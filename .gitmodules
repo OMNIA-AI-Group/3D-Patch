@@ -1,0 +1,6 @@
+[submodule "libs/opennurbs"]
+	path = libs/opennurbs
+	url = https://github.com/mcneel/opennurbs.git
+[submodule "libs/skp-iamahsanmehmood"]
+	path = libs/skp-iamahsanmehmood
+	url = https://github.com/iamahsanmehmood/openskp.git

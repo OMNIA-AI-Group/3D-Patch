@@ -1,0 +1,102 @@
+diff --git a/opennurbs_file_utilities.cpp b/opennurbs_file_utilities.cpp
+index 3ca4c3d..aecb7d2 100644
+--- a/opennurbs_file_utilities.cpp
++++ b/opennurbs_file_utilities.cpp
+@@ -12,6 +12,10 @@
+ ////////////////////////////////////////////////////////////////
+ 
+ #include "opennurbs.h"
++#if defined(__MINGW32__)
++#include <shlobj.h>
++#include <knownfolders.h>
++#endif
+ 
+ #if !defined(ON_COMPILING_OPENNURBS)
+ // This check is included in all opennurbs source .c and .cpp files to insure
+diff --git a/opennurbs_internal_defines.h b/opennurbs_internal_defines.h
+index 540a634..f82055c 100644
+--- a/opennurbs_internal_defines.h
++++ b/opennurbs_internal_defines.h
+@@ -27,7 +27,7 @@
+ #undef max
+ #endif
+ 
+-#ifdef ON_RUNTIME_WIN
++#if defined(ON_RUNTIME_WIN) && defined(_MSC_VER)
+ #define PRIVATE_CHECK(c) auto priv_has = sizeof(_PRIVATE), priv_needs = sizeof(c) + 64; \
+         if (priv_has < priv_needs) { ON_wString priv; \
+             priv.Format(L#c L" _PRIVATE has %u but needs %u bytes\n", priv_has, priv_needs); \
+diff --git a/opennurbs_sort.cpp b/opennurbs_sort.cpp
+index d405497..01959e2 100644
+--- a/opennurbs_sort.cpp
++++ b/opennurbs_sort.cpp
+@@ -63,7 +63,7 @@ ON_qsort( void *base, size_t nel, size_t width, int (*compar)(void*,const void *
+   // find pivots, that calculation must be thread safe.
+ #if defined(ON_COMPILER_MSC)
+   qsort_s(base,nel,width,compar,context);
+-#elif defined(ON_RUNTIME_ANDROID) || defined(ON_RUNTIME_LINUX) || defined(ON_RUNTIME_WASM)
++#elif defined(ON_RUNTIME_ANDROID) || defined(ON_RUNTIME_LINUX) || defined(ON_RUNTIME_WASM) || defined(__MINGW32__)
+   ON_hsort(base, nel, width, compar, context);
+ #elif defined(ON_COMPILER_CLANG)
+   qsort_r(base,nel,width,context,compar);
+diff --git a/opennurbs_uuid.cpp b/opennurbs_uuid.cpp
+index 02dc255..535dec9 100644
+--- a/opennurbs_uuid.cpp
++++ b/opennurbs_uuid.cpp
+@@ -148,6 +148,9 @@ ON__UINT64 ON_IndexFromNotUniqueId(
+   return (ON_nil_uuid == not_unique_id) ? 0 : 0xFFFF00000000;
+ }
+ 
++#if defined(__MINGW32__)
++#include <rpc.h>
++#endif
+ bool ON_CreateUuid( ON_UUID& new_uuid )
+ {
+   // See http://www.faqs.org/rfcs/rfc4122.html for uuid details.
+@@ -165,7 +168,7 @@ bool ON_CreateUuid( ON_UUID& new_uuid )
+ 
+ #else
+ 
+-#if defined(ON_COMPILER_MSC)
++#if defined(ON_COMPILER_MSC) || defined(__MINGW32__)
+   // Header: Declared in Rpcdce.h.
+   // Library: Use Rpcrt4.lib  
+ #pragma comment(lib, "Rpcrt4.lib")
+diff --git a/opennurbs_mingw_compat.h b/opennurbs_mingw_compat.h
+new file mode 100644
+index 0000000..22a8745
+--- /dev/null
++++ b/opennurbs_mingw_compat.h
+@@ -0,0 +1,32 @@
++/* 3D-Patch : compatibilité openNURBS <-> mingw-w64 (Windows, GCC). Inclus par -include.
++   openNURBS suppose MSVC sous Windows ; on fournit les quelques fonctions manquantes.
++   Les variantes « _l » ignorent la locale : l'appli tourne en locale « C ». */
++#pragma once
++#if defined(__MINGW32__) && defined(__cplusplus)
++#include <stdio.h>
++#include <stdarg.h>
++#include <stdlib.h>
++#include <time.h>
++#include <wchar.h>
++#include <locale.h>
++#include <dirent.h>
++#include <limits.h>
++#include <string.h>
++#define fcloseall _fcloseall
++#ifndef NAME_MAX
++#define NAME_MAX 260
++#endif
++static inline int vsnprintf_l(char* b, size_t n, _locale_t, const char* f, va_list a) { return vsnprintf(b, n, f, a); }
++static inline int snprintf_l(char* b, size_t n, _locale_t, const char* f, ...) { va_list a; va_start(a, f); int r = vsnprintf(b, n, f, a); va_end(a); return r; }
++static inline int sprintf_l(char* b, _locale_t, const char* f, ...) { va_list a; va_start(a, f); int r = vsprintf(b, f, a); va_end(a); return r; }
++static inline int sscanf_l(const char* s, _locale_t, const char* f, ...) { va_list a; va_start(a, f); int r = vsscanf(s, f, a); va_end(a); return r; }
++static inline int vsscanf_l(const char* s, _locale_t, const char* f, va_list a) { return vsscanf(s, f, a); }
++static inline int _vsscanf_s_l(const char* s, const char* f, _locale_t, va_list a) { return vsscanf(s, f, a); }
++static inline int _vswscanf_s_l(const wchar_t* s, const wchar_t* f, _locale_t, va_list a) { return vswscanf(s, f, a); }
++static inline struct tm* localtime_r(const time_t* t, struct tm* r) { return localtime_s(r, t) == 0 ? r : nullptr; }
++static inline int readdir_r(DIR* d, struct dirent* e, struct dirent** res) {
++  struct dirent* x = readdir(d);
++  if (!x) { *res = nullptr; return 0; }
++  memcpy(e, x, sizeof(*e)); *res = e; return 0;
++}
++#endif

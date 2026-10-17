@@ -1,0 +1,27 @@
+# Dépôt « liste blanche » : seules les sources sont publiées.
+# Binaires, installeurs et builds tiers restent en local (installeurs => GitHub Releases).
+/*
+!/.gitignore
+!/.gitmodules
+!/README*.md
+!/LICENSE
+!/install-systeme.sh
+!/3D-Patch/
+!/IMAGES/
+!/patches/
+!/docs/
+!/libs/
+!/winbuild/
+
+/3D-Patch/target/
+/3D-Patch/*.exe
+/3D-Patch/result.json
+
+/IMAGES/Logo3D/scripts/
+*.blend1
+
+/libs/skp-hew3d/
+
+/winbuild/*
+!/winbuild/3d-patch.nsi
+!/winbuild/mingw-w64.cmake

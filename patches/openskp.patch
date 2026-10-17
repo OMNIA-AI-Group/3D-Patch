@@ -1,0 +1,220 @@
+diff --git a/packages/cpp/src/earcut.cpp b/packages/cpp/src/earcut.cpp
+index a8b4a14..6ab176d 100644
+--- a/packages/cpp/src/earcut.cpp
++++ b/packages/cpp/src/earcut.cpp
+@@ -23,19 +23,36 @@ bool inside(const EarPoint& p, const EarPoint& a, const EarPoint& b, const EarPo
+   return x >= -1e-12 && y >= -1e-12 && z >= -1e-12;
+ }
+ 
++// 3D-Patch : point strictement sur le segment ]a, c[ (bloque une oreille : sinon jonction en T)
++bool on_open_segment(const EarPoint& p, const EarPoint& a, const EarPoint& c) {
++  const double dx = c.x - a.x, dy = c.y - a.y, l2 = dx * dx + dy * dy;
++  if (l2 <= 0) return false;
++  const double t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
++  if (t <= 1e-9 || t >= 1 - 1e-9) return false;
++  const double ex = a.x + t * dx - p.x, ey = a.y + t * dy - p.y;
++  return ex * ex + ey * ey <= 1e-12 * l2;
++}
++bool strictly_inside(const EarPoint& p, const EarPoint& a, const EarPoint& b, const EarPoint& c) {
++  const double s = 1e-12 * (std::abs(cross(a, b, c)) + 1e-300);
++  return cross(a, b, p) > s && cross(b, c, p) > s && cross(c, a, p) > s;
++}
++
+ std::vector<std::array<EntityId, 3>> clip(std::vector<EarPoint> p) {
+   std::vector<std::array<EntityId, 3>> out;
+   if (area(p) < 0) std::reverse(p.begin(), p.end());
++  // 3D-Patch : limite fixée au départ (avant : p.size() qui rétrécit => arrêt prématuré, triangles perdus)
+   size_t guard = 0;
+-  while (p.size() > 3 && guard++ < p.size() * p.size() * 4) {
++  const size_t guard_max = p.size() * p.size() * 4 + 16;
++  while (p.size() > 3 && guard++ < guard_max) {
+     bool cut = false;
+     for (size_t i = 0; i < p.size(); ++i) {
+       auto a = (i + p.size() - 1) % p.size(), c = (i + 1) % p.size();
+       if (cross(p[a], p[i], p[c]) <= 1e-12) continue;
+       bool hit = false;
+       for (size_t j = 0; j < p.size(); ++j)
+-        if (j != a && j != i && j != c && inside(p[j], p[a], p[i], p[c]) && p[j].id != p[a].id &&
+-            p[j].id != p[i].id && p[j].id != p[c].id) {
++        if (j != a && j != i && j != c && p[j].id != p[a].id && p[j].id != p[i].id &&
++            p[j].id != p[c].id &&
++            (strictly_inside(p[j], p[a], p[i], p[c]) || on_open_segment(p[j], p[a], p[c]))) {
+           hit = true;
+           break;
+         }
+@@ -46,6 +63,20 @@ std::vector<std::array<EntityId, 3>> clip(std::vector<EarPoint> p) {
+       break;
+     }
+     if (!cut) {
++      // 3D-Patch : coin convexe le plus « ouvert » plutôt que de jeter un sommet (=> fente)
++      size_t best = p.size();
++      double bestv = 0;
++      for (size_t i = 0; i < p.size(); ++i) {
++        auto a = (i + p.size() - 1) % p.size(), c = (i + 1) % p.size();
++        const double v = cross(p[a], p[i], p[c]);
++        if (v > bestv) { bestv = v; best = i; }
++      }
++      if (best < p.size()) {
++        auto a = (best + p.size() - 1) % p.size(), c = (best + 1) % p.size();
++        out.push_back({p[a].id, p[best].id, p[c].id});
++        p.erase(p.begin() + best);
++        continue;
++      }
+       for (size_t i = 0; i < p.size(); ++i) {
+         auto a = (i + p.size() - 1) % p.size(), c = (i + 1) % p.size();
+         if (std::abs(cross(p[a], p[i], p[c])) < 1e-10) {
+@@ -141,25 +172,54 @@ std::vector<std::array<EntityId, 3>> earcut_2d(std::vector<std::vector<EarPoint>
+   if (loops.size() > 2 && holes_overlap(loops)) return triangulate_by_filtering_holes(loops);
+   auto poly = std::move(loops[0]);
+   if (area(poly) < 0) std::reverse(poly.begin(), poly.end());
++  // trous traités du plus à droite au plus à gauche (comme earcut de Mapbox)
++  auto maxx = [](const std::vector<EarPoint>& r) {
++    double m = -1e300;
++    for (auto& q : r) m = std::max(m, q.x);
++    return m;
++  };
++  std::sort(loops.begin() + 1, loops.end(),
++            [&](const std::vector<EarPoint>& a, const std::vector<EarPoint>& b) { return maxx(a) > maxx(b); });
+   for (size_t h = 1; h < loops.size(); ++h) {
++    const size_t h_next = h + 1;
+     auto hole = std::move(loops[h]);
+     if (hole.empty()) continue;
+     if (area(hole) > 0) std::reverse(hole.begin(), hole.end());
+     size_t hi = 0;
+     for (size_t i = 1; i < hole.size(); ++i)
+       if (hole[i].x > hole[hi].x || (hole[i].x == hole[hi].x && hole[i].y < hole[hi].y)) hi = i;
+-    size_t oi = 0;
+-    double best = 1e300;
+-    for (size_t i = 0; i < poly.size(); ++i) {
+-      double dx = poly[i].x - hole[hi].x;
+-      if (dx >= 0) {
+-        double d = dx * dx + (poly[i].y - hole[hi].y) * (poly[i].y - hole[hi].y);
+-        if (d < best) {
+-          best = d;
+-          oi = i;
++    // 3D-Patch : sommet extérieur le plus proche ET visible (le pont ne coupe aucune arête)
++    auto seg_cross = [](const EarPoint& p1, const EarPoint& p2, const EarPoint& q1, const EarPoint& q2) {
++      auto o = [](const EarPoint& a, const EarPoint& b, const EarPoint& c) {
++        const double v = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
++        return (v > 0) - (v < 0);
++      };
++      return o(p1, p2, q1) * o(p1, p2, q2) < 0 && o(q1, q2, p1) * o(q1, q2, p2) < 0;
++    };
++    auto visible = [&](const EarPoint& h, const EarPoint& q) {
++      auto test_ring = [&](const std::vector<EarPoint>& r) {
++        for (size_t k = 0; k < r.size(); ++k) {
++          const auto& e1 = r[k];
++          const auto& e2 = r[(k + 1) % r.size()];
++          if (e1.id == h.id || e2.id == h.id || e1.id == q.id || e2.id == q.id) continue;
++          if (seg_cross(h, q, e1, e2)) return false;
+         }
+-      }
++        return true;
++      };
++      if (!test_ring(poly) || !test_ring(hole)) return false;
++      for (size_t k = h_next; k < loops.size(); ++k)
++        if (!loops[k].empty() && !test_ring(loops[k])) return false;
++      return true;
++    };
++    std::vector<std::pair<double, size_t>> cand;
++    for (size_t i = 0; i < poly.size(); ++i) {
++      double dx = poly[i].x - hole[hi].x, dy = poly[i].y - hole[hi].y;
++      cand.push_back({dx * dx + dy * dy - (dx >= 0 ? 0.0 : 0.0), i});
+     }
++    std::sort(cand.begin(), cand.end());
++    size_t oi = cand.empty() ? 0 : cand[0].second;
++    for (auto& cd : cand)
++      if (visible(hole[hi], poly[cd.second])) { oi = cd.second; break; }
+     std::vector<EarPoint> merged;
+     for (size_t i = 0; i <= oi; ++i) merged.push_back(poly[i]);
+     merged.push_back(hole[hi]);
+diff --git a/packages/cpp/src/face_groups.cpp b/packages/cpp/src/face_groups.cpp
+index 2a4869d..21b0cab 100644
+--- a/packages/cpp/src/face_groups.cpp
++++ b/packages/cpp/src/face_groups.cpp
+@@ -1,3 +1,5 @@
++#include <cstdio>
++#include <cstdlib>
+ #include "face_groups.hpp"
+ 
+ #include <algorithm>
+@@ -127,6 +129,8 @@ std::optional<std::string> sniff_image_mime(const ByteBuffer& data) {
+   return std::nullopt;
+ }
+ 
++bool front_only_sides = false;
++
+ std::map<GroupKey, Group> build_local_face_groups(const RawParsed& parsed, const GeometryBuilder& b,
+                                                   const FaceGroupContext& ctx) {
+   std::map<GroupKey, Group> groups;
+@@ -151,6 +155,12 @@ std::map<GroupKey, Group> build_local_face_groups(const RawParsed& parsed, const
+     if (loops.empty()) continue;
+ 
+     const auto triangles = triangulate_face_3d(vv, loops, f.normal);
++    if (std::getenv("SKP_DIAG")) {
++      size_t nv = 0; for (auto& l : loops) nv += l.size();
++      size_t attendu = nv + 2 * (loops.size() - 1) - 2;
++      if (triangles.size() != attendu || f.loops.size() != loops.size())
++        std::fprintf(stderr, "FACE %llu boucles %zu/%zu sommets %zu tri %zu attendu %zu\n", (unsigned long long)fv.first, loops.size(), f.loops.size(), nv, triangles.size(), attendu);
++    }
+ 
+     // Not a structured binding: those can't be captured by the nested
+     // add_side lambda below in C++17 (only from C++20 onward).
+@@ -183,7 +193,11 @@ std::map<GroupKey, Group> build_local_face_groups(const RawParsed& parsed, const
+         group.tris.push_back(indices);
+       }
+     };
+-    if (front == back) {
++    if (front_only_sides) {
++      // 3D-Patch : une seule épaisseur de faces (recto), pas de doublon recto/verso
++      const auto [tw, th] = tile_size(front_mat);
++      add_side({front, false, ctx.texture_index_for(front_mat)}, false, f.uv_transform, tw, th);
++    } else if (front == back) {
+       const auto [tw, th] = tile_size(front_mat);
+       add_side({front, true, ctx.texture_index_for(front_mat)}, false, f.uv_transform, tw, th);
+     } else {
+diff --git a/packages/cpp/src/triangulator.cpp b/packages/cpp/src/triangulator.cpp
+index b54b2a1..d4bb7d3 100644
+--- a/packages/cpp/src/triangulator.cpp
++++ b/packages/cpp/src/triangulator.cpp
+@@ -1,3 +1,5 @@
++#include <cstdio>
++#include <cstdlib>
+ #include <cmath>
+ 
+ #include "internal.hpp"
+@@ -29,7 +31,19 @@ std::vector<std::array<EntityId, 3>> triangulate_face_3d(
+   if (loops.empty()) return {};
+   if (loops.size() == 1 && loops[0].size() == 3) return {{loops[0][0], loops[0][1], loops[0][2]}};
+   if (loops.size() == 1 && loops[0].size() == 4) {
+-    return {{{loops[0][0], loops[0][1], loops[0][2]}}, {{loops[0][0], loops[0][2], loops[0][3]}}};
++    // 3D-Patch : un quadrilatère concave ne se coupe pas par n'importe quelle diagonale
++    const auto& L = loops[0];
++    auto P = [&](int k) -> const Vertex* { auto i = verts.find(L[k]); return i == verts.end() ? nullptr : &i->second; };
++    if (P(0) && P(1) && P(2) && P(3)) {
++      auto side = [&](int a, int b, int c) {
++        const Vertex &A = *P(a), &B = *P(b), &C = *P(c);
++        double ux = B.x - A.x, uy = B.y - A.y, uz = B.z - A.z, wx = C.x - A.x, wy = C.y - A.y, wz = C.z - A.z;
++        return (uy * wz - uz * wy) * n[0] + (uz * wx - ux * wz) * n[1] + (ux * wy - uy * wx) * n[2];
++      };
++      if (side(0, 1, 2) * side(0, 2, 3) >= 0)
++        return {{{L[0], L[1], L[2]}}, {{L[0], L[2], L[3]}}};
++      return {{{L[0], L[1], L[3]}}, {{L[1], L[2], L[3]}}};
++    }
+   }
+   double len = std::sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+   if (len < 1e-6)
+@@ -56,6 +70,13 @@ std::vector<std::array<EntityId, 3>> triangulate_face_3d(
+     }
+     projected.push_back(std::move(p));
+   }
++  if (const char* d = std::getenv("SKP_DUMP")) {
++    if (FILE* f = std::fopen(d, "a")) {
++      std::fprintf(f, "FACE\n");
++      for (auto& l : projected) { std::fprintf(f, "LOOP\n"); for (auto& q : l) std::fprintf(f, "%llu %.17g %.17g\n", (unsigned long long)q.id, q.x, q.y); }
++      std::fclose(f);
++    }
++  }
+   return earcut_2d(std::move(projected));
+ }
+ }  // namespace openskp

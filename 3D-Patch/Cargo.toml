@@ -1,0 +1,35 @@
+[package]
+name = "patch3d"
+version = "0.1.0"
+license = "GPL-3.0-or-later"
+authors = ["Alain Valette-Clary (ΩiA-Group)"]
+repository = "https://github.com/OMNIA-AI-Group/3D-Patch"
+description = "Modeleur 3D pour l'impression 3D (Rust + OpenCASCADE)"
+edition = "2021"
+
+[[bin]]
+name = "3d-patch"
+path = "src/main.rs"
+
+[dependencies]
+winit = "0.29"
+glutin = "0.31"
+glutin-winit = "0.4"
+raw-window-handle = "0.5"
+glow = "0.13"
+glam = "0.27"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+egui = "0.27"
+ab_glyph = "0.2"
+ttf-parser = "0.25"
+egui-winit = "0.27"
+egui_glow = "0.27"
+rfd = "0.14"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+manifold-rust = { version = "0.16", features = ["parallel"] }
+
+[profile.release]
+opt-level = 3
+
+[build-dependencies]
+cc = "1"
