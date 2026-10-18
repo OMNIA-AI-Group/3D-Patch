@@ -576,18 +576,32 @@ fn tr(l: Lang, key: &str) -> &'static str {
                             "Forbici: traccia una linea di taglio; un riquadro rosso si alza perpendicolarmente e taglia l'oggetto",
                             "Scissors: draw a cut line; a red frame rises perpendicular to it and cuts the object",
                             "Schere: Schnittlinie zeichnen; ein roter Rahmen steigt senkrecht auf und schneidet das Objekt"],
-        "coupe_aide"    => ["Clique sur les ciseaux, puis trace la ligne de coupe en glissant (vue 3D ou Dessus = sur la grille ; vues Face / Côté = dans leur plan). Le cadre rouge s'élève perpendiculairement : c'est lui qui coupe.",
-                            "Haz clic en las tijeras y traza la línea de corte arrastrando (vista 3D o Superior = sobre la rejilla; vistas Frontal / Lateral = en su plano). El marco rojo se eleva perpendicularmente: es el que corta.",
-                            "Clicca sulle forbici, poi traccia la linea di taglio trascinando (vista 3D o Dall'alto = sulla griglia; viste Frontale / Laterale = nel loro piano). Il riquadro rosso si alza perpendicolarmente: è lui che taglia.",
-                            "Click the scissors, then drag to draw the cut line (3D or Top view = on the grid; Front / Side views = in their plane). The red frame rises perpendicular to it: that is what cuts.",
-                            "Schere anklicken, dann die Schnittlinie ziehen (3D- oder Draufsicht = auf dem Raster; Vorder-/Seitenansicht = in ihrer Ebene). Der rote Rahmen steigt senkrecht auf: er schneidet."],
-        "coupe_trace"   => ["Trace la ligne (glisser)", "Traza la línea (arrastrar)", "Traccia la linea (trascina)", "Draw the line (drag)", "Linie ziehen"],
+        "coupe_aide"    => ["Clique sur les ciseaux, puis 1er clic = départ du trait, 2e clic = arrivée (longueur L ; vue 3D ou Dessus = sur la grille, vues Face / Côté = dans leur plan). Déplace ensuite la souris pour déplier l autour du trait (roue d'inclinaison, aimantée tous les 45°) et clique une 3e fois. Le cadre rouge est le plan qui coupe.",
+                            "Haz clic en las tijeras: 1.er clic = inicio del trazo, 2.º clic = final (longitud L; vista 3D o Superior = sobre la rejilla, vistas Frontal / Lateral = en su plano). Mueve luego el ratón para desplegar l alrededor del trazo (rueda de inclinación, imantada cada 45°) y haz un 3.er clic. El marco rojo es el plano que corta.",
+                            "Clicca sulle forbici: 1° clic = inizio del tratto, 2° clic = arrivo (lunghezza L; vista 3D o Dall'alto = sulla griglia, viste Frontale / Laterale = nel loro piano). Muovi poi il mouse per aprire l attorno al tratto (ruota d'inclinazione, magnetica ogni 45°) e fai un 3° clic. Il riquadro rosso è il piano che taglia.",
+                            "Click the scissors: 1st click = line start, 2nd click = end (length L; 3D or Top view = on the grid, Front / Side views = in their plane). Then move the mouse to unfold l around the line (tilt wheel, snapping every 45°) and click a 3rd time. The red frame is the cutting plane.",
+                            "Schere anklicken: 1. Klick = Linienanfang, 2. Klick = Ende (Länge L; 3D- oder Draufsicht = auf dem Raster, Vorder-/Seitenansicht = in ihrer Ebene). Dann die Maus bewegen, um l um die Linie aufzuklappen (Neigungsrad, rastet alle 45° ein), und ein 3. Mal klicken. Der rote Rahmen ist die Schnittebene."],
+        "coupe_t1"      => ["Clique le départ", "Clic: inicio", "Clic: inizio", "Click the start", "Start klicken"],
+        "coupe_t2"      => ["Clique l'arrivée", "Clic: final", "Clic: arrivo", "Click the end", "Ende klicken"],
+        "coupe_t3"      => ["Déplie l, clique", "Despliega l, clic", "Apri l, clic", "Unfold l, click", "l aufklappen, klicken"],
+        "coupe_incl"    => ["Inclinaison", "Inclinación", "Inclinazione", "Tilt", "Neigung"],
+        "coupe_incl_tip"=> ["Rotation du cadre autour du trait L : 90° = perpendiculaire au plan de tracé, 0° = à plat dedans",
+                            "Giro del marco alrededor del trazo L: 90° = perpendicular al plano de trazado, 0° = plano en él",
+                            "Rotazione del riquadro attorno al tratto L: 90° = perpendicolare al piano di tracciamento, 0° = piatto in esso",
+                            "Frame rotation around line L: 90° = perpendicular to the drawing plane, 0° = flat in it",
+                            "Drehung des Rahmens um die Linie L: 90° = senkrecht zur Zeichenebene, 0° = flach darin"],
+        "coupe_l_tip"   => ["Longueur dépliée du cadre depuis le trait (0 = toute la hauteur de la scène). La coupe traverse toujours toute la pièce.",
+                            "Longitud desplegada del marco desde el trazo (0 = toda la altura de la escena). El corte siempre atraviesa toda la pieza.",
+                            "Lunghezza aperta del riquadro dal tratto (0 = tutta l'altezza della scena). Il taglio attraversa sempre tutto il pezzo.",
+                            "Unfolded length of the frame from the line (0 = full scene height). The cut always goes through the whole part.",
+                            "Aufgeklappte Länge des Rahmens ab der Linie (0 = ganze Szenenhöhe). Der Schnitt geht immer durch das ganze Teil."],
         "coupe_objet"   => ["Le cadre est un objet : clique-le pour le sélectionner (contour jaune), fais-le glisser pour le déplacer, touche Suppr pour l'enlever. Il disparaît après la coupe.",
                             "El marco es un objeto: haz clic para seleccionarlo (contorno amarillo), arrástralo para moverlo, Supr para quitarlo. Desaparece tras el corte.",
                             "Il riquadro è un oggetto: cliccalo per selezionarlo (contorno giallo), trascinalo per spostarlo, Canc per toglierlo. Sparisce dopo il taglio.",
                             "The frame is an object: click it to select it (yellow outline), drag it to move it, Delete to remove it. It disappears after the cut.",
                             "Der Rahmen ist ein Objekt: anklicken zum Auswählen (gelber Rand), ziehen zum Verschieben, Entf zum Entfernen. Nach dem Schnitt verschwindet er."],
         "coupe_angle"   => ["Angle", "Ángulo", "Angolo", "Angle", "Winkel"],
+        "coupe_trait"   => ["Trait", "Trazo", "Tratto", "Line", "Linie"],
         "coupe_pos"     => ["Décalage", "Desplazamiento", "Spostamento", "Offset", "Versatz"],
         "coupe_pos_tip" => ["Déplace le cadre perpendiculairement à lui-même", "Desplaza el marco perpendicularmente", "Sposta il riquadro perpendicolarmente", "Moves the frame perpendicular to itself", "Verschiebt den Rahmen senkrecht zu sich selbst"],
         "coupe_garder"  => ["Garder", "Conservar", "Mantieni", "Keep", "Behalten"],
@@ -657,13 +671,12 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "texte_j_g"     => ["Aligné à gauche", "Alineado a la izquierda", "Allineato a sinistra", "Left aligned", "Linksbündig"],
         "texte_j_c"     => ["Centré", "Centrado", "Centrato", "Centred", "Zentriert"],
         "texte_j_d"     => ["Aligné à droite", "Alineado a la derecha", "Allineato a destra", "Right aligned", "Rechtsbündig"],
-        "texte_cadre"   => ["Tracer le cadre", "Trazar el marco", "Traccia il riquadro", "Draw the frame", "Rahmen zeichnen"],
-        "texte_cadre_en_cours"=> ["Clique dans la vue… (Échap)", "Haz clic en la vista… (Esc)", "Clicca nella vista… (Esc)", "Click in the view… (Esc)", "In die Ansicht klicken… (Esc)"],
-        "texte_aide"    => ["La fenêtre où tu cliques donne le plan (Dessus XY, Face XZ, Droite YZ ; 3D : la face sous le curseur). Clic 1 : départ · clic 2 : X et angle libre · clic 3 : Y · clic 4 : Z (au-dessus = relief, en dessous = gravé). Points jaunes : rotation ; glisser l'intérieur : déplacer.",
-                            "La ventana donde haces clic da el plano (Superior XY, Frontal XZ, Derecha YZ; 3D: la cara bajo el cursor). Clic 1: inicio · clic 2: X y ángulo libre · clic 3: Y · clic 4: Z (profundidad). Puntos amarillos: asas de rotación.",
-                            "La finestra in cui clicchi dà il piano (Alto XY, Frontale XZ, Destra YZ; 3D: la faccia sotto il cursore). Clic 1: inizio · clic 2: X e angolo libero · clic 3: Y · clic 4: Z (profondità). Punti gialli: maniglie di rotazione.",
-                            "The window you click in sets the plane (Top XY, Front XZ, Right YZ; 3D: the face under the cursor). Click 1: start · click 2: X and free angle · click 3: Y · click 4: Z (depth). Yellow dots: rotation handles.",
-                            "Das Fenster, in das du klickst, legt die Ebene fest (Oben XY, Vorne XZ, Rechts YZ; 3D: Fläche unter dem Cursor). Klick 1: Start · Klick 2: X und freier Winkel · Klick 3: Y · Klick 4: Z (Tiefe). Gelbe Punkte: Drehgriffe."],
+        "texte_aide"    => ["Le texte se pose sur la face de l'objet visée au centre de la vue. Glisse-le pour le déplacer sur la surface (il change de face tout seul), clique ailleurs sur l'objet pour l'y poser, tourne-le par les roues jaunes au milieu des arêtes (aimant tous les 45°), agrandis-le par les coins blancs. Flèche bleue : sa longueur donne la profondeur, sa direction incline le texte (aimant 0° / 45°) ; dehors = relief, dedans = gravé. Puis APPLIQUER.",
+                            "El texto se coloca en la cara del objeto apuntada en el centro de la vista. Arrástralo para moverlo por la superficie (cambia de cara solo), haz clic en otro punto del objeto para ponerlo allí, gíralo con las ruedas amarillas en el centro de las aristas (imán cada 45°), agrándalo por las esquinas blancas. Flecha azul: su longitud da la profundidad, su dirección inclina el texto (imán 0° / 45°); fuera = relieve, dentro = grabado. Y APLICAR.",
+                            "Il testo si posa sulla faccia dell'oggetto mirata al centro della vista. Trascinalo per spostarlo sulla superficie (cambia faccia da solo), clicca altrove sull'oggetto per metterlo lì, ruotalo con le ruote gialle al centro degli spigoli (magnete ogni 45°), ingrandiscilo dagli angoli bianchi. Freccia blu: la lunghezza dà la profondità, la direzione inclina il testo (magnete 0° / 45°); fuori = rilievo, dentro = inciso. Poi APPLICA.",
+                            "The text lands on the face of the object aimed at the centre of the view. Drag it to move it over the surface (it changes face by itself), click elsewhere on the object to put it there, turn it with the yellow wheels at the middle of the edges (snapping every 45°), resize it with the white corners. Blue arrow: its length sets the depth, its direction tilts the text (snaps 0° / 45°); out = raised, in = engraved. Then APPLY.",
+                            "Der Text legt sich auf die Fläche des Objekts in der Bildmitte. Ziehen, um ihn über die Oberfläche zu bewegen (er wechselt die Fläche von selbst), woanders aufs Objekt klicken, um ihn dort abzulegen, mit den gelben Rädern in der Kantenmitte drehen (rastet alle 45° ein), an den weißen Ecken vergrößern. Blauer Pfeil: Länge = Tiefe, Richtung neigt den Text (rastet bei 0° / 45° ein); außen = erhaben, innen = graviert. Dann ANWENDEN."],
+        "texte_recentrer" => ["Replacer au centre de la vue", "Recolocar en el centro de la vista", "Riposiziona al centro della vista", "Put back at view centre", "In Bildmitte zurücksetzen"],
         "texte_x"       => ["Longueur X", "Longitud X", "Lunghezza X", "Length X", "Länge X"],
         "texte_y"       => ["Largeur Y", "Anchura Y", "Larghezza Y", "Width Y", "Breite Y"],
         "texte_prof"    => ["Profondeur Z", "Profundidad Z", "Profondità Z", "Depth Z", "Tiefe Z"],
@@ -853,11 +866,19 @@ fn plane_point(mvp: &Mat4, cursor: (f64, f64), rect: (f32, f32, f32, f32), axe: 
     let d = -orig[axe] / dir[axe];
     if d.is_finite() { let mut p = orig + dir * d; p[axe] = 0.0; Some(p) } else { None }
 }
-/// Hauteur affichée du cadre de coupe : toute la scène le long de son axe, plus une marge.
+/// Hauteur du cadre de coupe étendu : toute la scène le long de la direction de dépli, plus une marge.
 fn coupe_hauteurs(c: &booleen::Cadre, scene: &[Obj]) -> (f32, f32) {
     let (lo, hi) = scene_bounds(scene);
-    let m = ((hi - lo)[c.e] * 0.08).max(2.0);
-    (lo[c.e].min(0.0) - m, hi[c.e] + m)
+    let (b, h) = c.etendue_l(lo, hi);
+    let m = ((h - b) * 0.08).max(2.0);
+    (b.min(0.0) - m, h + m)
+}
+/// Cadre tel qu'il est montré : le rectangle L × l tracé, ou (l = 0) le cadre étendu à toute la scène.
+fn cadre_affiche(c: &booleen::Cadre, scene: &[Obj]) -> (booleen::Cadre, f32, f32) {
+    if c.l > 0.0 { return (*c, 0.0, c.l); }
+    let ce = cadre_etendu(c, scene);
+    let (bas, haut) = coupe_hauteurs(&ce, scene);
+    (ce, bas, haut)
 }
 /// Cadre étendu à toute la largeur des objets (le long de la ligne tracée) : la coupe sépare
 /// franchement la pièce même si la ligne tracée est plus courte qu'elle.
@@ -871,14 +892,15 @@ fn cadre_etendu(c: &booleen::Cadre, scene: &[Obj]) -> booleen::Cadre {
         s0 = s0.min(s); s1 = s1.max(s);
     }
     let m = ((hi - lo).length() * 0.05).max(2.0);
-    booleen::Cadre { p0: c.p0 + u * (s0 - m), p1: c.p0 + u * (s1 + m), e: c.e }
+    booleen::Cadre { p0: c.p0 + u * (s0 - m), p1: c.p0 + u * (s1 + m), ..*c }
 }
 /// Ligne de coupe : là où le cadre traverse les objets (segments en coordonnées monde),
 /// limitée à l'emprise du cadre (longueur de la ligne tracée × hauteur affichée).
 fn section_cadre(c: &booleen::Cadre, scene: &[Obj]) -> Vec<[Vec3; 2]> {
     let c = &cadre_etendu(c, scene);
-    let Some((u, n, l)) = c.reperes() else { return Vec::new() };
+    let (Some((u, n, l)), Some(w)) = (c.reperes(), c.dir_l()) else { return Vec::new() };
     let (bas, haut) = coupe_hauteurs(c, scene);
+    let og = c.origine();
     let mut out = Vec::new();
     for o in scene {
         for t in &o.tris {
@@ -894,7 +916,7 @@ fn section_cadre(c: &booleen::Cadre, scene: &[Obj]) -> Vec<[Vec3; 2]> {
             // découpage du segment au rectangle du cadre (coordonnées s le long de la ligne, h le long de l'axe)
             let (a, b) = (pts[0], pts[1]);
             let (sa, sb) = ((a - c.p0).dot(u), (b - c.p0).dot(u));
-            let (ha, hb) = (a[c.e], b[c.e]);
+            let (ha, hb) = ((a - og).dot(w), (b - og).dot(w));
             let (mut t0, mut t1) = (0.0f32, 1.0f32);
             let mut ok = true;
             for (p0, dp, lo, hi) in [(sa, sb - sa, 0.0, l), (ha, hb - ha, bas, haut)] {
@@ -934,8 +956,8 @@ impl CadreTexte {
         let (a, b) = (self.lx * 0.5, self.ly * 0.5);
         [self.pt(-a, -b, dh), self.pt(a, -b, dh), self.pt(a, b, dh), self.pt(-a, b, dh)]
     }
-    /// Poignées de rotation : milieux des 4 côtés.
-    fn poignees(&self) -> [Vec3; 4] {
+    /// Roues de rotation : au milieu des arêtes L (bas, haut) et l (droite, gauche).
+    fn roues(&self) -> [Vec3; 4] {
         let (a, b) = (self.lx * 0.5, self.ly * 0.5);
         [self.pt(0.0, -b, 0.0), self.pt(a, 0.0, 0.0), self.pt(0.0, b, 0.0), self.pt(-a, 0.0, 0.0)]
     }
@@ -955,12 +977,48 @@ fn surface_sous(scene: &[Obj], p: Vec3, n: Vec3) -> Option<(usize, f32)> {
     }
     best.map(|(i, d)| (i, (o - n * d).dot(n)))
 }
-/// Le curseur est-il sur une poignée de rotation du cadre de texte ? (aucune quand le cadre est vu
+/// Le curseur est-il sur une roue de rotation (milieu d'une arête L ou l) ? (rien quand le cadre est vu
 /// par la tranche : tourner n'y aurait pas de sens)
 fn poignee_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64)) -> bool {
     if de_tranche(c, k) { return false; }
     let m = egui::pos2(cursor.0 as f32, cursor.1 as f32);
-    c.poignees().iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 13.0))
+    c.roues().iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 13.0))
+}
+/// Le curseur est-il sur une poignée de taille (coins du cadre) ?
+fn coin_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64)) -> bool {
+    if de_tranche(c, k) { return false; }
+    let m = egui::pos2(cursor.0 as f32, cursor.1 as f32);
+    c.coins(0.0).iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 10.0))
+}
+/// Rayon monde d'une roue de ≈ 70 px centrée en `o` dans le plan (eu, ew) ; None si ce plan est vu par la tranche.
+fn rayon_roue(mvp: &Mat4, rect: (f32, f32, f32, f32), ppp: f32, o: Vec3, eu: Vec3, ew: Vec3) -> Option<f32> {
+    let o2 = project(mvp, o, rect, ppp)?;
+    let v: Vec<egui::Vec2> = [eu, ew].iter().filter_map(|&d| project(mvp, o + d, rect, ppp)).map(|q| q - o2).collect();
+    if v.len() < 2 { return None; }
+    let pxu = v[0].length().max(v[1].length());
+    // vu par la tranche : les deux axes projetés presque alignés (aire du parallélogramme faible)
+    (pxu > 1e-6 && (v[0].x * v[1].y - v[0].y * v[1].x).abs() >= 0.2 * pxu * pxu).then(|| 70.0 / pxu)
+}
+/// Longueur monde de la flèche de profondeur : la profondeur, mais au moins 40 px à l'écran (None si le
+/// texte est regardé de face : flèche invisible).
+fn long_fleche(c: &CadreTexte, mvp: &Mat4, rect: (f32, f32, f32, f32), ppp: f32) -> Option<f32> {
+    let o = c.pt(0.0, 0.0, 0.0);
+    let l1 = (project(mvp, o + c.n, rect, ppp)? - project(mvp, o, rect, ppp)?).length();
+    (l1 >= 0.15).then(|| c.prof.max(40.0 / l1))
+}
+/// Poignée de profondeur et d'orientation : flèche depuis le centre du texte, le long de ±n ; (base, pointe) à l'écran.
+fn poignee_prof(c: &CadreTexte, mvp: &Mat4, rect: (f32, f32, f32, f32), ppp: f32, relief: bool) -> Option<(egui::Pos2, egui::Pos2)> {
+    let o = c.pt(0.0, 0.0, 0.0);
+    let l = long_fleche(c, mvp, rect, ppp)?;
+    Some((project(mvp, o, rect, ppp)?, project(mvp, o + c.n * if relief { l } else { -l }, rect, ppp)?))
+}
+/// Cadre de texte posé sur la surface touchée (point `hit`, normale `nrm`), droit par rapport à la verticale.
+fn cadre_sur(hit: Vec3, nrm: Vec3, base: Option<&CadreTexte>) -> CadreTexte {
+    let n = nrm.normalize_or(Vec3::Z);
+    let haut = if n.z.abs() < 0.9 { Vec3::Z } else { Vec3::Y };
+    let u = haut.cross(n).normalize_or(Vec3::X);
+    let (lx, ly, prof, angle) = base.map_or((1.0, 1.0, 1.0, 0.0), |b| (b.lx, b.ly, b.prof, b.angle));
+    CadreTexte { u, v: n.cross(u), n, centre: hit, h: hit.dot(n), lx, ly, prof, angle }
 }
 /// Le curseur est-il à l'intérieur du cadre de texte (tel qu'il est dessiné) ?
 fn dans_cadre(c: &CadreTexte, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64)) -> bool {
@@ -1006,8 +1064,7 @@ fn face_sous(mvp: &Mat4, cursor: (f64, f64), rect: (f32, f32, f32, f32), scene: 
 }
 /// Le curseur est-il sur le cadre de coupe tel qu'il est dessiné (surface, ou trait s'il est vu par la tranche) ?
 fn coupe_touche(c: &booleen::Cadre, scene: &[Obj], mvp: &Mat4, cursor: (f64, f64), rect: (f32, f32, f32, f32)) -> bool {
-    let c = &cadre_etendu(c, scene);
-    let (bas, haut) = coupe_hauteurs(c, scene);
+    let (c, bas, haut) = cadre_affiche(c, scene);
     let q: Vec<egui::Pos2> = c.coins(bas, haut).iter().filter_map(|w| project(mvp, *w, rect, 1.0)).collect();
     if q.len() < 4 { return false; }
     let m = egui::pos2(cursor.0 as f32, cursor.1 as f32);
@@ -1023,6 +1080,93 @@ fn coupe_touche(c: &booleen::Cadre, scene: &[Obj], mvp: &Mat4, cursor: (f64, f64
 }
 /// Axe d'élévation du cadre de coupe selon la vue où l'on trace (perpendiculaire au plan de la vue).
 fn axe_coupe(k: ViewKind) -> usize { match k { ViewKind::Front => 1, ViewKind::Right => 0, _ => 2 } }
+/// Axes (horizontal, vertical) du plan de tracé perpendiculaire à l'axe `e` : l'angle de coupe se mesure de l'un vers l'autre.
+fn axes_plan(e: usize) -> (usize, usize) { match e { 0 => (1, 2), 1 => (0, 2), _ => (0, 1) } }
+/// Angle du trait de coupe dans son plan, en degrés (0 à 360).
+fn angle_coupe(c: &booleen::Cadre) -> f32 {
+    let (iu, iw) = axes_plan(c.e);
+    let d = c.p1 - c.p0;
+    (d[iw].atan2(d[iu]).to_degrees() + 360.0) % 360.0
+}
+/// Roue aimantée : à moins de 5° d'un multiple de 45°, l'angle (degrés) s'y cale.
+fn aimante_angle(a: f32) -> f32 { let cran = (a / 45.0).round() * 45.0; if (a - cran).abs() <= 5.0 { cran } else { a } }
+/// Roue aimantée : à moins de 5° d'un multiple de 45°, le trait s'y cale (sa longueur est gardée).
+fn aimante_45(p0: Vec3, p: Vec3, e: usize) -> Vec3 {
+    let (iu, iw) = axes_plan(e);
+    let d = p - p0;
+    let l = (d[iu] * d[iu] + d[iw] * d[iw]).sqrt();
+    if l < 1e-6 { return p; }
+    let a = d[iw].atan2(d[iu]).to_degrees();
+    let cran = (a / 45.0).round() * 45.0;
+    if (a - cran).abs() > 5.0 { return p; }
+    let mut q = p0; let r = cran.to_radians();
+    q[iu] += l * r.cos(); q[iw] += l * r.sin();
+    q
+}
+/// Roue d'angle de la découpe, centrée en `o` dans le plan (eu, ew) : graduée tous les 15°, crans aimantés
+/// tous les 45° (chiffrés ; celui atteint s'allume), arc jaune de 0° (eu) à l'angle courant `ang` (degrés).
+/// Rien si ce plan est vu par la tranche.
+fn roue_angle(p: &egui::Painter, mvp: &Mat4, sr: (f32, f32, f32, f32), ppp: f32, o: Vec3, eu: Vec3, ew: Vec3, ang: f32) {
+    // rayon monde pour ≈ 70 px à l'écran
+    let Some(rw) = rayon_roue(mvp, sr, ppp, o, eu, ew) else { return };
+    let pt = |deg: f32, k: f32| { let a = deg.to_radians(); project(mvp, o + (eu * a.cos() + ew * a.sin()) * (rw * k), sr, ppp) };
+    let blanc = egui::Color32::from_rgba_unmultiplied(235, 240, 255, 200);
+    let cercle: Vec<egui::Pos2> = (0..=72).filter_map(|i| pt(i as f32 * 5.0, 1.0)).collect();
+    if cercle.len() < 10 { return; }
+    p.add(egui::Shape::line(cercle, egui::Stroke::new(1.5, blanc)));
+    let ang = (ang + 360.0) % 360.0;
+    let aimante = ((ang / 45.0).round() * 45.0 - ang).abs() < 0.01;
+    // arc de 0° à l'angle courant
+    let arc: Vec<egui::Pos2> = (0..=48).filter_map(|i| pt(ang * i as f32 / 48.0, 0.42)).collect();
+    p.add(egui::Shape::line(arc, egui::Stroke::new(2.5, JAUNE)));
+    for i in 0..24 {
+        let deg = i as f32 * 15.0;
+        let cran = i % 3 == 0;
+        if let (Some(a), Some(b)) = (pt(deg, if cran { 0.80 } else { 0.90 }), pt(deg, 1.0)) {
+            p.line_segment([a, b], egui::Stroke::new(if cran { 2.0 } else { 1.0 }, blanc));
+        }
+        if cran {
+            let actif = aimante && ((deg - ang).abs() < 0.01 || (deg - ang).abs() > 359.99);
+            if let Some(q) = pt(deg, 1.0) {
+                p.circle_filled(q, if actif { 6.0 } else { 3.0 }, if actif { JAUNE } else { blanc });
+                if actif { p.circle_stroke(q, 6.0, egui::Stroke::new(1.5, egui::Color32::BLACK)); }
+            }
+            if let Some(q) = pt(deg, 1.25) {
+                p.text(q, egui::Align2::CENTER_CENTER, format!("{deg:.0}°"), egui::FontId::proportional(11.0), if actif { JAUNE } else { blanc });
+            }
+        }
+    }
+}
+/// Partie d'un segment écran visible dans `r` (Liang-Barsky).
+fn segment_dans(a: egui::Pos2, b: egui::Pos2, r: egui::Rect) -> Option<(egui::Pos2, egui::Pos2)> {
+    let d = b - a;
+    let (mut t0, mut t1) = (0.0f32, 1.0f32);
+    for (p, q) in [(-d.x, a.x - r.left()), (d.x, r.right() - a.x), (-d.y, a.y - r.top()), (d.y, r.bottom() - a.y)] {
+        if p.abs() < 1e-6 { if q < 0.0 { return None; } continue; }
+        let t = q / p;
+        if p < 0.0 { t0 = t0.max(t); } else { t1 = t1.min(t); }
+    }
+    (t0 < t1).then(|| (a + d * t0, a + d * t1))
+}
+/// Cote du cadre de coupe sur celui de deux bords opposés (`bords`) qui se voit le mieux dans la vue `vue` :
+/// au milieu de sa partie visible, poussée vers l'extérieur ; rien si moins de 40 px sont visibles.
+fn cote_bord(p: &egui::Painter, pr: &[egui::Pos2], bords: [(usize, usize); 2], vue: egui::Rect, t: String) {
+    let centre = egui::pos2(pr.iter().map(|q| q.x).sum::<f32>() / 4.0, pr.iter().map(|q| q.y).sum::<f32>() / 4.0);
+    let vue = vue.shrink(20.0);
+    let Some((a, b)) = bords.iter().filter_map(|&(i, j)| segment_dans(pr[i], pr[j], vue))
+        // à longueur visible égale : le bord de droite / du bas (loin des règles, à gauche et en haut)
+        .max_by(|x, y| { let k = |s: &(egui::Pos2, egui::Pos2)| ((s.1 - s.0).length().round(), s.0.x + s.1.x + s.0.y + s.1.y);
+                         let (kx, ky) = (k(x), k(y)); kx.0.total_cmp(&ky.0).then(kx.1.total_cmp(&ky.1)) }) else { return };
+    if (b - a).length() < 40.0 { return; }
+    let m = egui::pos2((a.x + b.x) * 0.5, (a.y + b.y) * 0.5);
+    let dir = if (m - centre).length() < 1.0 { egui::vec2(-(b - a).y, (b - a).x).normalized() } else { (m - centre).normalized() };
+    let gal = p.layout_no_wrap(t, egui::FontId::proportional(13.0), egui::Color32::WHITE);
+    // écart selon l'orientation du bord (largeur de l'étiquette sur un bord vertical), sans couvrir les poignées
+    let ecart = dir.x.abs() * gal.size().x * 0.5 + dir.y.abs() * gal.size().y * 0.5 + 14.0;
+    let r = egui::Rect::from_center_size(m + dir * ecart, gal.size());
+    p.rect_filled(r.expand(3.0), 3.0, egui::Color32::from_rgba_unmultiplied(20, 20, 20, 210));
+    p.galley(r.min, gal, egui::Color32::WHITE);
+}
 
 /// Point d'intersection du rayon avec le plan Z=0 (déplacement « sur la grille »).
 fn ground_point(mvp: &Mat4, cursor: (f64, f64), rect: (f32, f32, f32, f32)) -> Option<Vec3> {
@@ -2217,10 +2361,21 @@ unsafe fn recompute_defects(gl: &glow::Context, scene: &[Obj], sel: Option<usize
     d
 }
 
-/// (Re)construit grille + règle calées sur le rayon de l'objet. Renvoie le nombre de graduations.
-unsafe fn build_grid_ruler(gl: &glow::Context, step: f32, r: f32) -> (grid::Grid, ruler::Ruler, i32) {
-    let lines = ((r * 2.5 / step).ceil() as i32).clamp(8, 400);
-    let majors = ((r * 2.0 / step).ceil() as i32).clamp(6, 30);
+/// Pas, nombre de lignes de grille et de graduations de règle pour la scène : le pas suit la taille
+/// des objets (demi-diagonale), l'étendue couvre aussi un objet éloigné de l'origine (grille et
+/// règles partent de l'origine).
+fn dims_grille(unit: Unit, scene: &[Obj], r_vide: f32) -> (f32, i32, i32) {
+    let (lo, hi) = scene_bounds(scene);
+    let (taille, portee) = if hi == lo { (r_vide, r_vide) }
+                           else { (((hi - lo) * 0.5).length().max(1e-3), lo.abs().max(hi.abs()).max_element()) };
+    let step = unit.pas_grille((taille * 0.2).max(portee / 150.0));
+    let lines = (((portee + taille) * 1.25 / step).ceil() as i32).clamp(8, 400);
+    let majors = (((portee + taille) / step).ceil() as i32).clamp(6, 200);
+    (step, lines, majors)
+}
+
+/// (Re)construit grille + règle aux dimensions données (voir dims_grille).
+unsafe fn build_grid_ruler(gl: &glow::Context, (step, lines, majors): (f32, i32, i32)) -> (grid::Grid, ruler::Ruler, i32) {
     (grid::Grid::new(gl, step, lines), ruler::Ruler::new(gl, step, majors), majors)
 }
 
@@ -2544,8 +2699,9 @@ fn main() {
     let mut splash = (path == "prim:logo" || path == "logo") && std::env::var_os("PATCH3D_NOSPLASH").is_none();
     let mut sel: Option<usize> = if scene[0].nverts > 0 && !splash && !viewer_start { Some(0) } else { None };
     let mut unit = Unit::initiale();
-    let mut grid_step = unit.pas_grille(r * 2.0 / 10.0);
-    let (mut grid, mut rule, mut ruler_majors) = unsafe { build_grid_ruler(&gl, grid_step, r) };
+    let mut grille_dims = dims_grille(unit, &scene, r);
+    let mut grid_step = grille_dims.0;
+    let (mut grid, mut rule, mut ruler_majors) = unsafe { build_grid_ruler(&gl, grille_dims) };
 
 
     // Mode « photo » : viewer <src> --shot <png> (vue 3D seule).
@@ -2793,8 +2949,10 @@ fn main() {
     let mut txt_filtre = String::new();
     let mut txt_cadre: Option<CadreTexte> = None;
     // tracé du cadre : 0 rien, 1 armé (clic 1 = départ), 2 X, 3 Y, 4 Z (profondeur)
-    let mut txt_etape: u8 = 0;
-    let (mut txt_k, mut txt_p0, mut txt_p3, mut txt_sx, mut txt_sy) = (ViewKind::ThreeD, Vec3::ZERO, Vec3::ZERO, 0.0f32, 0.0f32);
+    let mut txt_echelle: Option<(f32, f32)> = None; // poignée de coin tenue : (taille de départ, distance au centre de départ)
+    // poignée de profondeur tenue : (cadre de départ, longueur de flèche de départ, normale du plan de glisse face à la vue)
+    let mut txt_prof_glisse: Option<(CadreTexte, f32, Vec3)> = None;
+    let mut txt_k = ViewKind::ThreeD;
     let mut outil_ann: Option<(usize, OutilAnn)> = None; // (étape d'historique de l'opération, outil à rétablir)
     let (mut txt_lance, mut coupe_lance): (Option<CadreTexte>, Option<booleen::Cadre>) = (None, None);
     let mut txt_k_cur = ViewKind::ThreeD;
@@ -2806,6 +2964,7 @@ fn main() {
     let mut txt_contours: (String, Vec<Vec<[f64; 2]>>) = (String::new(), Vec::new());
     let mut coupe: Option<booleen::Cadre> = None;
     let mut coupe_tir: Option<ViewKind> = None; // tracé en cours dans cette vue
+    let mut coupe_etape = 0u8; // 1 = clic 1 fait, le trait L suit la souris ; 2 = clic 2 fait, l se déplie
     let mut coupe_garder: u8 = 0; // 0 = les deux morceaux, 1 = côté flèche, 2 = autre côté
     let mut coupe_ecart = true;
     let mut coupe_section: (String, Vec<[Vec3; 2]>) = (String::new(), Vec::new()); // ligne de coupe mémorisée
@@ -2911,9 +3070,9 @@ fn main() {
                 WindowEvent::KeyboardInput { event, .. } if event.state == ElementState::Pressed => {
                     match event.logical_key {
                         // Échap : ferme d'abord l'outil de rotation (sinon quitte)
-                        Key::Named(NamedKey::Escape) if panneau_texte && txt_etape > 0 => { txt_etape = 0; if txt_cadre.map_or(false, |c| c.lx < 0.05 || c.ly < 0.05) { txt_cadre = None; } window.request_redraw(); }
+                        Key::Named(NamedKey::Escape) if panneau_texte && txt_sel => { txt_sel = false; window.request_redraw(); }
                         Key::Named(NamedKey::Escape) if surf.is_some() => { surf = None; surf_survol = None; window.request_redraw(); }
-                        Key::Named(NamedKey::Escape) => if coupe_arme || coupe.is_some() { coupe_arme = false; coupe = None; coupe_tir = None; window.request_redraw(); }
+                        Key::Named(NamedKey::Escape) => if coupe_arme || coupe.is_some() { coupe_arme = false; coupe = None; coupe_tir = None; coupe_etape = 0; window.request_redraw(); }
                             else if light_mode { light_mode = false; window.request_redraw(); }
                             else if gizmo.is_some() { gizmo = None; window.request_redraw(); } else { elwt.exit() },
                         Key::Character(ref c) if c.eq_ignore_ascii_case("f") => {
@@ -2962,7 +3121,6 @@ fn main() {
                                 multi = if scene.len() - debut >= 2 { (debut..scene.len()).collect() } else { Vec::new() };
                                 sel = Some(scene.len() - 1); selection = None; gizmo = None;
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
-                                grid_step = unit.pas_grille(r * 2.0 / 10.0);
                                 orbit.target = base; orbit.dist = orbit.dist.max(r * 3.2);
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
                                 defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
@@ -3031,65 +3189,36 @@ fn main() {
                                         drag = Some(if k == ViewKind::ThreeD { Drag::Orbit(k) } else { Drag::Pan(k) });
                                     }
                                 }
-                                MouseButton::Left if panneau_texte && !splash && (txt_etape > 0 || txt_cadre.map_or(false, |c| poignee_sous(&c, k, &mvp, rect, cursor) || dans_cadre(&c, &mvp, rect, cursor))) => {
-                                    // TEXTE : tracé du cadre en 4 clics (départ, X, Y, profondeur) ou rotation par poignée
-                                    let (mut u, mut v, mut n) = repere_vue(k);
-                                    match txt_etape {
-                                        1 => {
-                                            // plan de travail = la fenêtre où l'on clique : Dessus XY, Face XZ, Droite YZ,
-                                            // posé sur le dessus de l'objet sélectionné (sinon de la scène) ; dans la vue 3D,
-                                            // plan de la face de l'objet sous le curseur (côtés, faces inclinées…)
-                                            let (lo, hi) = sel.filter(|&i| i < scene.len()).map(|i| (scene[i].min, scene[i].max)).unwrap_or_else(|| scene_bounds(&scene));
-                                            let mut h = (0..8).map(|b| Vec3::new(if b & 1 == 0 { lo.x } else { hi.x }, if b & 2 == 0 { lo.y } else { hi.y }, if b & 4 == 0 { lo.z } else { hi.z }).dot(n)).fold(f32::MIN, f32::max);
-                                            if k != ViewKind::ThreeD {
-                                                // collé à l'objet : hauteur de la vraie surface sous le clic
-                                                if let Some((_, hit, _)) = pick_scene(&mvp, cursor, rect, &scene) { h = hit.dot(n); }
-                                            }
-                                            if k == ViewKind::ThreeD {
-                                                if let Some((_, hit, nrm)) = pick_scene(&mvp, cursor, rect, &scene) {
-                                                    n = nrm.normalize_or(Vec3::Z);
-                                                    let haut = if n.z.abs() < 0.9 { Vec3::Z } else { Vec3::Y };
-                                                    u = haut.cross(n).normalize_or(Vec3::X);
-                                                    v = n.cross(u);
-                                                    h = hit.dot(n);
-                                                }
-                                            }
-                                            if let Some(p0) = plan_h(&mvp, cursor, rect, n, h) {
-                                                txt_k = k; txt_p0 = p0; txt_sx = 0.0; txt_sy = 0.0;
-                                                txt_cadre = Some(CadreTexte { u, v, n, centre: p0, h, lx: 0.0, ly: 0.0, prof: 1.0, angle: 0.0 });
-                                                txt_etape = 2;
-                                            }
-                                        }
-                                        2 => { txt_etape = 3; }
-                                        3 => { if let Some(c) = txt_cadre { if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { txt_p3 = p; } } txt_etape = 4; }
-                                        4 => {
-                                            txt_etape = 0;
-                                            // taille de police ajustée au cadre (modifiable ensuite)
-                                            if let (Some(c), Some(liste)) = (txt_cadre, texte::polices()) {
-                                                if let Some(pol) = txt_police.and_then(|i| liste.get(i)) {
-                                                    if let Some((_, w, hh)) = texte::contours(pol, &txt_saisie, 10.0, txt_just, 0.0) {
-                                                        if w > 0.0 && hh > 0.0 { txt_taille = (10.0 * (c.lx / w).min(c.ly / hh) * 0.92).max(0.2); }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        _ => {
-                                            if let Some(c) = txt_cadre {
-                                                txt_sel = true; txt_k = k;
-                                                if poignee_sous(&c, k, &mvp, rect, cursor) {
-                                                    // poignée : rotation autour du centre du cadre (dans son plan)
-                                                    if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { let d = p - c.centre; txt_rot = Some((c.angle, d.dot(c.v).atan2(d.dot(c.u)))); }
-                                                } else {
-                                                    // dans le cadre : on le fait glisser (vue 3D : sur l'objet ; vue à plat : dans le
-                                                    // plan de la VUE, même si le cadre y est vu par la tranche)
-                                                    let pv = if k == ViewKind::ThreeD { plan_h(&mvp, cursor, rect, c.n, c.h) } else {
-                                                        let (rr, uu) = Ortho::right_up(k); let nv = rr.cross(uu);
-                                                        plan_h(&mvp, cursor, rect, nv, c.centre.dot(nv))
-                                                    };
-                                                    txt_deplace = pv.map(|q| c.centre - q);
-                                                }
-                                            }
-                                        }
+                                MouseButton::Left if panneau_texte && !splash && txt_cadre.is_some() && nav_tool.is_none() => {
+                                    // TEXTE (façon 3D Builder) : flèche = profondeur et orientation, coin = taille, roue = rotation, intérieur = glisser sur la
+                                    // surface ; ailleurs sur un objet = le texte s'y pose (orienté sur la face touchée)
+                                    if let Some(c) = txt_cadre {
+                                        let centre = c.pt(0.0, 0.0, 0.0);
+                                        let sfc = window.scale_factor() as f32;
+                                        let cur = egui::pos2(cursor.0 as f32 / sfc, cursor.1 as f32 / sfc);
+                                        let sur_prof = poignee_prof(&c, &mvp, rect, sfc, txt_relief).map_or(false, |(_, tip)| (tip - cur).length() < 10.0);
+                                        if sur_prof {
+                                            // flèche bleue : sa longueur = profondeur, sa direction = orientation du texte ; elle glisse
+                                            // dans le plan face à la vue passant par sa pointe
+                                            txt_sel = true; txt_k = k;
+                                            if let Some(l) = long_fleche(&c, &mvp, rect, 1.0) { txt_prof_glisse = Some((c, l, ray_from(&mvp, cursor, rect).1.normalize())); }
+                                        } else if coin_sous(&c, k, &mvp, rect, cursor) {
+                                            txt_sel = true; txt_k = k;
+                                            if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { txt_echelle = Some((txt_taille, (p - centre).length().max(1e-3))); }
+                                        } else if poignee_sous(&c, k, &mvp, rect, cursor) {
+                                            txt_sel = true; txt_k = k;
+                                            if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { let d = p - centre; txt_rot = Some((c.angle, d.dot(c.v).atan2(d.dot(c.u)))); }
+                                        } else if dans_cadre(&c, &mvp, rect, cursor) {
+                                            txt_sel = true; txt_k = k;
+                                            // vue 3D : sur l'objet ; vue à plat : dans le plan de la VUE, même si le cadre y est vu par la tranche
+                                            let pv = if k == ViewKind::ThreeD { plan_h(&mvp, cursor, rect, c.n, c.h) } else {
+                                                let (rr, uu) = Ortho::right_up(k); let nv = rr.cross(uu);
+                                                plan_h(&mvp, cursor, rect, nv, c.centre.dot(nv))
+                                            };
+                                            txt_deplace = pv.map(|q| c.centre - q);
+                                        } else if let Some((_, hit, nrm)) = pick_scene(&mvp, cursor, rect, &scene) {
+                                            txt_cadre = Some(cadre_sur(hit, nrm, Some(&c))); txt_sel = true; txt_k = k;
+                                        } else { txt_sel = false; }
                                     }
                                     drag = None;
                                 }
@@ -3103,10 +3232,20 @@ fn main() {
                                     drag = None;
                                 }
                                 MouseButton::Left if coupe_arme && !splash => {
-                                    // ciseaux : début de la ligne de coupe dans le plan de la vue
-                                    let e = axe_coupe(k);
-                                    if let Some(p) = plane_point(&mvp, cursor, rect, e) {
-                                        coupe = Some(booleen::Cadre { p0: p, p1: p, e }); coupe_tir = Some(k);
+                                    // ciseaux, par clics : 1 = départ du trait, 2 = arrivée (L fixé), 3 = l déplié, fini
+                                    match coupe_etape {
+                                        0 => {
+                                            let e = axe_coupe(k);
+                                            if let Some(p) = plane_point(&mvp, cursor, rect, e) {
+                                                coupe = Some(booleen::Cadre::new(p, p, e)); coupe_tir = Some(k); coupe_etape = 1;
+                                            }
+                                        }
+                                        1 => if coupe.map_or(false, |c| c.reperes().map_or(false, |(_, _, l)| l >= 0.5)) { coupe_etape = 2; },
+                                        _ => {
+                                            // l non déplié : cadre perpendiculaire sur toute la hauteur
+                                            if let Some(c) = coupe.as_mut() { if c.l < 0.5 { c.l = 0.0; c.incl = 90.0; } }
+                                            coupe_etape = 0; coupe_tir = None; coupe_arme = false;
+                                        }
                                     }
                                     drag = None;
                                 }
@@ -3203,12 +3342,7 @@ fn main() {
                         }
                     } else {
                         if button == MouseButton::Left { light_drag = None; }
-                        if button == MouseButton::Left { coupe_glisse = None; txt_rot = None; txt_deplace = None; }
-                        if button == MouseButton::Left && coupe_tir.take().is_some() {
-                            // fin du tracé : ligne trop courte = pas de cadre ; les ciseaux se désarment
-                            if coupe.map_or(true, |c| c.reperes().map_or(true, |(_, _, l)| l < 0.5)) { coupe = None; }
-                            coupe_arme = false;
-                        }
+                        if button == MouseButton::Left { coupe_glisse = None; txt_rot = None; txt_deplace = None; txt_echelle = None; txt_prof_glisse = None; }
                         // fin de rotation : la rotation est cuite dans les sommets (l'objet garde son appui en Z)
                         if button == MouseButton::Left {
                             if let Some(g) = gizmo.as_mut().filter(|g| g.drag.is_some()) {
@@ -3337,32 +3471,45 @@ fn main() {
                         });
                         if h != surf_survol { surf_survol = h; window.request_redraw(); }
                     }
-                    // TEXTE : cadre en construction (X, Y, profondeur) ou rotation par poignée
-                    if panneau_texte && (txt_etape >= 2 || txt_rot.is_some() || txt_deplace.is_some()) {
+                    // TEXTE : déplacement sur la surface, rotation par les roues, taille par les coins, profondeur / orientation par la flèche
+                    if panneau_texte && (txt_rot.is_some() || txt_deplace.is_some() || txt_echelle.is_some() || txt_prof_glisse.is_some()) {
                         // la souris est lue dans la fenêtre où elle se trouve (on peut changer de vue en cours de tracé)
                         let kc = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32).unwrap_or(txt_k);
                         txt_k_cur = kc;
                         if let (Some(rect), Some(c)) = (rect_of(mode, kc), txt_cadre.as_mut()) {
                             let (mvp, _) = view_mvp(kc, &orbit, &ortho, base, aspect_of(mode, kc));
-                            // profondeur : point de l'axe perpendiculaire au cadre (passant par le clic 3) le plus
-                            // proche du curseur ; dans une vue de côté elle suit exactement la souris
                             let mut prof_axe = false;
-                            if txt_etape == 4 {
-                                let (o, d) = ray_from(&mvp, cursor, rect);
-                                let w0 = txt_p3 - o;
-                                let (b, cc, d1, e) = (c.n.dot(d), d.dot(d), c.n.dot(w0), d.dot(w0));
-                                let den = cc - b * b;
-                                if den.abs() > 1e-4 {
-                                    // au-dessus de la surface : relief (extérieur) ; en dessous : gravure (intérieur)
-                                    let t = (b * e - cc * d1) / den;
-                                    c.prof = t.abs().max(0.1); txt_relief = t >= 0.0; prof_axe = true;
+                            // flèche bleue : pointe = point visé dans le plan face à la vue ; direction = normale du texte
+                            // (aimantée à 0° / 45° de la normale de départ), longueur = profondeur ; côté = relief / gravé
+                            if let Some((c0, l0, dv)) = txt_prof_glisse {
+                                let o = c0.pt(0.0, 0.0, 0.0);
+                                let sg0 = if txt_relief { 1.0 } else { -1.0 };
+                                let tip0 = o + c0.n * (sg0 * l0);
+                                if let Some(p) = plan_h(&mvp, cursor, rect, dv, tip0.dot(dv)) {
+                                    let w = p - o;
+                                    let l = w.length();
+                                    if l > 1e-3 {
+                                        let cote = if w.dot(c0.n) >= 0.0 { 1.0 } else { -1.0 };
+                                        let mut n = w / l * cote; // toujours vers l'extérieur
+                                        let th = n.dot(c0.n).clamp(-1.0, 1.0).acos().to_degrees();
+                                        let cran = aimante_angle(th);
+                                        if (cran - th).abs() > 1e-4 {
+                                            let ax = c0.n.cross(n).normalize_or_zero();
+                                            n = if ax == Vec3::ZERO || cran == 0.0 { c0.n } else { glam::Mat3::from_axis_angle(ax, cran.to_radians()) * c0.n };
+                                        }
+                                        let q = glam::Quat::from_rotation_arc(c0.n, n);
+                                        c.u = q * c0.u; c.v = q * c0.v; c.n = n; c.centre = o; c.h = o.dot(n);
+                                        txt_relief = cote > 0.0;
+                                        c.prof = (c0.prof + (l - l0)).max(0.1);
+                                    }
                                 }
+                                prof_axe = true;
                             }
                             // déplacement au contact de l'objet : le cadre glisse sur la surface sous la souris ;
                             // sur une autre face (vue 3D), il se réoriente sur cette face
                             let mut colle = false;
                             // vue à plat : déplacement dans le plan de la vue (directions des flèches bleues)
-                            if txt_etape == 0 && txt_rot.is_none() && kc != ViewKind::ThreeD {
+                            if txt_rot.is_none() && kc != ViewKind::ThreeD {
                                 if let Some(off) = txt_deplace {
                                     let (rr, uu) = Ortho::right_up(kc); let nv = rr.cross(uu);
                                     if let Some(q) = plan_h(&mvp, cursor, rect, nv, c.centre.dot(nv)) {
@@ -3374,7 +3521,7 @@ fn main() {
                                     colle = true;
                                 }
                             }
-                            if txt_etape == 0 && txt_rot.is_none() && kc == ViewKind::ThreeD {
+                            if txt_rot.is_none() && kc == ViewKind::ThreeD {
                                 if let (Some(off), Some((_, hit, nrm))) = (txt_deplace, pick_scene(&mvp, cursor, rect, &scene)) {
                                     let nrm = nrm.normalize_or(c.n);
                                     if kc == ViewKind::ThreeD && nrm.dot(c.n) < 0.95 {
@@ -3390,32 +3537,13 @@ fn main() {
                                 }
                             }
                             if prof_axe || colle {} else if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) {
-                                let d = p - txt_p0;
-                                match txt_etape {
-                                    // X : longueur ET direction libres (angle du texte) dans le plan de travail
-                                    2 => {
-                                        let (a, b) = (d.dot(c.u), d.dot(c.v));
-                                        txt_sx = (a * a + b * b).sqrt();
-                                        if txt_sx > 1e-4 { c.angle = b.atan2(a); }
-                                        c.lx = txt_sx;
-                                        let (sn, cs) = c.angle.sin_cos();
-                                        c.centre = txt_p0 + (c.u * cs + c.v * sn) * (txt_sx * 0.5);
-                                    }
-                                    // Y : perpendiculaire à la direction de X, de part ou d'autre
-                                    3 => {
-                                        let (sn, cs) = c.angle.sin_cos();
-                                        let (dir, perp) = (c.u * cs + c.v * sn, c.u * -sn + c.v * cs);
-                                        txt_sy = d.dot(perp); c.ly = txt_sy.abs();
-                                        c.centre = txt_p0 + dir * (txt_sx * 0.5) + perp * (txt_sy * 0.5);
-                                    }
-                                    4 => { let q = p - txt_p3; c.prof = q.length().max(0.1); txt_relief = q.dot(c.v) >= 0.0; }
+                                match () {
+                                    _ if txt_echelle.is_some() => if let Some((t0, d0)) = txt_echelle { txt_taille = (t0 * (p - c.pt(0.0, 0.0, 0.0)).length() / d0).clamp(0.5, 2000.0); },
                                     _ => if let Some((a0, c0)) = txt_rot {
-                                        let q = p - c.centre;
+                                        let q = p - c.pt(0.0, 0.0, 0.0);
                                         let a = a0 + (q.dot(c.v).atan2(q.dot(c.u)) - c0);
-                                        // aimant : à moins de 3° de l'horizontale ou de la verticale, l'angle s'y colle
-                                        let quart = std::f32::consts::FRAC_PI_2;
-                                        let m = (a / quart).round() * quart;
-                                        c.angle = if (a - m).abs() < 3f32.to_radians() { m } else { a };
+                                        // aimant de la roue : à moins de 5° d'un multiple de 45°, l'angle s'y colle
+                                        c.angle = aimante_angle(a.to_degrees().rem_euclid(360.0)).to_radians();
                                     }
                                          else if let Some(off) = txt_deplace { c.centre = p + off; },
                                 }
@@ -3431,12 +3559,31 @@ fn main() {
                             window.request_redraw();
                         }
                     }
-                    // Ligne de coupe en cours de tracé.
-                    if let (Some(k), Some(c)) = (coupe_tir, coupe.as_mut()) {
+                    // Découpe en cours : le trait L suit la souris dans sa vue (étape 1)…
+                    if let (Some(k), Some(c), 1) = (coupe_tir, coupe.as_mut(), coupe_etape) {
                         if let Some(rect) = rect_of(mode, k) {
                             let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
-                            if let Some(p) = plane_point(&mvp, cursor, rect, c.e) { c.p1 = p; }
+                            if let Some(p) = plane_point(&mvp, cursor, rect, c.e) { c.p1 = aimante_45(c.p0, p, c.e); }
                             window.request_redraw();
+                        }
+                    }
+                    // … puis l se déplie en pivotant autour de L (étape 2), dans la vue sous la souris : point visé
+                    // dans le plan perpendiculaire au trait passant par son milieu (vue où ce plan est de face ou de biais)
+                    if let (Some(c), 2) = (coupe.as_mut(), coupe_etape) {
+                        let kc = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32);
+                        if let (Some(k), Some((u, _, l)), Some(np)) = (kc, c.reperes(), c.perp_plan()) {
+                            if let Some(rect) = rect_of(mode, k) {
+                                let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
+                                let (o, d) = ray_from(&mvp, cursor, rect);
+                                let mil = c.origine() + u * (l * 0.5);
+                                if d.dot(u).abs() > 0.15 {
+                                    let v = o + d * ((mil - o).dot(u) / d.dot(u)) - mil;
+                                    let v = v - u * v.dot(u);
+                                    c.l = v.length();
+                                    c.incl = aimante_angle(v.dot(c.axe()).atan2(v.dot(np)).to_degrees());
+                                }
+                                window.request_redraw();
+                            }
                         }
                     }
                     // Mise à jour du tracé en cours (aperçu rectangle/cercle/ligne).
@@ -3527,6 +3674,15 @@ fn main() {
                     if let Some((g, rx)) = &gpu { unsafe { g.serve(&gl, rx); } }
                     let cur_mode = mode;
                     // outil de rotation : objet disparu => fermé ; sinon recalé sur l'objet (hors geste)
+                    // grille et règles toujours à la taille de la scène (import, redimensionnement, déplacement,
+                    // annulation, changement d'unité…)
+                    let dims = dims_grille(unit, &scene, r);
+                    if dims != grille_dims {
+                        unsafe { grid.delete(&gl); rule.delete(&gl); }
+                        let (g, ru, mj) = unsafe { build_grid_ruler(&gl, dims) };
+                        grid = g; rule = ru; ruler_majors = mj; grille_dims = dims;
+                    }
+                    grid_step = grille_dims.0;
                     if gizmo.as_ref().map_or(false, |g| g.obj >= scene.len() || scene[g.obj].nverts == 0) { gizmo = None; }
                     if let Some(g) = gizmo.as_mut() { if g.drag.is_none() { g.fit(scene[g.obj].min, scene[g.obj].max); } }
                     if let Some((ax, deg, cuire)) = rot_test {
@@ -3550,7 +3706,7 @@ fn main() {
                     // sélection multiple : objets disparus oubliés ; une sélection simple ailleurs l'annule
                     multi.retain(|&i| i < scene.len() && scene[i].nverts > 0);
                     if multi.len() < 2 || !sel.map_or(false, |s| multi.contains(&s)) { multi.clear(); }
-                    macro_rules! cle_scene { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {} {} {} {:?} {:?} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {:?} {surf_survol:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
+                    macro_rules! cle_scene { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {} {} {} {:?} {:?} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {coupe_etape} {:?} {surf_survol:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
                         cache3d::generation(), code_de_vue(mode), disp as u8, dark, show_ruler, show_grid, show_axes(),
                         sel, orbit.yaw, orbit.pitch, orbit.dist, orbit.target,
                         ortho.iter().map(|o| (o.pan, o.scale)).collect::<Vec<_>>(), base, lumiere_courante(),
@@ -3578,9 +3734,9 @@ fn main() {
                     if panneau_bool && !panneau_prec && mode != ViewMode::Quad { mode_avant_coupe = Some(mode); mode = ViewMode::Quad; }
                     panneau_prec = panneau_bool;
                     if !panneau_bool { panneau_texte = false; }
-                    if !panneau_texte { txt_etape = 0; txt_rot = None; }
+                    if !panneau_texte { txt_rot = None; txt_echelle = None; txt_prof_glisse = None; }
                     if !panneau_bool {
-                        coupe_arme = false; coupe = None; coupe_tir = None; coupe_glisse = None;
+                        coupe_arme = false; coupe = None; coupe_tir = None; coupe_etape = 0; coupe_glisse = None;
                         if let Some(m) = mode_avant_coupe.take() { mode = m; }
                     }
                     if coupe.is_none() { coupe_sel = false; }
@@ -3631,12 +3787,33 @@ fn main() {
                         }
                     }
                     if inter_job.is_some() { egui_ctx.request_repaint_after(std::time::Duration::from_millis(40)); }
-                    // TEXTE : contours de l'aperçu (police, texte, taille, justification, largeur du cadre)
+                    // TEXTE : à l'ouverture, le texte se pose de lui-même sur la face visée au centre de la vue
+                    // (vue 3D de préférence), sinon sur le dessus de l'objet
+                    if panneau_texte && txt_cadre.is_none() && scene.iter().any(|o| o.nverts > 0) {
+                        let vue = [ViewKind::ThreeD, ViewKind::Top, ViewKind::Front, ViewKind::Right].into_iter().find_map(|k| rect_of(mode, k).map(|r| (k, r)));
+                        let touche = vue.and_then(|(k, r)| {
+                            let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
+                            pick_scene(&mvp, ((r.0 + r.2 * 0.5) as f64, (r.1 + r.3 * 0.5) as f64), r, &scene)
+                        });
+                        txt_cadre = Some(match touche {
+                            Some((_, hit, nrm)) => cadre_sur(hit, nrm, None),
+                            None => {
+                                let (lo, hi) = sel.filter(|&i| i < scene.len()).map(|i| (scene[i].min, scene[i].max)).unwrap_or_else(|| scene_bounds(&scene));
+                                cadre_sur(Vec3::new((lo.x + hi.x) * 0.5, (lo.y + hi.y) * 0.5, hi.z), Vec3::Z, None)
+                            }
+                        });
+                        txt_sel = true;
+                    }
+                    // TEXTE : contours de l'aperçu (police, texte, taille, justification) ; le cadre épouse le texte
                     if panneau_texte {
-                        if let (Some(c), Some(liste)) = (txt_cadre, texte::polices()) {
+                        if let (Some(c), Some(liste)) = (txt_cadre.as_mut(), texte::polices()) {
                             if let Some(pol) = txt_police.and_then(|i| liste.get(i)) {
-                                let cle = format!("{} {} {} {} {}", pol.nom, txt_saisie, txt_taille, txt_just, c.lx);
-                                if txt_contours.0 != cle { txt_contours = (cle, texte::contours(pol, &txt_saisie, txt_taille, txt_just, c.lx).map(|r| r.0).unwrap_or_default()); }
+                                let cle = format!("{} {} {} {}", pol.nom, txt_saisie, txt_taille, txt_just);
+                                if txt_contours.0 != cle {
+                                    let r = texte::contours(pol, &txt_saisie, txt_taille, txt_just, 0.0);
+                                    if let Some((_, w, h)) = &r { c.lx = w.max(0.5); c.ly = h.max(0.5); }
+                                    txt_contours = (cle, r.map(|r| r.0).unwrap_or_default());
+                                }
                             }
                         }
                     }
@@ -3699,9 +3876,8 @@ fn main() {
                                     }
                                 }
                                 // cadre de coupe : plaque rouge translucide au fond (ne masque jamais un objet)
-                                if let Some(c) = coupe {
-                                    let ce = cadre_etendu(&c, &scene);
-                                    let (bas, haut) = coupe_hauteurs(&ce, &scene);
+                                if let (Some(c), false) = (coupe, coupe_etape == 1) {
+                                    let (ce, bas, haut) = cadre_affiche(&c, &scene);
                                     plaque.dessiner(&gl, &a, &ce.coins(bas, haut), [0.90, 0.16, 0.16, if coupe_sel { 0.42 } else { 0.30 }]);
                                 }
                                 // Défauts (trous rouges, erreurs jaunes) : UNIQUEMENT en mode Défauts.
@@ -3754,7 +3930,6 @@ fn main() {
                     // test sans clic : PATCH3D_REQ=lissage|repair|simp|wire|center|clear déclenche l'action à l'image 6
                     let req_test = if egui_ctx.frame_nr() == 6 { std::env::var("PATCH3D_REQ").ok() } else { None };
                     let mut fit_view: Option<ViewKind> = None; // bouton "Centrer" de l'overlay
-                    let gs_before = grid_step;
                     let mut ui_pressed = false;
                     let full = egui_ctx.run(raw_input, |ctx| {
                         // appui souris sur l'interface (panneaux, barre, menus, boutons de navigation)
@@ -3780,7 +3955,26 @@ fn main() {
                         let fg = ctx.layer_painter(egui::LayerId::new(egui::Order::Middle, egui::Id::new("fg")));
                         // Cotes de l'objet (unité de la règle) : une seule fois, angle haut-droit de toute la zone
                         // de visualisation, sans cadre (texte cerclé de noir), tant que les règles sont visibles.
-                        if show_ruler {
+                        // Pendant le tracé d'une découpe : à leur place, la boîte jaune des métriques de coupe en temps réel.
+                        if let (Some(c), true) = (coupe, coupe_etape > 0) {
+                            let su = unit.suffix();
+                            let lt = fmt_measure(c.reperes().map_or(0.0, |r| r.2), unit);
+                            let t = if coupe_etape == 1 { format!("L {lt} {su}\n{} {:.1}°", tr(lang, "coupe_angle"), angle_coupe(&c)) }
+                                    else { format!("L {lt} {su}\nl {} {su}\n{} {:.1}°", fmt_measure(c.l, unit), tr(lang, "coupe_incl"), (c.incl + 360.0) % 360.0) };
+                            let gal = fg.layout_no_wrap(t, egui::FontId::proportional(14.0), egui::Color32::BLACK);
+                            let pos = egui::pos2((wf - side_px) / ppp - 10.0 - gal.size().x, 10.0);
+                            fg.rect_filled(egui::Rect::from_min_size(pos, gal.size()).expand(4.0), 4.0, JAUNE);
+                            fg.galley(pos, gal, egui::Color32::BLACK);
+                        } else if let Some(c) = txt_cadre.filter(|_| panneau_texte) {
+                            let su = unit.suffix();
+                            let t = format!("X {} × Y {} {su}\n{} {:.1}°\nZ {}{} {su} ({})", fmt_measure(c.lx, unit), fmt_measure(c.ly, unit),
+                                            tr(lang, "texte_angle"), c.angle.to_degrees().rem_euclid(360.0), if txt_relief { "+" } else { "−" }, fmt_measure(c.prof, unit),
+                                            tr(lang, if txt_relief { "texte_relief_c" } else { "texte_grave_c" }));
+                            let gal = fg.layout_no_wrap(t, egui::FontId::proportional(14.0), egui::Color32::BLACK);
+                            let pos = egui::pos2((wf - side_px) / ppp - 10.0 - gal.size().x, 10.0);
+                            fg.rect_filled(egui::Rect::from_min_size(pos, gal.size()).expand(4.0), 4.0, JAUNE);
+                            fg.galley(pos, gal, egui::Color32::BLACK);
+                        } else if show_ruler {
                             if let Some(i) = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 && scene[0].nverts > 0 { Some(0) } else { None }) {
                                 let e = (scene[i].max - scene[i].min) / unit.factor();
                                 let right = (wf - side_px) / ppp - 10.0;
@@ -3826,27 +4020,55 @@ fn main() {
                                         vp.circle_filled(sp, 2.0, y);
                                     }
                                 }
-                                // Cadre de coupe (ciseaux) : rouge plein translucide, élevé sur la ligne tracée,
-                                // flèche = côté A ; hauteur = toute la scène (+ marge)
+                                // Cadre de coupe (ciseaux) : rouge plein translucide, déplié depuis le trait L,
+                                // flèche = côté A ; l = 0 : toute la hauteur de la scène (+ marge)
                                 if let Some(c) = coupe {
                                     let rouge = egui::Color32::from_rgb(230, 40, 40);
-                                    // sélectionné : contour jaune épais, comme la sélection d'un objet
-                                    let bord = if coupe_sel { egui::Stroke::new(3.0, egui::Color32::from_rgb(255, 210, 60)) } else { egui::Stroke::new(2.0, rouge) };
-                                    // le remplissage est dessiné dans la scène 3D (derrière les objets) ; ici le contour seul
-                                    let ce = cadre_etendu(&c, &scene);
-                                    let (bas, haut) = coupe_hauteurs(&ce, &scene);
-                                    let pr: Vec<_> = ce.coins(bas, haut).iter().filter_map(|q| project(&mvp, *q, sr, ppp)).collect();
-                                    if pr.len() == 4 {
-                                        vp.add(egui::Shape::closed_line(pr.clone(), bord));
-                                    } else if let (Some(a), Some(b)) = (project(&mvp, ce.p0, sr, ppp), project(&mvp, ce.p1, sr, ppp)) {
-                                        vp.line_segment([a, b], bord);
-                                    }
-                                    // ligne de coupe sur l'objet : trait rouge fin (précision), toujours visible
-                                    lignes_rouges(&vp, &coupe_section.1, &mvp, sr, ppp);
-                                    if let Some((_, n, l)) = c.reperes() {
-                                        let mut mil = (c.p0 + c.p1) * 0.5; mil[c.e] = (bas + haut) * 0.5;
-                                        if let (Some(a), Some(b)) = (project(&mvp, mil, sr, ppp), project(&mvp, mil + n * (l * 0.15).clamp(3.0, 30.0), sr, ppp)) {
-                                            vp.arrow(a, b - a, egui::Stroke::new(2.5, egui::Color32::from_rgb(255, 120, 100)));
+                                    let su = unit.suffix();
+                                    let vue = egui::Rect::from_min_size(egui::pos2(sr.0 / ppp, sr.1 / ppp), egui::vec2(sr.2 / ppp, sr.3 / ppp));
+                                    if coupe_etape == 1 {
+                                        // étape 1 : le trait L seul, sa longueur, et la roue d'angle dans le plan de tracé
+                                        if let (Some(a), Some(b)) = (project(&mvp, c.p0, sr, ppp), project(&mvp, c.p1, sr, ppp)) {
+                                            vp.line_segment([a, b], egui::Stroke::new(3.0, rouge));
+                                            vp.circle_filled(a, 4.0, rouge);
+                                            cote_bord(&vp, &[a, b, b, a], [(0, 1), (0, 1)], vue, format!("L {} {su}", fmt_measure(c.reperes().map_or(0.0, |r| r.2), unit)));
+                                        }
+                                        if coupe_tir == Some(k) {
+                                            let (iu, iw) = axes_plan(c.e);
+                                            let (mut eu, mut ew) = (Vec3::ZERO, Vec3::ZERO); eu[iu] = 1.0; ew[iw] = 1.0;
+                                            roue_angle(&vp, &mvp, sr, ppp, c.p0, eu, ew, angle_coupe(&c));
+                                        }
+                                    } else {
+                                        // sélectionné : contour jaune épais, comme la sélection d'un objet
+                                        let bord = if coupe_sel { egui::Stroke::new(3.0, egui::Color32::from_rgb(255, 210, 60)) } else { egui::Stroke::new(2.0, rouge) };
+                                        // le remplissage est dessiné dans la scène 3D (derrière les objets) ; ici le contour seul
+                                        let (ce, bas, haut) = cadre_affiche(&c, &scene);
+                                        let pr: Vec<_> = ce.coins(bas, haut).iter().filter_map(|q| project(&mvp, *q, sr, ppp)).collect();
+                                        if pr.len() == 4 {
+                                            // 4 traits séparés : un polygone fermé aplati (cadre vu par la tranche) ferait une
+                                            // pointe de raccord géante
+                                            for i in 0..4 { vp.line_segment([pr[i], pr[(i + 1) % 4]], bord); }
+                                        } else if let (Some(a), Some(b)) = (project(&mvp, ce.p0, sr, ppp), project(&mvp, ce.p1, sr, ppp)) {
+                                            vp.line_segment([a, b], bord);
+                                        }
+                                        // ligne de coupe sur l'objet : trait rouge fin (précision), toujours visible
+                                        lignes_rouges(&vp, &coupe_section.1, &mvp, sr, ppp);
+                                        let rect_l = ce.reperes().map_or(0.0, |r| r.2);
+                                        if let (Some((u, n, l)), Some(w)) = (ce.reperes(), ce.dir_l()) {
+                                            let mil = ce.origine() + u * (l * 0.5) + w * ((bas + haut) * 0.5);
+                                            if let (Some(a), Some(b)) = (project(&mvp, mil, sr, ppp), project(&mvp, mil + n * (l * 0.15).clamp(3.0, 30.0), sr, ppp)) {
+                                                vp.arrow(a, b - a, egui::Stroke::new(2.5, egui::Color32::from_rgb(255, 120, 100)));
+                                            }
+                                        }
+                                        // cotes du rectangle en temps réel : L le long du trait, l = dépli
+                                        // (rien si le cadre est vu par la tranche : moins de 20 px d'épaisseur à l'écran)
+                                        if pr.len() == 4 && (pr[1] - pr[0]).length().min((pr[2] - pr[1]).length()) >= 20.0 {
+                                            cote_bord(&vp, &pr, [(0, 1), (2, 3)], vue, format!("L {} {su}", fmt_measure(rect_l, unit)));
+                                            cote_bord(&vp, &pr, [(1, 2), (3, 0)], vue, format!("l {} {su}", fmt_measure(haut - bas, unit)));
+                                        }
+                                        // étape 2 : roue d'inclinaison autour du trait (0° = plan de tracé, 90° = le long de l'axe)
+                                        if let (2, Some((u, _, l)), Some(np)) = (coupe_etape, c.reperes(), c.perp_plan()) {
+                                            roue_angle(&vp, &mvp, sr, ppp, c.origine() + u * (l * 0.5), np, c.axe(), c.incl);
                                         }
                                     }
                                 }
@@ -3873,7 +4095,7 @@ fn main() {
                                         }
                                     }
                                     lignes_rouges(&vp, &segs, &mvp, sr, ppp);
-                                    if txt_etape == 0 && txt_sel {
+                                    if txt_deplace.is_some() {
                                         if let Some(c0) = pr(c.pt(0.0, 0.0, 0.0)) {
                                             let bleu = egui::Color32::from_rgb(70, 160, 255);
                                             let dirs: Vec<Vec3> = if k == ViewKind::ThreeD { vec![Vec3::X, -Vec3::X, Vec3::Y, -Vec3::Y, Vec3::Z, -Vec3::Z] }
@@ -3886,30 +4108,38 @@ fn main() {
                                             }
                                         }
                                     }
-                                    if txt_etape == 0 && !de_tranche(&c, k) {
-                                        for q in c.poignees() { if let Some(sp) = pr(q) { vp.circle_filled(sp, 7.0, JAUNE); vp.circle_stroke(sp, 7.0, egui::Stroke::new(1.5, egui::Color32::BLACK)); } }
+                                    // poignée de profondeur (flèche bleue le long de la normale)
+                                    if let Some((b, tip)) = poignee_prof(&c, &mvp, sr, ppp, txt_relief) {
+                                        let bleu = egui::Color32::from_rgb(70, 160, 255);
+                                        vp.line_segment([b, tip], egui::Stroke::new(3.0, bleu));
+                                        vp.circle_filled(tip, 7.0, bleu); vp.circle_stroke(tip, 7.0, egui::Stroke::new(1.5, egui::Color32::BLACK));
                                     }
-                                    // cotes en cours de tracé (unité en cours), près du curseur
-                                    if (txt_etape >= 2 || txt_rot.is_some()) && k == txt_k_cur {
-                                        let u_ = unit.suffix();
-                                        let t = match txt_etape { 2 => format!("X : {} {u_}", fmt_measure(c.lx, unit)), 3 => format!("Y : {} {u_}", fmt_measure(c.ly, unit)),
-                                                                  4 => format!("Z : {}{} {u_} ({})", if txt_relief { "+" } else { "−" }, fmt_measure(c.prof, unit), tr(lang, if txt_relief { "texte_relief_c" } else { "texte_grave_c" })),
-                                                                  _ => {
-                                                                      // angle du texte vu dans cette fenêtre, depuis son horizontale
-                                                                      let (sn, cs) = c.angle.sin_cos();
-                                                                      let dir = c.u * cs + c.v * sn;
-                                                                      let l = c.lx.max(1.0);
-                                                                      let a = match (pr(c.pt(0.0, 0.0, 0.0)), pr(c.pt(0.0, 0.0, 0.0) + dir * l)) {
-                                                                          (Some(p0), Some(p1)) => { let d = p1 - p0; (-d.y).atan2(d.x).to_degrees() } _ => c.angle.to_degrees() };
-                                                                      let a = (a + 360.0) % 360.0;
-                                                                      let etat = if (a % 180.0).min(180.0 - a % 180.0) < 0.05 { format!(" ({})", tr(lang, "texte_horiz")) }
-                                                                                 else if ((a - 90.0) % 180.0).abs() < 0.05 { format!(" ({})", tr(lang, "texte_vert")) } else { String::new() };
-                                                                      format!("{} {a:.1}°{etat}", tr(lang, "texte_angle"))
-                                                                  } };
-                                        let pos = egui::pos2(cursor.0 as f32 / ppp + 16.0, cursor.1 as f32 / ppp + 14.0);
-                                        let gal = vp.layout_no_wrap(t, egui::FontId::proportional(14.0), egui::Color32::BLACK);
-                                        vp.rect_filled(egui::Rect::from_min_size(pos, gal.size()).expand(4.0), 4.0, JAUNE);
-                                        vp.galley(pos, gal, egui::Color32::BLACK);
+                                    // façon 3D Builder : roues de rotation au milieu des arêtes L et l, poignées de taille aux coins
+                                    if !de_tranche(&c, k) {
+                                        for q in c.roues() { if let Some(sp) = pr(q) {
+                                            // petite roue : disque jaune cerclé de noir, 4 crans
+                                            vp.circle_filled(sp, 9.0, JAUNE); vp.circle_stroke(sp, 9.0, egui::Stroke::new(1.5, egui::Color32::BLACK));
+                                            vp.circle_stroke(sp, 4.5, egui::Stroke::new(1.5, egui::Color32::BLACK));
+                                            for i in 0..4 { let a = i as f32 * std::f32::consts::FRAC_PI_2 + std::f32::consts::FRAC_PI_4; let d = egui::vec2(a.cos(), a.sin());
+                                                vp.line_segment([sp + d * 5.5, sp + d * 8.5], egui::Stroke::new(1.5, egui::Color32::BLACK)); }
+                                        } }
+                                        for q in c.coins(0.0) { if let Some(sp) = pr(q) {
+                                            let r = egui::Rect::from_center_size(sp, egui::vec2(11.0, 11.0));
+                                            vp.rect_filled(r, 2.0, egui::Color32::WHITE); vp.rect_stroke(r, 2.0, egui::Stroke::new(1.5, egui::Color32::BLACK));
+                                        } }
+                                    }
+                                    // cotes X / Y sur le cadre (tracé, sélection, rotation) et roue d'angle autour du centre
+                                    if (txt_sel || txt_rot.is_some() || txt_echelle.is_some() || txt_prof_glisse.is_some()) && !de_tranche(&c, k) {
+                                        let pc: Vec<_> = c.coins(0.0).iter().filter_map(|q| pr(*q)).collect();
+                                        if pc.len() == 4 && (pc[1] - pc[0]).length().min((pc[2] - pc[1]).length()) >= 20.0 {
+                                            let vue = egui::Rect::from_min_size(egui::pos2(sr.0 / ppp, sr.1 / ppp), egui::vec2(sr.2 / ppp, sr.3 / ppp));
+                                            let u_ = unit.suffix();
+                                            cote_bord(&vp, &pc, [(0, 1), (2, 3)], vue, format!("X {} {u_}", fmt_measure(c.lx, unit)));
+                                            cote_bord(&vp, &pc, [(1, 2), (3, 0)], vue, format!("Y {} {u_}", fmt_measure(c.ly, unit)));
+                                        }
+                                    }
+                                    if txt_rot.is_some() {
+                                        roue_angle(&vp, &mvp, sr, ppp, c.pt(0.0, 0.0, 0.0), c.u, c.v, c.angle.to_degrees());
                                     }
                                 } }
                                 // Booléens : là où les objets sélectionnés se croisent, trait rouge fin
@@ -4180,7 +4410,7 @@ fn main() {
                                     thermo_gauge_c(ui, frac, !txt.is_empty(), &txt, wpan, job.is_none() && file_job.is_some());
                                 });
                                 // ANNULER aussi disponible pour revenir d'une étape d'outil (tracé du texte, cadre de coupe…)
-                                let etape_outil = (panneau_texte && (txt_etape > 0 || txt_cadre.is_some())) || coupe.is_some() || coupe_arme || surf.is_some();
+                                let etape_outil = (panneau_texte && txt_cadre.is_some()) || coupe.is_some() || coupe_arme || surf.is_some();
                                 let can_undo = (hist_idx > 0 || etape_outil) && !busy;
                                 let can_redo = hist_idx + 1 < history.len() && !busy;
                                 let b = egui::Rect::from_min_max(egui::pos2(x0, row_top), egui::pos2(x0 + wpan, row_top + row_h));
@@ -4472,15 +4702,9 @@ fn main() {
                                     }
                                 });
                                 ui.add_space(6.0);
-                                // tracé du cadre (comme le cadre de coupe) : jaune, rouge quand armé
-                                let rouge = egui::Color32::from_rgb(220, 50, 45);
-                                let arme = txt_etape > 0;
-                                let lib = if arme { tr(lang, "texte_cadre_en_cours").to_string() } else { tr(lang, "texte_cadre").to_uppercase() };
-                                let b = egui::Button::new(egui::RichText::new(lib).size(12.5).strong().color(if arme { egui::Color32::WHITE } else { egui::Color32::BLACK }))
-                                    .fill(if arme { rouge } else { JAUNE }).stroke(egui::Stroke::new(2.0, rouge)).rounding(egui::Rounding::same(6.0));
-                                if ui.add_sized(egui::vec2(ui.available_width(), 32.0), b).on_hover_text(tr(lang, "texte_aide")).clicked() {
-                                    txt_etape = if arme { 0 } else { 1 };
-                                    if txt_etape == 1 && mode != ViewMode::Quad { mode_avant_coupe = mode_avant_coupe.or(Some(mode)); mode = ViewMode::Quad; }
+                                // le texte se pose de lui-même sur la face visée au centre de la vue ; ce bouton l'y replace
+                                if ui.add_sized(egui::vec2(ui.available_width(), 32.0), yellow_btn(&tr(lang, "texte_recentrer").to_uppercase(), 12.5)).on_hover_text(tr(lang, "texte_aide")).clicked() {
+                                    txt_cadre = None;
                                 }
                                 ui.add(egui::Label::new(egui::RichText::new(tr(lang, "texte_aide")).size(11.0).color(egui::Color32::from_gray(170))).wrap(true));
                                 // dimensions du cadre (unité en cours), modifiables
@@ -4490,8 +4714,8 @@ fn main() {
                                         let mut x = *val / f;
                                         ui.horizontal(|ui| { ui.label(nom); if ui.add(egui::DragValue::new(&mut x).speed(0.05).max_decimals(unit.decimales()).suffix(format!(" {}", unit.suffix()))).changed() { *val = (x * f).max(0.05); } });
                                     };
-                                    champ(ui, &tr(lang, "texte_x"), &mut c.lx);
-                                    champ(ui, &tr(lang, "texte_y"), &mut c.ly);
+                                    // X / Y découlent du texte (police, taille) : affichés seulement
+                                    ui.label(egui::RichText::new(format!("X {} × Y {} {}", fmt_measure(c.lx, unit), fmt_measure(c.ly, unit), unit.suffix())).size(12.0).color(egui::Color32::from_gray(190)));
                                     champ(ui, &tr(lang, "texte_prof"), &mut c.prof);
                                     let mut deg = c.angle.to_degrees();
                                     ui.horizontal(|ui| { ui.label(tr(lang, "texte_angle")); if ui.add(egui::DragValue::new(&mut deg).speed(0.5).suffix(" °").max_decimals(1)).changed() { c.angle = deg.to_radians(); } });
@@ -4501,7 +4725,7 @@ fn main() {
                                 if radio_jaune(ui, !txt_relief, &tr(lang, "texte_grave")).clicked() { txt_relief = false; }
                                 case_jaune(ui, &mut txt_suivre, &tr(lang, "texte_suivre").to_uppercase()).on_hover_text(tr(lang, "texte_suivre_tip"));
                                 ui.add_space(4.0);
-                                let pret = txt_cadre.is_some() && !txt_saisie.trim().is_empty() && txt_police.is_some() && !busy && txt_etape == 0;
+                                let pret = txt_cadre.is_some() && !txt_saisie.trim().is_empty() && txt_police.is_some() && !busy;
                                 if ui.add_enabled_ui(pret, |ui| ui.add_sized(egui::vec2(ui.available_width(), 34.0), yellow_btn(&tr(lang, "texte_appl").to_uppercase(), 13.5))).inner
                                     .on_hover_text(tr(lang, "texte_appl_tip")).clicked() { txt_appl = true; }
                                 // ===== POLICE : taille et aperçu en direct =====
@@ -4622,7 +4846,7 @@ fn main() {
                                     let fond = if coupe_arme { rouge } else if cresp.hovered() { egui::Color32::from_rgb(250, 222, 120) } else { JAUNE };
                                     pnt.rect(cr, 6.0, fond, egui::Stroke::new(2.0, rouge));
                                     // icône + libellé centrés ensemble dans le bouton
-                                    let t = if coupe_arme { tr(lang, "coupe_trace").to_string() } else { tr(lang, "coupe_btn").to_uppercase() };
+                                    let t = if coupe_arme { tr(lang, ["coupe_t1", "coupe_t2", "coupe_t3"][coupe_etape.min(2) as usize]).to_string() } else { tr(lang, "coupe_btn").to_uppercase() };
                                     let police = egui::FontId::proportional(if coupe_arme { 11.5 } else { 13.5 });
                                     let tw = pnt.layout_no_wrap(t.clone(), police.clone(), egui::Color32::BLACK).size().x;
                                     let x0 = (cr.center().x - (34.0 + 8.0 + tw) * 0.5).max(cr.left() + 4.0);
@@ -4632,19 +4856,22 @@ fn main() {
                                 }
                                 if cresp.on_hover_text(tr(lang, "coupe_tip")).clicked() {
                                     coupe_arme = !coupe_arme;
+                                    // désarmés en plein tracé : trait inachevé abandonné, l déjà en cours = gardé tel quel
+                                    if !coupe_arme { if coupe_etape == 1 { coupe = None; } coupe_etape = 0; coupe_tir = None; }
                                     // découpe : passage direct en 4 vues (la vue d'avant revient à la fin)
                                     if coupe_arme && mode != ViewMode::Quad { mode_avant_coupe = Some(mode); mode = ViewMode::Quad; }
                                 }
                                 if let Some(mut c) = coupe {
                                     ui.add_space(4.0);
                                     ui.add(egui::Label::new(egui::RichText::new(tr(lang, "coupe_objet")).size(11.5).color(if coupe_sel { egui::Color32::from_rgb(255, 210, 60) } else { ui.visuals().weak_text_color() })).wrap(true));
-                                    if let Some((u, n, l)) = c.reperes() {
+                                    if let (Some((u, _, l)), Some(n)) = (c.reperes(), c.perp_plan()) {
                                         // angle de la ligne et décalage perpendiculaire, modifiables au clavier / à la souris
-                                        let (iu, iw) = match c.e { 0 => (1, 2), 1 => (0, 2), _ => (0, 1) };
+                                        let (iu, iw) = axes_plan(c.e);
                                         let mut ang = u[iw].atan2(u[iu]).to_degrees();
                                         let mil = (c.p0 + c.p1) * 0.5;
                                         let mut dec = mil.dot(n);
                                         let (ang0, dec0) = (ang, dec);
+                                        let (incl0, dl0) = (c.incl, c.l);
                                         ui.add_space(6.0);
                                         egui::Grid::new("coupe_grid").num_columns(2).spacing([6.0, 4.0]).show(ui, |ui| {
                                             ui.label(egui::RichText::new(tr(lang, "coupe_angle")).size(12.0));
@@ -4653,7 +4880,14 @@ fn main() {
                                             ui.label(egui::RichText::new(tr(lang, "coupe_pos")).size(12.0)).on_hover_text(tr(lang, "coupe_pos_tip"));
                                             ui.add(egui::DragValue::new(&mut dec).speed(0.2).suffix(" mm").max_decimals(2)).on_hover_text(tr(lang, "coupe_pos_tip"));
                                             ui.end_row();
+                                            ui.label(egui::RichText::new(tr(lang, "coupe_incl")).size(12.0)).on_hover_text(tr(lang, "coupe_incl_tip"));
+                                            ui.add(egui::DragValue::new(&mut c.incl).speed(0.5).suffix(" °").max_decimals(1)).on_hover_text(tr(lang, "coupe_incl_tip"));
+                                            ui.end_row();
+                                            ui.label(egui::RichText::new("l").size(12.0)).on_hover_text(tr(lang, "coupe_l_tip"));
+                                            ui.add(egui::DragValue::new(&mut c.l).speed(0.2).clamp_range(0.0..=1.0e5).suffix(" mm").max_decimals(2)).on_hover_text(tr(lang, "coupe_l_tip"));
+                                            ui.end_row();
                                         });
+                                        if c.incl != incl0 || c.l != dl0 { coupe = Some(c); }
                                         if ang != ang0 || dec != dec0 {
                                             let a = ang.to_radians();
                                             let mut u2 = Vec3::ZERO; u2[iu] = a.cos(); u2[iw] = a.sin();
@@ -4683,9 +4917,7 @@ fn main() {
                                 title_box(ui, &tr(lang, "texte_btn").to_uppercase(), 14.0, ui.available_width());
                                 ui.add_space(4.0);
                                 if ui.add_sized(egui::vec2(ui.available_width(), 34.0), yellow_btn(&tr(lang, "texte_btn").to_uppercase(), 13.5)).on_hover_text(tr(lang, "texte_tip")).clicked() {
-                                    panneau_texte = true;
-                                    // mode 4 vues : chaque fenêtre donne son plan de travail
-                                    if mode != ViewMode::Quad { mode_avant_coupe = mode_avant_coupe.or(Some(mode)); mode = ViewMode::Quad; }
+                                    panneau_texte = true; txt_cadre = None; // posé de lui-même sur la face visée
                                 }
                             } else {
                             // --- AFFICHAGE : modes de visualisation (au-dessus des outils) ---
@@ -5052,8 +5284,7 @@ fn main() {
                                             if ui.selectable_label(unit == u, tr(lang, k)).clicked() { unit = u; ui.memory_mut(|m| m.close_popup()); }
                                         }
                                         if unit != avant {
-                                            // grille et règle recalées sur des pas ronds du nouveau système
-                                            grid_step = unit.pas_grille(r * 2.0 / 10.0);
+                                            // grille et règle recalées (dims_grille) sur des pas ronds du nouveau système
                                             window.request_redraw();
                                         }
                                     });
@@ -5418,7 +5649,6 @@ fn main() {
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
                                 orbit = Orbit { yaw: CAM_YAW, pitch: CAM_PITCH, dist: r * 3.2, target: base };
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
-                                grid_step = unit.pas_grille(r * 2.0 / 10.0);
                                 selection = None;
                                 history.truncate(hist_idx + 1); history.push(snapshot(&scene));
                                 if history.len() > 40 { history.remove(0); } hist_idx = history.len() - 1;
@@ -5460,7 +5690,6 @@ fn main() {
                                 sel = Some(scene.len() - 1);
                                 defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
-                                grid_step = unit.pas_grille(r * 2.0 / 10.0);
                                 // recadre toujours sur l'ensemble de la scène : l'objet créé est visible
                                 orbit = Orbit { yaw: CAM_YAW, pitch: CAM_PITCH, dist: r * 3.2, target: base };
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
@@ -5499,7 +5728,6 @@ fn main() {
                                 sel = dernier; multi.clear(); selection = None; gizmo = None;
                                 coupe = None; fin_outil = true;
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
-                                grid_step = unit.pas_grille(r * 2.0 / 10.0);
                                 history.truncate(hist_idx + 1); history.push(snapshot(&scene));
                                 if history.len() > 40 { history.remove(0); } hist_idx = history.len() - 1;
                                 outil_ann = coupe_lance.map(|c| (hist_idx, OutilAnn::Coupe(c)));
@@ -5522,7 +5750,6 @@ fn main() {
                                 sel = Some(i); multi.clear(); selection = None; gizmo = None; fin_outil = true;
                                 // règles, grille et cadrage à la taille de la nouvelle scène (l'outil B a pu disparaître)
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
-                                grid_step = unit.pas_grille(r * 2.0 / 10.0);
                                 orbit.target = base; orbit.dist = r * 3.2;
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
                                 history.truncate(hist_idx + 1); history.push(snapshot(&scene));
@@ -5589,7 +5816,17 @@ fn main() {
                     // test sans clic : PATCH3D_COUPE="x0,y0,x1,y1" trace la ligne (vue de dessus) et coupe à l'image 6
                     if egui_ctx.frame_nr() == 6 { if let Ok(t) = std::env::var("PATCH3D_COUPE") {
                         let v: Vec<f32> = t.split(',').filter_map(|x| x.trim().parse().ok()).collect();
-                        if v.len() == 4 { coupe = Some(booleen::Cadre { p0: Vec3::new(v[0], v[1], 0.0), p1: Vec3::new(v[2], v[3], 0.0), e: 2 }); coupe_req = true; }
+                        if v.len() == 4 { coupe = Some(booleen::Cadre::new(Vec3::new(v[0], v[1], 0.0), Vec3::new(v[2], v[3], 0.0), 2)); coupe_req = true; }
+                    }}
+                    // test sans clic : PATCH3D_COUPE_TRACE="x0,y0,x1,y1" = trait L en cours (vue 3D) ; avec ",incl,l" = l en cours de dépli
+                    if egui_ctx.frame_nr() == 3 { if let Ok(t) = std::env::var("PATCH3D_COUPE_TRACE") {
+                        let v: Vec<f32> = t.split(',').filter_map(|x| x.trim().parse().ok()).collect();
+                        if v.len() == 4 || v.len() == 6 {
+                            let p0 = Vec3::new(v[0], v[1], 0.0);
+                            let mut c = booleen::Cadre::new(p0, aimante_45(p0, Vec3::new(v[2], v[3], 0.0), 2), 2);
+                            if v.len() == 6 { c.incl = v[4]; c.l = v[5]; }
+                            coupe = Some(c); coupe_tir = Some(ViewKind::ThreeD); coupe_arme = true; coupe_etape = if v.len() == 6 { 2 } else { 1 };
+                        }
                     }}
                     if coupe_req && job.is_none() && file_job.is_none() {
                         coupe_lance = coupe;
@@ -5640,12 +5877,13 @@ fn main() {
                     }
                     // TEXTE : incrustation (relief ou gravure) dans l'objet sélectionné
                     if txt_appl && job.is_none() && file_job.is_none() {
-                        let cible = sel.filter(|&i| i < scene.len() && scene[i].nverts > 0)
-                            .or_else(|| txt_cadre.and_then(|c| surface_sous(&scene, c.centre, c.n).map(|x| x.0)))
+                        // l'objet sur lequel le texte est posé, sinon la sélection
+                        let cible = txt_cadre.and_then(|c| surface_sous(&scene, c.centre, c.n).map(|x| x.0))
+                            .or_else(|| sel.filter(|&i| i < scene.len() && scene[i].nverts > 0))
                             .or_else(|| { let v: Vec<usize> = (0..scene.len()).filter(|&i| scene[i].nverts > 0).collect(); if v.len() == 1 { Some(v[0]) } else { None } });
                         match (cible, txt_cadre, texte::polices()) {
                             (Some(i), Some(c), Some(liste)) => if let Some(pol) = txt_police.and_then(|j| liste.get(j)) {
-                                let polys = texte::contours(pol, &txt_saisie, txt_taille, txt_just, c.lx).map(|r| r.0).unwrap_or_default();
+                                let polys = texte::contours(pol, &txt_saisie, txt_taille, txt_just, 0.0).map(|r| r.0).unwrap_or_default();
                                 txt_lance = Some(c);
                                 let prm = booleen::ParamsTexte { polys, u: c.u, v: c.v, n: c.n, centre: c.centre, angle: c.angle, prof: c.prof, relief: txt_relief, suivre: txt_suivre };
                                 let v = scene[i].verts.clone();
@@ -5720,7 +5958,6 @@ fn main() {
                                 orbit.target = base; orbit.dist = orbit.dist.max(r * 3.2);
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
                             }
-                            grid_step = unit.pas_grille(r * 2.0 / 10.0);
                             selection = None; gizmo = None;
                             defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
                             // glisser une valeur de position : une seule étape d'annulation pour tout le geste
@@ -5845,23 +6082,14 @@ fn main() {
                         // Pour un seul objet (ou le cadre sélectionné) : touche Suppr.
                         for o in &scene { unsafe { o.delete(&gl); } }
                         scene.clear(); sel = None; multi.clear(); selection = None; gizmo = None;
-                        coupe = None; coupe_arme = false; coupe_sel = false; panneau_bool = false;
+                        coupe = None; coupe_arme = false; coupe_etape = 0; coupe_tir = None; coupe_sel = false; panneau_bool = false;
                         defects = unsafe { recompute_defects(&gl, &scene, None, &mut bnd_lines, &mut err_lines) };
                         history.truncate(hist_idx + 1); history.push(snapshot(&scene));
                         if history.len() > 40 { history.remove(0); } hist_idx = history.len() - 1;
                         window.request_redraw();
                     }
                     // ANNULER pendant un outil : on revient d'une étape de l'outil, pas de la géométrie
-                    if undo_req && panneau_texte && (txt_etape > 0 || txt_cadre.is_some()) {
-                        match txt_etape {
-                            4 => { txt_etape = 3; }
-                            3 => { txt_etape = 2; if let Some(c) = txt_cadre.as_mut() { c.ly = 0.0; } }
-                            2 | 1 => { txt_etape = 1; txt_cadre = None; }
-                            _ => { txt_cadre = None; }
-                        }
-                        undo_req = false; window.request_redraw();
-                    }
-                    if undo_req && (coupe.is_some() || coupe_arme) { coupe = None; coupe_arme = false; coupe_tir = None; undo_req = false; window.request_redraw(); }
+                    if undo_req && (coupe.is_some() || coupe_arme) { coupe = None; coupe_arme = false; coupe_tir = None; coupe_etape = 0; undo_req = false; window.request_redraw(); }
                     if undo_req && surf.is_some() { surf = None; surf_survol = None; undo_req = false; window.request_redraw(); }
                     let retablir = if undo_req { outil_ann.filter(|(h, _)| *h == hist_idx).map(|(_, o)| o) } else { None };
                     if job.is_none() && file_job.is_none() && ((undo_req && hist_idx > 0) || (redo_req && hist_idx + 1 < history.len())) {
@@ -5876,17 +6104,13 @@ fn main() {
                         if let Some(o) = retablir {
                             outil_ann = None;
                             match o {
-                                OutilAnn::Texte(c) => { panneau_bool = true; panneau_texte = true; txt_cadre = Some(c); txt_etape = 0; }
+                                OutilAnn::Texte(c) => { panneau_bool = true; panneau_texte = true; txt_cadre = Some(c); txt_sel = true; }
                                 OutilAnn::Coupe(c) => { panneau_bool = true; coupe = Some(c); }
                             }
                             panneau_prec = true; // pas de nouveau basculement de vue
                             if mode != ViewMode::Quad { mode_avant_coupe = mode_avant_coupe.or(Some(mode)); mode = ViewMode::Quad; }
                         }
                         window.request_redraw();
-                    }
-                    if grid_step != gs_before {
-                        let (g, ru, mj) = unsafe { build_grid_ruler(&gl, grid_step, r.max(grid_step)) };
-                        grid = g; rule = ru; ruler_majors = mj;
                     }
                     surface.swap_buffers(&gl_context).unwrap();
                     {

@@ -17,6 +17,7 @@ void main(){ frag=vec4(vCol,1.0); }"#;
 pub struct Grid {
     program: glow::NativeProgram,
     vao: glow::NativeVertexArray,
+    vbo: glow::NativeBuffer,
     u_mvp: Option<glow::NativeUniformLocation>,
     count: i32,
     /// nombre de sommets des lignes de grille (les axes suivent)
@@ -74,7 +75,12 @@ impl Grid {
         gl.vertex_attrib_pointer_f32(1, 3, glow::FLOAT, false, stride, 3 * 4);
         let u_mvp = gl.get_uniform_location(program, "uMVP");
 
-        Grid { program, vao, u_mvp, count: (v.len() / 6) as i32, n_grille }
+        Grid { program, vao, vbo, u_mvp, count: (v.len() / 6) as i32, n_grille }
+    }
+
+    /// Libère les ressources GPU (avant de remplacer par une grille à la nouvelle taille).
+    pub unsafe fn delete(&self, gl: &glow::Context) {
+        gl.delete_vertex_array(self.vao); gl.delete_buffer(self.vbo); gl.delete_program(self.program);
     }
 
     /// `grille` = lignes de la grille, `axes` = axes X/Y/Z colorés.

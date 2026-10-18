@@ -394,7 +394,7 @@ fn booleens_exacts() {
     // objet ouvert (un triangle en moins) : réparé automatiquement avant l'opération, résultat exact
     let u = booleen::calculer(&a[18..], &b, booleen::Op::Union).expect("objet troué non réparé");
     assert!(ecart_rel(volume(&u), 2.0 * 8000.0 - commun) < 1e-6, "union après réparation : {}", volume(&u));
-    let (p, q) = booleen::couper(&a[18..], &booleen::Cadre { p0: Vec3::new(5.0, -10.0, 0.0), p1: Vec3::new(5.0, 30.0, 0.0), e: 2 }).expect("découpe d'un objet troué");
+    let (p, q) = booleen::couper(&a[18..], &booleen::Cadre::new(Vec3::new(5.0, -10.0, 0.0), Vec3::new(5.0, 30.0, 0.0), 2)).expect("découpe d'un objet troué");
     assert!(ecart_rel(volume(&p) + volume(&q), 8000.0) < 1e-6);
 }
 
@@ -580,26 +580,36 @@ fn verifications_impression() {
 fn decoupe_par_cadre() {
     // cube de 20 mm, ligne tracée en travers à x = 5 (de y = -10 à 30) : cadre vertical
     let a = prim(occt::Prim::Box { dx: 20.0, dy: 20.0, dz: 20.0 });
-    let c = booleen::Cadre { p0: Vec3::new(5.0, -10.0, 0.0), p1: Vec3::new(5.0, 30.0, 0.0), e: 2 };
+    let c = booleen::Cadre::new(Vec3::new(5.0, -10.0, 0.0), Vec3::new(5.0, 30.0, 0.0), 2);
     let (p, q) = booleen::couper(&a, &c).unwrap();
     for m in [&p, &q] { let d = defects::analyze(m); assert_eq!((d.holes, d.face_errors), (0, 0)); }
     let mut v = [volume(&p), volume(&q)]; v.sort_by(|x, y| x.partial_cmp(y).unwrap());
     assert!(ecart_rel(v[0], 5.0 * 400.0) < 1e-9 && ecart_rel(v[1], 15.0 * 400.0) < 1e-9, "volumes {v:?}");
     // ligne en biais (45°) passant par le centre : deux moitiés égales
-    let c = booleen::Cadre { p0: Vec3::new(-10.0, -10.0, 0.0), p1: Vec3::new(30.0, 30.0, 0.0), e: 2 };
+    let c = booleen::Cadre::new(Vec3::new(-10.0, -10.0, 0.0), Vec3::new(30.0, 30.0, 0.0), 2);
     let (p, q) = booleen::couper(&a, &c).unwrap();
     assert!(ecart_rel(volume(&p), 4000.0) < 1e-6 && ecart_rel(volume(&q), 4000.0) < 1e-6);
     // ligne trop courte (emporte-pièce) : n'entame que l'emprise de la ligne, de y = 0 à 10
-    let c = booleen::Cadre { p0: Vec3::new(5.0, 10.0, 0.0), p1: Vec3::new(5.0, -10.0, 0.0), e: 2 };
+    let c = booleen::Cadre::new(Vec3::new(5.0, 10.0, 0.0), Vec3::new(5.0, -10.0, 0.0), 2);
     let (p, q) = booleen::couper(&a, &c).unwrap();
     assert!(ecart_rel(volume(&p) + volume(&q), 8000.0) < 1e-9);
     // cadre élevé le long de Y (tracé en vue de face) : coupe horizontale à z = 5
-    let c = booleen::Cadre { p0: Vec3::new(-10.0, 0.0, 5.0), p1: Vec3::new(30.0, 0.0, 5.0), e: 1 };
+    let c = booleen::Cadre::new(Vec3::new(-10.0, 0.0, 5.0), Vec3::new(30.0, 0.0, 5.0), 1);
     let (p, q) = booleen::couper(&a, &c).unwrap();
     let mut v = [volume(&p), volume(&q)]; v.sort_by(|x, y| x.partial_cmp(y).unwrap());
     assert!(ecart_rel(v[0], 5.0 * 400.0) < 1e-9, "coupe horizontale {v:?}");
+    // cadre incliné de 45° autour d'un trait le long de Y à x = 10 (plan x = z + 10) : prisme de 1000 mm³
+    // détaché ; à 135° (plan x + z = 10) idem de l'autre côté
+    for incl in [45.0, 135.0] {
+        let mut c = booleen::Cadre::new(Vec3::new(10.0, -10.0, 0.0), Vec3::new(10.0, 30.0, 0.0), 2);
+        c.incl = incl;
+        let (p, q) = booleen::couper(&a, &c).unwrap();
+        for m in [&p, &q] { let d = defects::analyze(m); assert_eq!((d.holes, d.face_errors), (0, 0)); }
+        let mut v = [volume(&p), volume(&q)]; v.sort_by(|x, y| x.partial_cmp(y).unwrap());
+        assert!(ecart_rel(v[0], 1000.0) < 1e-6 && ecart_rel(v[1], 7000.0) < 1e-6, "coupe inclinée {incl}° : {v:?}");
+    }
     // cadre à côté de l'objet : refus clair
-    let c = booleen::Cadre { p0: Vec3::new(50.0, -10.0, 0.0), p1: Vec3::new(50.0, 30.0, 0.0), e: 2 };
+    let c = booleen::Cadre::new(Vec3::new(50.0, -10.0, 0.0), Vec3::new(50.0, 30.0, 0.0), 2);
     assert!(booleen::couper(&a, &c).is_err());
 }
 
@@ -654,7 +664,7 @@ fn soustraction_forme_complexe_sans_defaut() {
     eprintln!("Femme − cylindre : {} tri, trous {} err {}", v.len() / 18, d.holes, d.face_errors);
     assert_eq!((d.holes, d.face_errors), (0, 0));
     // découpe de la même forme : deux morceaux sans défaut
-    let cadre = booleen::Cadre { p0: Vec3::new(c.x, lo.y - 10.0, 0.0), p1: Vec3::new(c.x, hi.y + 10.0, 0.0), e: 2 };
+    let cadre = booleen::Cadre::new(Vec3::new(c.x, lo.y - 10.0, 0.0), Vec3::new(c.x, hi.y + 10.0, 0.0), 2);
     let (a, b) = booleen::couper(&m.verts, &cadre).unwrap();
     for (k, x) in [&a, &b].iter().enumerate() { let d = defects::analyze(x); eprintln!("morceau {k} : trous {} err {}", d.holes, d.face_errors); assert_eq!((d.holes, d.face_errors), (0, 0)); }
 }

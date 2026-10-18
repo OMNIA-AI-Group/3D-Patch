@@ -108,37 +108,65 @@ pub fn calculer_n(objs: &[&[f32]], op: Op) -> Result<Vec<f32>, String> {
     Ok(out)
 }
 
-/// Cadre de coupe : on trace une ligne p0 -> p1 dans un plan, et le cadre s'élève perpendiculairement
-/// à ce plan, le long de l'axe `e` (0 = X, 1 = Y, 2 = Z), sur toute la hauteur de l'objet.
+/// Cadre de coupe : on trace une ligne p0 -> p1 (le trait L) dans un plan perpendiculaire à l'axe `e`
+/// (0 = X, 1 = Y, 2 = Z), puis le cadre se déplie de `l` en pivotant autour du trait : `incl` = angle
+/// depuis le plan de tracé (90° = perpendiculaire, le long de l'axe ; 45° = coupe en biais).
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Cadre { pub p0: glam::Vec3, pub p1: glam::Vec3, pub e: usize }
-
-impl Cadre {
-    pub fn axe(&self) -> glam::Vec3 { let mut v = glam::Vec3::ZERO; v[self.e] = 1.0; v }
-    /// Direction de la ligne tracée (dans le plan) et normale du cadre (côté A).
-    pub fn reperes(&self) -> Option<(glam::Vec3, glam::Vec3, f32)> {
-        let mut d = self.p1 - self.p0; d[self.e] = 0.0;
-        let l = d.length();
-        if l < 1e-3 { return None; }
-        let u = d / l;
-        Some((u, u.cross(self.axe()).normalize(), l))
-    }
-    /// Les 4 coins du cadre, élevé de `bas` à `haut` le long de l'axe.
-    pub fn coins(&self, bas: f32, haut: f32) -> [glam::Vec3; 4] {
-        let (mut a, mut b) = (self.p0, self.p1);
-        let (mut c, mut d) = (b, a);
-        a[self.e] = bas; b[self.e] = bas; c[self.e] = haut; d[self.e] = haut;
-        [a, b, c, d]
-    }
+pub struct Cadre {
+    pub p0: glam::Vec3, pub p1: glam::Vec3, pub e: usize,
+    /// inclinaison du plan de coupe autour du trait, en degrés
+    pub incl: f32,
+    /// longueur dépliée l (0 = toute la hauteur de la scène)
+    pub l: f32,
 }
 
-/// Boîte de coupe (soupe fermée, orientée vers l'extérieur) : l'emprise de la ligne tracée,
-/// du cadre jusqu'à `prof` du côté A, de `bas` à `haut` le long de l'axe.
+impl Cadre {
+    /// Cadre perpendiculaire au plan de tracé, sur toute la hauteur de la scène.
+    pub fn new(p0: glam::Vec3, p1: glam::Vec3, e: usize) -> Cadre { Cadre { p0, p1, e, incl: 90.0, l: 0.0 } }
+    pub fn axe(&self) -> glam::Vec3 { let mut v = glam::Vec3::ZERO; v[self.e] = 1.0; v }
+    /// Début du trait ramené dans le plan de tracé.
+    pub fn origine(&self) -> glam::Vec3 { let mut o = self.p0; o[self.e] = 0.0; o }
+    /// Direction du trait (dans le plan de tracé) et sa longueur L.
+    fn trait_l(&self) -> Option<(glam::Vec3, f32)> {
+        let mut d = self.p1 - self.p0; d[self.e] = 0.0;
+        let l = d.length();
+        (l >= 1e-3).then(|| (d / l, l))
+    }
+    /// Perpendiculaire au trait dans le plan de tracé (0° de la roue d'inclinaison).
+    pub fn perp_plan(&self) -> Option<glam::Vec3> { self.trait_l().map(|(u, _)| u.cross(self.axe()).normalize()) }
+    /// Direction de dépli de l : perpendiculaire au trait, tournée de `incl` depuis le plan de tracé vers l'axe.
+    pub fn dir_l(&self) -> Option<glam::Vec3> {
+        let np = self.perp_plan()?;
+        // angles droits exacts : un cadre à 90° reste rigoureusement le long de l'axe
+        let a = self.incl.rem_euclid(360.0);
+        let (s, c) = if a == 0.0 { (0.0, 1.0) } else if a == 90.0 { (1.0, 0.0) } else if a == 180.0 { (0.0, -1.0) } else if a == 270.0 { (-1.0, 0.0) }
+                     else { a.to_radians().sin_cos() };
+        Some(np * c + self.axe() * s)
+    }
+    /// Direction du trait, normale du cadre (côté A) et longueur L.
+    pub fn reperes(&self) -> Option<(glam::Vec3, glam::Vec3, f32)> {
+        let (u, l) = self.trait_l()?;
+        Some((u, u.cross(self.dir_l()?).normalize(), l))
+    }
+    /// Les 4 coins du cadre, déplié de `bas` à `haut` le long de dir_l (depuis le trait).
+    pub fn coins(&self, bas: f32, haut: f32) -> [glam::Vec3; 4] {
+        let (Some((u, l)), Some(w)) = (self.trait_l(), self.dir_l()) else { return [self.p0, self.p1, self.p1, self.p0] };
+        let (a, b) = (self.origine(), self.origine() + u * l);
+        [a + w * bas, b + w * bas, b + w * haut, a + w * haut]
+    }
+    /// Étendue (min, max) de la boîte `lo`..`hi` le long de dir_l, depuis le trait.
+    pub fn etendue_l(&self, lo: glam::Vec3, hi: glam::Vec3) -> (f32, f32) {
+        let Some(w) = self.dir_l() else { return (0.0, 0.0) };
+        let o = self.origine();
+        (0..8).map(|i| glam::Vec3::new(if i & 1 == 0 { lo.x } else { hi.x }, if i & 2 == 0 { lo.y } else { hi.y }, if i & 4 == 0 { lo.z } else { hi.z }))
+            .fold((f32::MAX, f32::MIN), |(a, b), q| { let s = (q - o).dot(w); (a.min(s), b.max(s)) })
+    }
+}
 fn boite_coupe(c: &Cadre, bas: f32, haut: f32, prof: f32) -> Option<Vec<f32>> {
     let (u, n, l) = c.reperes()?;
-    let ax = c.axe();
-    let mut o = c.p0; o[c.e] = 0.0;
-    let p = |i: u8, j: u8, k: u8| o + u * (l * i as f32) + n * (prof * j as f32) + ax * if k == 0 { bas } else { haut };
+    let w = c.dir_l()?;
+    let o = c.origine();
+    let p = |i: u8, j: u8, k: u8| o + u * (l * i as f32) + n * (prof * j as f32) + w * if k == 0 { bas } else { haut };
     let faces = [[(0,0,0),(1,0,0),(1,1,0),(0,1,0)], [(0,0,1),(0,1,1),(1,1,1),(1,0,1)], [(0,0,0),(0,0,1),(1,0,1),(1,0,0)],
                  [(0,1,0),(1,1,0),(1,1,1),(0,1,1)], [(0,0,0),(0,1,0),(0,1,1),(0,0,1)], [(1,0,0),(1,0,1),(1,1,1),(1,1,0)]];
     let mut tris: Vec<[glam::Vec3; 3]> = Vec::new();
@@ -164,7 +192,8 @@ pub fn couper(v: &[f32], c: &Cadre) -> Result<(Vec<f32>, Vec<f32>), String> {
     let (mut lo, mut hi) = (glam::Vec3::splat(f32::MAX), glam::Vec3::splat(f32::MIN));
     for p in v.chunks_exact(6) { let q = glam::Vec3::new(p[0], p[1], p[2]); lo = lo.min(q); hi = hi.max(q); }
     let marge = (hi - lo).length() + 1.0;
-    let Some(b) = boite_coupe(c, lo[c.e] - 1.0, hi[c.e] + 1.0, marge + (c.p0 - (lo + hi) * 0.5).length()) else { return Err(crate::trc("coupe_rate").into()) };
+    let (bas, haut) = c.etendue_l(lo, hi);
+    let Some(b) = boite_coupe(c, bas - 1.0, haut + 1.0, marge + (c.p0 - (lo + hi) * 0.5).length()) else { return Err(crate::trc("coupe_rate").into()) };
     let boite = Manifold::from_mesh_gl64(&vers_manifold(&b));
     crate::progress::span(0.1, 0.5);
     let plus = m.boolean_with_engine_and_progress(&boite, OpType::Intersect, BooleanEngine::Auto, None, None);
@@ -382,7 +411,20 @@ pub fn texte(obj: &[f32], p: &ParamsTexte) -> Result<Vec<f32>, String> {
     crate::progress::span(0.0, 0.1);
     let sec = crate::texte::section(&p.polys);
     if sec.is_empty() { return Err(crate::trc("texte_vide").into()); }
-    let rec = (p.prof * 0.2).max(0.2); // recouvrement : le texte entre un peu dans l'objet
+    crate::progress::span(0.1, 0.3);
+    let rel = Relief::new(obj, p.u, p.v, p.n);
+    let (ca, cb) = (p.centre.dot(p.u), p.centre.dot(p.v));
+    let (sn, cs) = p.angle.sin_cos();
+    let plan = |x: f64, y: f64| (ca + cs * x as f32 - sn * y as f32, cb + sn * x as f32 + cs * y as f32);
+    // à plat : posé sur le plus haut point de la surface sous le texte ; le pied d'un relief descend jusqu'au
+    // plus bas (texte incliné, surface courbe) pour que les lettres restent soudées à l'objet
+    let (mut h_max, mut h_min): (Option<f32>, f32) = (None, f32::MAX);
+    for c in &p.polys { for q in c {
+        let (a, b) = plan(q[0], q[1]);
+        if let Some(h) = rel.h(a, b) { h_max = Some(h_max.map_or(h, |x: f32| x.max(h))); h_min = h_min.min(h); }
+    } }
+    let Some(h_plat) = h_max else { return Err(crate::trc("texte_hors").into()) };
+    let rec = (p.prof * 0.2).max(0.2) + if p.relief && !p.suivre { h_plat - h_min } else { 0.0 }; // recouvrement : le texte entre un peu dans l'objet
     let haut = (p.prof + rec) as f64;
     let mut prisme = Manifold::extrude(&sec, haut, 0, 0.0, Vec2::new(1.0, 1.0))
         .translate(Vec3::new(0.0, 0.0, if p.relief { -rec as f64 } else { -p.prof as f64 }));
@@ -393,20 +435,6 @@ pub fn texte(obj: &[f32], p: &ParamsTexte) -> Result<Vec<f32>, String> {
         let diag = ((hi[0] - lo[0]).powi(2) + (hi[1] - lo[1]).powi(2)).sqrt();
         prisme = prisme.refine_to_length((diag / 120.0).max(0.25));
     }
-    crate::progress::span(0.1, 0.3);
-    let rel = Relief::new(obj, p.u, p.v, p.n);
-    let (ca, cb) = (p.centre.dot(p.u), p.centre.dot(p.v));
-    let (sn, cs) = p.angle.sin_cos();
-    let plan = |x: f64, y: f64| (ca + cs * x as f32 - sn * y as f32, cb + sn * x as f32 + cs * y as f32);
-    // hauteur à plat : le plus haut point de la surface sous le texte
-    let m = prisme.get_mesh_gl64(-1);
-    let np = m.num_prop as usize;
-    let mut h_max: Option<f32> = None;
-    for k in 0..m.vert_properties.len() / np {
-        let (a, b) = plan(m.vert_properties[k * np], m.vert_properties[k * np + 1]);
-        if let Some(h) = rel.h(a, b) { h_max = Some(h_max.map_or(h, |x: f32| x.max(h))); }
-    }
-    let Some(h_plat) = h_max else { return Err(crate::trc("texte_hors").into()) };
     let (u, v, n, suivre) = (p.u, p.v, p.n, p.suivre);
     let pose = prisme.warp(|q: &mut Vec3| {
         let (a, b) = plan(q.x, q.y);

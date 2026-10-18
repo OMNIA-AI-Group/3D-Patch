@@ -17,6 +17,7 @@ void main(){ frag = uColor; }"#;
 pub struct Ruler {
     program: glow::NativeProgram,
     vao: glow::NativeVertexArray,
+    vbo: glow::NativeBuffer,
     u_mvp: Option<glow::NativeUniformLocation>,
     u_color: Option<glow::NativeUniformLocation>,
     count: i32,
@@ -64,12 +65,17 @@ impl Ruler {
         gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 3 * 4, 0);
 
         Ruler {
-            program, vao,
+            program, vao, vbo,
             u_mvp: gl.get_uniform_location(program, "uMVP"),
             u_color: gl.get_uniform_location(program, "uColor"),
             count: (v.len() / 3) as i32,
             step, majors,
         }
+    }
+
+    /// Libère les ressources GPU (avant de remplacer par une règle à la nouvelle taille).
+    pub unsafe fn delete(&self, gl: &glow::Context) {
+        gl.delete_vertex_array(self.vao); gl.delete_buffer(self.vbo); gl.delete_program(self.program);
     }
 
     pub unsafe fn draw(&self, gl: &glow::Context, mvp: &[f32; 16]) {
