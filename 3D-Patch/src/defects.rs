@@ -305,7 +305,10 @@ pub struct Defects {
 }
 
 /// `verts` = sommets entrelacés [pos(3) nrm(3)] * 3 * triangles (format stl::Mesh).
-pub fn analyze(verts: &[f32]) -> Defects {
+pub fn analyze(verts: &[f32]) -> Defects { analyze_suivi(verts, false) }
+/// Idem ; `suivi` = l'analyse fait avancer la jauge (chargement d'un fichier). Pas pendant un calcul qui
+/// l'appelle en interne (réparation…) : il garde la main sur sa propre jauge.
+pub fn analyze_suivi(verts: &[f32], suivi: bool) -> Defects {
     let ntri = verts.len() / 18;
     // Tolérance de soudure relative à la taille de l'objet (robuste quelle que soit l'échelle).
     let (mut lo, mut hi) = ([f32::INFINITY; 3], [f32::NEG_INFINITY; 3]);
@@ -319,6 +322,7 @@ pub fn analyze(verts: &[f32]) -> Defects {
     let mut pos: Vec<[f32; 3]> = Vec::new();
     let mut idx: Vec<u32> = Vec::with_capacity(ntri * 3);
     for t in 0..ntri {
+        if suivi && t % 65536 == 0 { crate::progress::set(0.5 * t as f32 / ntri.max(1) as f32); }
         for k in 0..3 {
             let o = t * 18 + k * 6;
             let key = (q(verts[o]), q(verts[o + 1]), q(verts[o + 2]));
@@ -329,6 +333,7 @@ pub fn analyze(verts: &[f32]) -> Defects {
     // (count, somme des sens, triangles) par arête non orientée
     let mut edges: HashMap<(u32, u32), (u32, i32, Vec<u32>)> = HashMap::default();
     for t in 0..ntri {
+        if suivi && t % 65536 == 0 { crate::progress::set(0.5 + 0.45 * t as f32 / ntri.max(1) as f32); }
         let tri = [idx[t * 3], idx[t * 3 + 1], idx[t * 3 + 2]];
         for e in 0..3 {
             let (a, b) = (tri[e], tri[(e + 1) % 3]);

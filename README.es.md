@@ -25,7 +25,9 @@ Funciona en Linux y Windows, completamente sin conexión, y su interfaz está di
 
 ## Formatos compatibles
 
-Importación: STL, OBJ, PLY, 3MF, STEP, IGES, Rhino/MoI 3DM, SketchUp SKP, FBX, glTF/GLB, DAE, 3DS, X3D, FreeCAD FCStd, DXF, Blender (mediante un Blender instalado)… — Exportación: STL, 3MF (con colores), OBJ, PLY, Rhino/MoI 3DM, SketchUp SKP, 3DS, FBX, DAE, glTF/GLB, X3D.
+Importación: STL, OBJ, PLY, 3MF, STEP, IGES, Rhino/MoI 3DM, SketchUp SKP, FBX, glTF/GLB, DAE, 3DS, X3D, FreeCAD FCStd, DXF, SolidCraft (.solidcraft), Blender (mediante un Blender instalado)… — Exportación: STL, 3MF (con colores), OBJ, PLY, Rhino/MoI 3DM, SketchUp SKP, 3DS, FBX, DAE, glTF/GLB, X3D, SolidCraft.
+
+Diseños de SolidCraft: las mallas y las piezas STEP importadas se leen directamente, sin SolidCraft. Un diseño puramente paramétrico (bocetos, extrusiones, redondeos…) no contiene geometría: si SolidCraft está instalado, 3D-Patch se lo hace calcular y guarda el resultado para reabrir el mismo archivo al instante. Guardar en SolidCraft escribe cada objeto como una malla importada, que SolidCraft abre.
 
 ## Descarga
 

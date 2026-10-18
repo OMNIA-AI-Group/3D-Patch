@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <chrono>
 // Passerelle Rhino 3DM (openNURBS, McNeel, licence MIT) pour 3D-Patch.
 // Import : maillages + maillages de rendu des NURBS/extrusions + blocs (instances), unité -> mm,
 // couleur d'objet/calque. Export : un maillage en millimètres.
@@ -35,11 +37,14 @@
 #include <cstdio>
 #include <cstdlib>
 
+// chronométrage des étapes (PATCH3D_3DMDBG)
+static double horloge() { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); }
+static void etape(const char* nom, double& t) { double n = horloge(); if (std::getenv("PATCH3D_3DMDBG")) std::fprintf(stderr, "  3DM %-22s %.2f s\n", nom, n - t); t = n; }
 static void err(char* e, int n, const std::string& s) { if (e && n > 0) { std::strncpy(e, s.c_str(), n - 1); e[n - 1] = 0; } }
 static void init() { static bool ok = false; if (!ok) { ON::Begin(); ok = true; } }
 
-struct FaceCol { TopoDS_Face f; ON_Color col; };
-struct Sortie { std::vector<float> v, c; int sans_maillage = 0; std::vector<FaceCol> faces; };
+struct FaceCol { TopoDS_Face f; ON_Color col; int obj; }; // obj : objet d'origine
+struct Sortie { std::vector<float> v, c; int sans_maillage = 0; std::vector<FaceCol> faces; int n_obj = 0; };
 
 static void ajoute_maillage(Sortie& o, const ON_Mesh* m, const ON_Xform& x, ON_Color col) {
     if (!m) return;
@@ -136,7 +141,7 @@ static bool collecte_brep(Sortie& o, const ON_Brep& br, const ON_Xform& x, ON_Co
                           x.m_xform[1][0], x.m_xform[1][1], x.m_xform[1][2], x.m_xform[1][3],
                           x.m_xform[2][0], x.m_xform[2][1], x.m_xform[2][2], x.m_xform[2][3]); }
         catch (const Standard_Failure&) { simil = false; }
-        int n = 0;
+        int n = 0, id = o.n_obj++;
         for (int i = 0; i < br.m_F.Count(); ++i) {
             TopoDS_Face fc; if (!face_occt(br, br.m_F[i], fc)) continue;
             TopoDS_Shape sh;
@@ -145,26 +150,31 @@ static bool collecte_brep(Sortie& o, const ON_Brep& br, const ON_Xform& x, ON_Co
                 gp_GTrsf g; for (int r = 1; r <= 3; ++r) { for (int c = 1; c <= 3; ++c) g.SetValue(r, c, x.m_xform[r - 1][c - 1]); g.SetValue(r, 4, x.m_xform[r - 1][3]); }
                 sh = BRepBuilderAPI_GTransform(fc, g, Standard_True).Shape();
             }
-            for (TopExp_Explorer ex(sh, TopAbs_FACE); ex.More(); ex.Next()) { o.faces.push_back({ TopoDS::Face(ex.Current()), col }); n++; }
+            for (TopExp_Explorer ex(sh, TopAbs_FACE); ex.More(); ex.Next()) { o.faces.push_back({ TopoDS::Face(ex.Current()), col, id }); n++; }
         }
         return n > 0;
     } catch (const Standard_Failure&) { return false; }
 }
-// Couture globale + maillage + couleurs par face d'origine
-static void maille_faces(Sortie& o, double defl_mm) {
-    if (o.faces.empty()) return;
+// Couture + maillage + couleurs par face d'origine (la fusion des arêtes de la couture coûte l'essentiel du
+// temps d'ouverture d'un 3DM : résultat gardé en cache côté Rust, voir cao_en_cache)
+static void maille_objet(const std::vector<const FaceCol*>& faces, double defl_mm, std::vector<float>& v, std::vector<float>& c, int& rate) {
     try {
-        BRepBuilderAPI_Sewing sew(0.05, Standard_True, Standard_True, Standard_False, Standard_False); // 0,05 mm, sans découpage (moins d'erreurs)
-        sew.SetSameParameterMode(Standard_False); // recalage fin des arêtes inutile pour mailler (~30 % du temps)
-        for (auto& fc : o.faces) sew.Add(fc.f);
-        sew.Perform();
-        TopoDS_Shape sh = sew.SewedShape();
-        if (std::getenv("PATCH3D_3DMDBG")) std::fprintf(stderr, "  couture globale : %zu faces, %d arêtes libres\n", o.faces.size(), sew.NbFreeEdges());
+        TopoDS_Shape sh;
         TopTools_DataMapOfShapeInteger coul;
-        for (size_t i = 0; i < o.faces.size(); ++i) {
-            const TopoDS_Shape& f0 = o.faces[i].f;
-            TopoDS_Shape f1 = sew.IsModified(f0) ? sew.Modified(f0) : f0;
-            for (TopExp_Explorer ex(f1, TopAbs_FACE); ex.More(); ex.Next()) coul.Bind(ex.Current(), (int)i);
+        if (faces.size() == 1) { sh = faces[0]->f; coul.Bind(sh, 0); }
+        else {
+            // NB : l'essentiel du temps est la fusion des arêtes (Merging -> Approx_SameParameter), qu'aucune
+            // option n'évite ; le résultat est donc gardé en cache côté Rust (cao_en_cache)
+            BRepBuilderAPI_Sewing sew(0.05, Standard_True, Standard_True, Standard_False, Standard_False); // 0,05 mm, sans découpage (moins d'erreurs)
+            sew.SetSameParameterMode(Standard_False); // recalage fin des arêtes inutile pour mailler (~30 % du temps)
+            for (auto* fc : faces) sew.Add(fc->f);
+            sew.Perform();
+            sh = sew.SewedShape();
+            for (size_t i = 0; i < faces.size(); ++i) {
+                const TopoDS_Shape& f0 = faces[i]->f;
+                TopoDS_Shape f1 = sew.IsModified(f0) ? sew.Modified(f0) : f0;
+                for (TopExp_Explorer ex(f1, TopAbs_FACE); ex.More(); ex.Next()) coul.Bind(ex.Current(), (int)i);
+            }
         }
         BRepMesh_IncrementalMesh mesher(sh, defl_mm, Standard_False, 0.1, Standard_True); mesher.Perform();
         for (TopExp_Explorer ex(sh, TopAbs_FACE); ex.More(); ex.Next()) {
@@ -172,8 +182,8 @@ static void maille_faces(Sortie& o, double defl_mm) {
             Handle(Poly_Triangulation) tri = BRep_Tool::Triangulation(face, loc);
             if (tri.IsNull()) continue;
             ON_Color col(237, 204, 84);
-            if (coul.IsBound(face)) col = o.faces[coul.Find(face)].col;
-            else { TopoDS_Face fr = face; fr.Orientation(TopAbs_FORWARD); if (coul.IsBound(fr)) col = o.faces[coul.Find(fr)].col; }
+            if (coul.IsBound(face)) col = faces[coul.Find(face)]->col;
+            else { TopoDS_Face fr = face; fr.Orientation(TopAbs_FORWARD); if (coul.IsBound(fr)) col = faces[coul.Find(fr)]->col; }
             const float r = col.FractionRed(), g = col.FractionGreen(), b = col.FractionBlue();
             const gp_Trsf& tr = loc.Transformation(); bool rev = face.Orientation() == TopAbs_REVERSED;
             for (int i = 1; i <= tri->NbTriangles(); ++i) {
@@ -182,12 +192,22 @@ static void maille_faces(Sortie& o, double defl_mm) {
                 if (ia == ib || ib == ic || ia == ic || p[0].IsEqual(p[1], 1e-9) || p[1].IsEqual(p[2], 1e-9) || p[0].IsEqual(p[2], 1e-9)) continue; // dégénéré
                 gp_Vec n = gp_Vec(p[0], p[1]).Crossed(gp_Vec(p[0], p[2])); double l = n.Magnitude(); if (l > 1e-20) n /= l;
                 for (int k = 0; k < 3; ++k) {
-                    o.v.insert(o.v.end(), { (float)p[k].X(), (float)p[k].Y(), (float)p[k].Z(), (float)n.X(), (float)n.Y(), (float)n.Z() });
-                    o.c.insert(o.c.end(), { r, g, b });
+                    v.insert(v.end(), { (float)p[k].X(), (float)p[k].Y(), (float)p[k].Z(), (float)n.X(), (float)n.Y(), (float)n.Z() });
+                    c.insert(c.end(), { r, g, b });
                 }
             }
         }
-    } catch (const Standard_Failure&) { o.sans_maillage += (int)o.faces.size(); }
+    } catch (const Standard_Failure&) { rate += (int)faces.size(); }
+}
+// Toutes les faces NURBS du fichier cousues ENSEMBLE : des objets Rhino qui se touchent sont soudés entre eux
+// (coudre objet par objet laissait des trous entre objets voisins : boite.3dm 58 trous au lieu de 8)
+static void maille_faces(Sortie& o, double defl_mm) {
+    if (o.faces.empty()) return;
+    double t = horloge();
+    std::vector<const FaceCol*> toutes;
+    for (auto& fc : o.faces) toutes.push_back(&fc);
+    maille_objet(toutes, defl_mm, o.v, o.c, o.sans_maillage);
+    etape("couture + maillage", t);
     o.faces.clear();
 }
 
@@ -229,7 +249,9 @@ static void ajoute_geometrie(Sortie& o, const ONX_Model& model, const ON_Geometr
 extern "C" int on_import(const char* path, float** verts, size_t* nv, float** cols, int* sans_maillage, char* e, int en) {
     init();
     ONX_Model model; ON_TextLog log;
+    double t = horloge();
     if (!model.Read(path, &log)) { err(e, en, "fichier 3DM illisible"); return 1; }
+    etape("lecture openNURBS", t);
     const double s = ON::UnitScale(model.m_settings.m_ModelUnitsAndTolerances.m_unit_system, ON::LengthUnitSystem::Millimeters);
     ON_Xform ech(ON_Xform::DiagonalTransformation(s > 0 ? s : 1.0));
     Sortie o;
@@ -252,6 +274,8 @@ extern "C" int on_import(const char* path, float** verts, size_t* nv, float** co
         if (col.Red() < 16 && col.Green() < 16 && col.Blue() < 16) col = ON_Color(237, 204, 84);
         ajoute_geometrie(o, model, mg->Geometry(nullptr), ech, col, 0);
     }
+    etape("conversion NURBS->OCCT", t);
+    if (std::getenv("PATCH3D_3DMDBG")) std::fprintf(stderr, "  3DM %zu faces NURBS, %zu sommets déjà maillés\n", o.faces.size(), o.v.size() / 6);
     maille_faces(o, 0.02); // faces déjà en millimètres : précision 0,02 mm (comme occt::DEFLEXION)
     *sans_maillage = o.sans_maillage;
     if (o.v.empty()) { err(e, en, o.sans_maillage ? "objets NURBS sans maillage de rendu : dans Rhino, enregistrer AVEC les maillages (ou exporter en STEP)" : "aucun objet 3D dans le fichier"); return 2; }

@@ -25,7 +25,9 @@ Er läuft unter Linux und Windows, vollständig offline, und die Oberfläche ist
 
 ## Unterstützte Formate
 
-Import: STL, OBJ, PLY, 3MF, STEP, IGES, Rhino/MoI 3DM, SketchUp SKP, FBX, glTF/GLB, DAE, 3DS, X3D, FreeCAD FCStd, DXF, Blender (über ein installiertes Blender)… — Export: STL, 3MF (mit Farben), OBJ, PLY, Rhino/MoI 3DM, SketchUp SKP, 3DS, FBX, DAE, glTF/GLB, X3D.
+Import: STL, OBJ, PLY, 3MF, STEP, IGES, Rhino/MoI 3DM, SketchUp SKP, FBX, glTF/GLB, DAE, 3DS, X3D, FreeCAD FCStd, DXF, SolidCraft (.solidcraft), Blender (über ein installiertes Blender)… — Export: STL, 3MF (mit Farben), OBJ, PLY, Rhino/MoI 3DM, SketchUp SKP, 3DS, FBX, DAE, glTF/GLB, X3D, SolidCraft.
+
+SolidCraft-Konstruktionen: Netze und importierte STEP-Teile werden direkt gelesen, ohne SolidCraft. Eine rein parametrische Konstruktion (Skizzen, Extrusionen, Verrundungen…) enthält keine Geometrie: Ist SolidCraft installiert, lässt 3D-Patch sie dort berechnen und behält das Ergebnis, sodass dieselbe Datei sofort wieder öffnet. Beim Speichern als SolidCraft wird jedes Objekt als importiertes Netz geschrieben, das SolidCraft öffnet.
 
 ## Download
 

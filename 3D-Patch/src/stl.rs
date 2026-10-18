@@ -64,8 +64,9 @@ fn parse_binary(bytes: &[u8]) -> Vec<(Vec3, [Vec3; 3])> {
     let count = u32::from_le_bytes([bytes[80], bytes[81], bytes[82], bytes[83]]) as usize;
     let mut off = 84;
     let rd = |b: &[u8], o: usize| f32::from_le_bytes([b[o], b[o + 1], b[o + 2], b[o + 3]]);
-    for _ in 0..count {
+    for k in 0..count {
         if off + 50 > bytes.len() { break; }
+        if k % 65536 == 0 { crate::progress::set(k as f32 / count.max(1) as f32); }
         let n = Vec3::new(rd(bytes, off), rd(bytes, off + 4), rd(bytes, off + 8));
         let mut p = [Vec3::ZERO; 3];
         for (i, pt) in p.iter_mut().enumerate() {

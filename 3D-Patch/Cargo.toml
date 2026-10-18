@@ -1,6 +1,6 @@
 [package]
 name = "patch3d"
-version = "0.1.1"
+version = "0.1.2"
 license = "GPL-3.0-or-later"
 authors = ["Alain Valette-Clary (ΩiA-Group)"]
 repository = "https://github.com/OMNIA-AI-Group/3D-Patch"
@@ -26,6 +26,8 @@ egui-winit = "0.27"
 egui_glow = "0.27"
 rfd = "0.14"
 zip = { version = "2", default-features = false, features = ["deflate"] }
+serde_json = "1"
+sha2 = "0.10"
 manifold-rust = { version = "0.16", features = ["parallel"] }
 
 [profile.release]

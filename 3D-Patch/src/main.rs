@@ -31,6 +31,7 @@ mod forme;
 mod texte;
 mod impression;
 mod plaque;
+mod solidcraft;
 #[cfg(test)]
 mod tests_precision;
 
@@ -276,6 +277,17 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "f_ouvrir_tip" => ["Remplace la scène par le fichier choisi", "Sustituye la escena por el archivo elegido", "Sostituisce la scena con il file scelto", "Replaces the scene with the chosen file", "Ersetzt die Szene durch die gewählte Datei"],
         "f_importer" => ["Importer (ajouter à la scène)…", "Importar (añadir a la escena)…", "Importa (aggiungi alla scena)…", "Import (add to the scene)…", "Importieren (zur Szene hinzufügen)…"],
         "f_importer_tip" => ["Ajoute l'objet du fichier à côté de ceux déjà présents (pour les booléens, l'assemblage…)", "Añade el objeto del archivo junto a los ya presentes (booleanas, ensamblaje…)", "Aggiunge l'oggetto del file accanto a quelli presenti (booleane, assemblaggio…)", "Adds the file's object next to those already there (booleans, assembly…)", "Fügt das Objekt der Datei neben die vorhandenen ein (Boolesch, Montage…)"],
+        "vis_fil_tip"   => ["Affichage fil de fer", "Vista alámbrica", "Vista wireframe", "Wireframe view", "Drahtgitteransicht"],
+        "vis_plein_tip" => ["Affichage plein (facettes)", "Vista sólida (facetas)", "Vista piena (sfaccettature)", "Solid view (facets)", "Volle Ansicht (Facetten)"],
+        "chargement" => ["CHARGEMENT", "CARGANDO", "CARICAMENTO", "LOADING", "LADEN"],
+        "exportation" => ["EXPORTATION", "EXPORTACIÓN", "ESPORTAZIONE", "EXPORT", "EXPORT"],
+        "export"     => ["Export", "Exportar", "Esporta", "Export", "Export"],
+        "export_rep" => ["Réparation…", "Reparando…", "Riparazione…", "Repairing…", "Reparatur…"],
+        "export_tip" => ["Exporter : corrige d'abord les défauts (trous, faces en erreur), puis choisis le format d'enregistrement",
+                         "Exportar: corrige primero los defectos (agujeros, caras con error) y luego elige el formato",
+                         "Esporta: corregge prima i difetti (buchi, facce errate), poi scegli il formato",
+                         "Export: first fixes the defects (holes, faulty faces), then choose the save format",
+                         "Exportieren: behebt zuerst die Fehler (Löcher, fehlerhafte Flächen), dann das Speicherformat wählen"],
         "sauver"     => ["Sauver", "Guardar", "Salva", "Save", "Speichern"],
         "enreg_sous" => ["Enregistrer sous", "Guardar como", "Salva come", "Save as", "Speichern unter"],
         "photo"      => ["Photo", "Foto", "Foto", "Snapshot", "Foto"],
@@ -544,6 +556,13 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "err_import" => ["Import impossible", "No se pudo importar", "Importazione impossibile", "Cannot import", "Import nicht möglich"],
         "err_photo"  => ["Copie d'écran impossible", "No se pudo capturar la pantalla", "Istantanea impossibile", "Cannot take screenshot", "Bildschirmfoto nicht möglich"],
         "err_assoc"  => ["Associations impossibles", "No se pudieron asociar los archivos", "Associazioni impossibili", "Cannot set file associations", "Dateizuordnung nicht möglich"],
+        "sc_illisible"  => ["Conception SolidCraft illisible", "Diseño SolidCraft ilegible", "Progetto SolidCraft illeggibile", "Unreadable SolidCraft design", "SolidCraft-Konstruktion unlesbar"],
+        "sc_parametrique" => ["Conception SolidCraft purement paramétrique : elle ne contient pas de géométrie enregistrée (seulement l'historique de construction). Installe SolidCraft (3D-Patch s'en servira pour la calculer), ou dans SolidCraft exporte-la en STEP ou 3MF.",
+                            "Diseño SolidCraft puramente paramétrico: no contiene geometría guardada (solo el historial). Instala SolidCraft (3D-Patch lo usará para calcularlo), o expórtalo a STEP o 3MF desde SolidCraft.",
+                            "Progetto SolidCraft puramente parametrico: non contiene geometria salvata (solo la cronologia). Installa SolidCraft (3D-Patch lo userà per calcolarlo), o esportalo in STEP o 3MF da SolidCraft.",
+                            "Purely parametric SolidCraft design: it holds no saved geometry (only its construction history). Install SolidCraft (3D-Patch will use it to compute it), or export it to STEP or 3MF from SolidCraft.",
+                            "Rein parametrische SolidCraft-Konstruktion: keine gespeicherte Geometrie (nur der Verlauf). SolidCraft installieren (3D-Patch berechnet sie damit) oder in SolidCraft als STEP oder 3MF exportieren."],
+        "sc_vide"       => ["Conception SolidCraft vide", "Diseño SolidCraft vacío", "Progetto SolidCraft vuoto", "Empty SolidCraft design", "Leere SolidCraft-Konstruktion"],
         "cao_illisible" => ["Fichier CAO illisible", "Archivo CAD ilegible", "File CAD illeggibile", "Unreadable CAD file", "CAD-Datei unlesbar"],
         "bool_btn"      => ["Booléens", "Booleanos", "Booleane", "Booleans", "Boolesch"],
         "bool_tip"      => ["Booléens (comme 3D Builder) : fusionner, soustraire ou intersecter les objets sélectionnés\nRemplace le panneau d'outils ; un 2e clic le rétablit",
@@ -1311,13 +1330,13 @@ fn logo3d() -> (Vec<f32>, Vec<f32>) {
 const FORMATS_SAUVE: &[(&str, &str)] = &[
     ("stl", "STL"), ("3mf", "3MF"), ("obj", "OBJ"), ("ply", "PLY"),
     ("3dm", "3DM MoI (v5)"), ("3dm8", "3DM Rhino 8"), ("skp", "SKP SketchUp"), ("3ds", "3DS"),
-    ("fbx", "FBX"), ("dae", "DAE"), ("glb", "GLB"), ("gltf", "glTF"), ("x3d", "X3D"),
+    ("fbx", "FBX"), ("dae", "DAE"), ("glb", "GLB"), ("gltf", "glTF"), ("x3d", "X3D"), ("solidcraft", "SolidCraft"),
 ];
 /// Extension du fichier pour une entrée de FORMATS_SAUVE (« 3dm8 » = 3DM version Rhino 8).
 fn ext_fichier(cle: &str) -> &str { if cle == "3dm8" { "3dm" } else { cle } }
 
 /// Extensions ouvertes par l'appli (bouton Fichier, double-clic, ligne de commande).
-const EXT_OUVERTURE: &[&str] = &["stl","obj","ply","3mf","3dm","skp","skb","3ds","dae","fbx","gltf","glb","x3d","step","stp","iges","igs","blend","fcstd","fcstd1","dxf","f3d","f3z","dwg"];
+const EXT_OUVERTURE: &[&str] = &["stl","obj","ply","3mf","3dm","skp","skb","3ds","dae","fbx","gltf","glb","x3d","step","stp","iges","igs","blend","fcstd","fcstd1","dxf","f3d","f3z","dwg","solidcraft","solvecraft"];
 
 /// Charge un modèle selon son extension : (maillage, couleurs par sommet éventuelles).
 fn load_model(path: &str) -> Result<(stl::Mesh, Option<Vec<f32>>), String> {
@@ -1328,16 +1347,98 @@ fn load_model(path: &str) -> Result<(stl::Mesh, Option<Vec<f32>>), String> {
         stl::Mesh { verts: v, min: lo, max: hi }
     };
     match ext.as_str() {
-        "step" | "stp" => occt::import_cad(path, false, occt::DEFLEXION).map(|m| (m, None)).map_err(|rc| format!("{} (STEP, code {rc})", trc("cao_illisible"))),
-        "iges" | "igs" => occt::import_cad(path, true, occt::DEFLEXION).map(|m| (m, None)).map_err(|rc| format!("{} (IGES, code {rc})", trc("cao_illisible"))),
+        "step" | "stp" => cao_en_cache(path, || occt::import_cad(path, false, occt::DEFLEXION).map(|m| (m.verts, None)).map_err(|rc| format!("{} (STEP, code {rc})", trc("cao_illisible")))).map(|(v, c)| (mesh_of(v), c)),
+        "iges" | "igs" => cao_en_cache(path, || occt::import_cad(path, true, occt::DEFLEXION).map(|m| (m.verts, None)).map_err(|rc| format!("{} (IGES, code {rc})", trc("cao_illisible")))).map(|(v, c)| (mesh_of(v), c)),
         "stl" | "obj" | "ply" => stl::load_any(path).map(|m| (m, None)).map_err(|e| format!("{e}")),
         "3mf" => threemf::read(path).map(|(v, c)| (mesh_of(v), c)),
-        "3dm" => rhino::import(path).map(|(v, c)| (mesh_of(v), c)),
+        // conception SolidCraft : ses objets réunis (l'import par le bouton Fichier les garde séparés)
+        "solidcraft" | "solvecraft" => solidcraft::lire(path).map(|objs| {
+            let colore = objs.iter().any(|o| o.1.is_some());
+            let (mut v, mut c) = (Vec::new(), Vec::new());
+            for (ov, oc) in &objs {
+                v.extend_from_slice(ov);
+                if colore { match oc { Some(x) => c.extend_from_slice(x), None => for _ in 0..ov.len() / 6 { c.extend_from_slice(&[0.93, 0.80, 0.33]); } } }
+            }
+            (mesh_of(v), colore.then_some(c))
+        }),
+        "3dm" => cao_en_cache(path, || rhino::import(path)).map(|(v, c)| (mesh_of(v), c)),
         "skp" | "skb" => sketchup::import(path).map(|(v, c)| (mesh_of(v), c)),
         e if assimp::EXT_IMPORT.contains(&e) => assimp::import(path).map(|(v, c)| (mesh_of(v), c)),
         // formats d'applis tierces (Blender, FreeCAD, Fusion 360, AutoCAD)
         other => convert::import_external(path, other, occt::DEFLEXION).map(|m| (m, None)),
     }
+}
+/// Modèles CAO (3DM, STEP, IGES) : leur conversion en maillage peut prendre de longues secondes (couture
+/// des faces NURBS par OpenCASCADE). Le maillage obtenu est gardé sous l'empreinte du fichier : rouvrir le
+/// même fichier est immédiat. Cache ~/.cache/3d-patch/cao, 30 modèles au plus.
+fn cao_en_cache(path: &str, convertir: impl FnOnce() -> Result<(Vec<f32>, Option<Vec<f32>>), String>) -> Result<(Vec<f32>, Option<Vec<f32>>), String> {
+    use sha2::{Digest, Sha256};
+    const MAGIC: &[u8; 8] = b"3DPCAO01";
+    let Ok(octets) = std::fs::read(path) else { return convertir() };
+    let cle: String = Sha256::digest(&octets).iter().map(|b| format!("{b:02x}")).collect();
+    let dossier = if cfg!(windows) { std::env::temp_dir().join("3d-patch") } else {
+        std::env::var_os("HOME").map(std::path::PathBuf::from).unwrap_or_else(std::env::temp_dir).join(".cache").join("3d-patch")
+    }.join("cao");
+    // la précision de maillage fait partie de la clé : la changer refait la conversion
+    let fichier = dossier.join(format!("{cle}-{}.bin", occt::DEFLEXION));
+    let f32s = |b: &[u8]| -> Vec<f32> { b.chunks_exact(4).map(|c| f32::from_le_bytes(c.try_into().unwrap())).collect() };
+    if let Ok(b) = std::fs::read(&fichier) {
+        if b.len() >= 24 && &b[..8] == MAGIC {
+            let (nv, nc) = (u64::from_le_bytes(b[8..16].try_into().unwrap()) as usize, u64::from_le_bytes(b[16..24].try_into().unwrap()) as usize);
+            if b.len() == 24 + (nv + nc) * 4 {
+                let v = f32s(&b[24..24 + nv * 4]);
+                let c = (nc > 0).then(|| f32s(&b[24 + nv * 4..]));
+                return Ok((v, c));
+            }
+        }
+    }
+    let (v, c) = convertir()?;
+    let _ = std::fs::create_dir_all(&dossier);
+    let mut b = Vec::with_capacity(24 + (v.len() + c.as_ref().map_or(0, |c| c.len())) * 4);
+    b.extend_from_slice(MAGIC);
+    b.extend_from_slice(&(v.len() as u64).to_le_bytes());
+    b.extend_from_slice(&(c.as_ref().map_or(0, |c| c.len()) as u64).to_le_bytes());
+    for x in &v { b.extend_from_slice(&x.to_le_bytes()); }
+    if let Some(c) = &c { for x in c { b.extend_from_slice(&x.to_le_bytes()); } }
+    let tmp = fichier.with_extension("part");
+    if std::fs::write(&tmp, &b).is_ok() && std::fs::rename(&tmp, &fichier).is_ok() {
+        // cache borné : les modèles les plus anciens sont oubliés
+        if let Ok(rd) = std::fs::read_dir(&dossier) {
+            let mut f: Vec<(std::time::SystemTime, std::path::PathBuf)> = rd.flatten().filter_map(|e| Some((e.metadata().ok()?.modified().ok()?, e.path()))).collect();
+            f.sort();
+            for (_, p) in f.iter().rev().skip(30) { let _ = std::fs::remove_file(p); }
+        }
+    }
+    Ok((v, c))
+}
+/// Ouverture d'un fichier par l'interface (bouton Fichier, démarrage de la visionneuse) : ses objets,
+/// séparés pour un 3MF ou une conception SolidCraft à plusieurs corps, le groupe posé à l'origine.
+fn charger_objets(p: &std::path::Path) -> Result<Vec<(Vec<f32>, Option<Vec<f32>>)>, String> {
+    // jauge : lecture 0-60 % (le lecteur STL avance au fil des triangles), analyse des défauts ensuite
+    progress::reset(); progress::span(0.0, 0.6);
+    let chemin = p.to_str().unwrap_or("");
+    let ext_o = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_ascii_lowercase();
+    // fichier lu UNE seule fois (une conception SolidCraft paramétrique demande un calcul long à SolidCraft)
+    let mut objs = match ext_o.as_str() {
+        // 3MF / SolidCraft à plusieurs objets : chacun reste séparé (positions relatives gardées)
+        "3mf" => match threemf::read_objets(chemin) { Ok(o) if !o.is_empty() => o, _ => { let (nm, c) = load_model(chemin)?; vec![(nm.verts, c)] } },
+        "solidcraft" | "solvecraft" => solidcraft::lire(chemin)?,
+        _ => { let (nm, c) = load_model(chemin)?; vec![(nm.verts, c)] }
+    };
+    progress::set(1.0);
+    // le groupe est posé à l'origine (coin bas à 0), comme un objet seul
+    let mut lo = Vec3::splat(f32::INFINITY);
+    for (v, _) in &objs { for q in v.chunks_exact(6) { lo = lo.min(Vec3::new(q[0], q[1], q[2])); } }
+    for (v, _) in objs.iter_mut() { for q in v.chunks_exact_mut(6) { q[0] -= lo.x; q[1] -= lo.y; q[2] -= lo.z; } }
+    Ok(objs)
+}
+/// Défauts du dernier objet ouvert (celui qui sera actif), analysés dans le fil de chargement : la fenêtre
+/// n'est pas figée par l'analyse d'un gros maillage à son arrivée. Jauge : 60-95 %.
+fn analyse_ouverture(objs: &[(Vec<f32>, Option<Vec<f32>>)]) -> Option<defects::Defects> {
+    progress::span(0.6, 0.95);
+    let d = objs.last().map(|(v, _)| defects::analyze_suivi(v, true));
+    progress::set(1.0);
+    d
 }
 /// Couleurs du dernier modèle chargé en ligne de commande (pour l'affichage au démarrage).
 static CLI_COLS: std::sync::Mutex<Option<Vec<f32>>> = std::sync::Mutex::new(None);
@@ -1436,17 +1537,19 @@ fn draw_back_arrow(p: &egui::Painter, r: egui::Rect, mirror: bool, col: egui::Co
 /// en calcul = mercure rouge (reflet haut, ombre basse) qui avance, pourcentage lisible.
 fn thermo_gauge(ui: &mut egui::Ui, frac: f32, active: bool, text: &str, w: f32) { thermo_gauge_c(ui, frac, active, text, w, false) }
 /// Idem ; `vert` = mercure VERT (menu Fichier : jauge fixe, pleine).
-fn thermo_gauge_c(ui: &mut egui::Ui, frac: f32, active: bool, text: &str, w: f32, vert: bool) {
+fn thermo_gauge_c(ui: &mut egui::Ui, frac: f32, active: bool, text: &str, w: f32, vert: bool) { thermo_gauge_k(ui, frac, active, text, w, vert, 1.0) }
+/// Idem, toutes les dimensions multipliées par `k` (jauge EXPORTATION de la visionneuse : ×1,5).
+fn thermo_gauge_k(ui: &mut egui::Ui, frac: f32, active: bool, text: &str, w: f32, vert: bool, k: f32) {
     use egui::{pos2, vec2, Color32, Rect, Rounding, Stroke};
-    let (rect, _) = ui.allocate_exact_size(vec2(w, 22.0), egui::Sense::hover());
+    let (rect, _) = ui.allocate_exact_size(vec2(w, 22.0 * k), egui::Sense::hover());
     let p = ui.painter();
-    let tube = rect.shrink2(vec2(1.0, 1.0));
+    let tube = rect.shrink2(vec2(k, k));
     let rt = Rounding::same(tube.height() * 0.5);
     // verre noir + léger volume (ombre interne en haut, reflet en bas)
     p.rect_filled(tube, rt, Color32::from_gray(8));
-    p.rect_filled(Rect::from_min_max(pos2(tube.left() + 6.0, tube.bottom() - 5.0), pos2(tube.right() - 6.0, tube.bottom() - 2.0)), Rounding::same(1.5), Color32::from_white_alpha(10));
+    p.rect_filled(Rect::from_min_max(pos2(tube.left() + 6.0 * k, tube.bottom() - 5.0 * k), pos2(tube.right() - 6.0 * k, tube.bottom() - 2.0 * k)), Rounding::same(1.5 * k), Color32::from_white_alpha(10));
     if active {
-        let inner = tube.shrink(2.5);
+        let inner = tube.shrink(2.5 * k);
         let h = inner.height();
         let fill_r = inner.left() + inner.width() * frac.clamp(0.0, 1.0);
         let merc = Rect::from_min_max(inner.min, pos2(fill_r.max(inner.left() + h), inner.max.y));
@@ -1460,20 +1563,20 @@ fn thermo_gauge_c(ui: &mut egui::Ui, frac: f32, active: bool, text: &str, w: f32
         p.rect_filled(merc, rm, corps);
         p.rect_filled(Rect::from_min_max(pos2(merc.left(), merc.top() + h * 0.55), merc.max), rm, ombre);
         p.rect_filled(Rect::from_min_max(pos2(merc.left(), merc.top() + h * 0.40), pos2(merc.right(), merc.top() + h * 0.75)), Rounding::same(h * 0.2), milieu);
-        p.rect_filled(Rect::from_min_max(pos2(merc.left() + h * 0.4, merc.top() + 1.5), pos2((merc.right() - h * 0.4).max(merc.left() + h * 0.6), merc.top() + h * 0.32)), Rounding::same(h * 0.16), reflet);
+        p.rect_filled(Rect::from_min_max(pos2(merc.left() + h * 0.4, merc.top() + 1.5 * k), pos2((merc.right() - h * 0.4).max(merc.left() + h * 0.6), merc.top() + h * 0.32)), Rounding::same(h * 0.16), reflet);
     }
-    p.rect_stroke(tube, rt, Stroke::new(1.2, Color32::from_gray(if active { 150 } else { 90 })));
+    p.rect_stroke(tube, rt, Stroke::new(1.2 * k, Color32::from_gray(if active { 150 } else { 90 })));
     // reflet du verre sur toute la longueur
-    p.line_segment([pos2(tube.left() + 8.0, tube.top() + 2.5), pos2(tube.right() - 8.0, tube.top() + 2.5)], Stroke::new(1.0, Color32::from_white_alpha(35)));
+    p.line_segment([pos2(tube.left() + 8.0 * k, tube.top() + 2.5 * k), pos2(tube.right() - 8.0 * k, tube.top() + 2.5 * k)], Stroke::new(k, Color32::from_white_alpha(35)));
     if active {
         // texte gras blanc cerclé de noir : lisible sur le rouge comme sur le noir
         let c = tube.center();
-        let font = egui::FontId::proportional(12.5);
+        let font = egui::FontId::proportional(12.5 * k);
         for (dx, dy) in [(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0)] {
-            p.text(c + vec2(dx, dy), egui::Align2::CENTER_CENTER, text, font.clone(), Color32::BLACK);
+            p.text(c + vec2(dx, dy) * k, egui::Align2::CENTER_CENTER, text, font.clone(), Color32::BLACK);
         }
         p.text(c, egui::Align2::CENTER_CENTER, text, font.clone(), Color32::WHITE);
-        p.text(c + vec2(0.5, 0.0), egui::Align2::CENTER_CENTER, text, font, Color32::WHITE);
+        p.text(c + vec2(0.5 * k, 0.0), egui::Align2::CENTER_CENTER, text, font, Color32::WHITE);
     }
 }
 /// Engrenage seul (sans libellé) : ouvre le menu Options.
@@ -1747,6 +1850,29 @@ fn draw_obj_axe(p: &egui::Painter, r: egui::Rect) {
 
 /// Diagramme de Venn de deux disques A (gauche) et B (droite), la région du résultat remplie.
 /// `op` : None = logo du bouton BOOLÉENS (A orange, B bleu, sans résultat).
+/// Sommets d'un cube vu en isométrique dans `r` : (haut, haut-droit, bas-droit, bas, bas-gauche, haut-gauche, centre).
+fn cube_iso(r: egui::Rect) -> [egui::Pos2; 7] {
+    let (c, h) = (r.center(), r.height() * 0.42);
+    let x = h * 0.866;
+    [egui::pos2(c.x, c.y - h), egui::pos2(c.x + x, c.y - h * 0.5), egui::pos2(c.x + x, c.y + h * 0.5), egui::pos2(c.x, c.y + h),
+     egui::pos2(c.x - x, c.y + h * 0.5), egui::pos2(c.x - x, c.y - h * 0.5), c]
+}
+/// Logo fil de fer : cube en arêtes claires, faces coupées par leur diagonale (triangles).
+fn draw_fil_de_fer(p: &egui::Painter, r: egui::Rect) {
+    let [t, tr, br, b, bl, tl, m] = cube_iso(r);
+    let st = egui::Stroke::new(1.4, egui::Color32::from_rgb(200, 230, 255));
+    for (a, z) in [(t, tr), (tr, br), (br, b), (b, bl), (bl, tl), (tl, t), (m, tl), (m, tr), (m, b)] { p.line_segment([a, z], st); }
+    let fin = egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(200, 230, 255, 150));
+    for (a, z) in [(tl, tr), (tl, b), (m, br)] { p.line_segment([a, z], fin); }
+}
+/// Logo facettes : cube plein, faces dorées ombrées (dessus clair, gauche moyen, droite sombre).
+fn draw_facettes(p: &egui::Painter, r: egui::Rect) {
+    let [t, tr, br, b, bl, tl, m] = cube_iso(r);
+    let bord = egui::Stroke::new(1.0, egui::Color32::from_rgb(60, 45, 10));
+    p.add(egui::Shape::convex_polygon(vec![t, tr, m, tl], egui::Color32::from_rgb(250, 222, 120), bord));
+    p.add(egui::Shape::convex_polygon(vec![tl, m, b, bl], egui::Color32::from_rgb(215, 175, 60), bord));
+    p.add(egui::Shape::convex_polygon(vec![m, tr, br, b], egui::Color32::from_rgb(150, 115, 30), bord));
+}
 fn draw_venn(p: &egui::Painter, r: egui::Rect, op: Option<booleen::Op>, plein: egui::Color32, fond: egui::Color32, trait_: egui::Color32) {
     let w = r.width().min(r.height());
     let rad = w * 0.30;
@@ -2036,6 +2162,36 @@ fn bar_menu_at(ctx: &egui::Context, id: egui::Id, btn: &egui::Response, bar_top:
     });
     if r.response.clicked_elsewhere() && !btn.clicked() && !btn.secondary_clicked() { ctx.memory_mut(|m| m.close_popup()); }
 }
+/// Menu « Enregistrer sous » : avertissements (sélection / scène) puis grille des formats ; renvoie le
+/// format choisi. `n_sel` = objets sélectionnés (0 = aucun : toute la scène part), `n_tot` = objets de la scène.
+fn menu_sauver(ui: &mut egui::Ui, lang: Lang, n_sel: usize, n_tot: usize) -> Option<&'static str> {
+    let mut choix = None;
+    yellow_title(ui, tr(lang, "enreg_sous"));
+    if n_sel >= 2 || (n_sel == 0 && n_tot >= 2) {
+        ui.label(egui::RichText::new(tr(lang, "sauve_3mf")).size(11.5).color(egui::Color32::from_rgb(150, 200, 255)));
+    }
+    if n_sel > 0 && n_tot > n_sel {
+        // plusieurs objets sur le plateau (ex. après une découpe) : avertissement bien visible
+        egui::Frame::none().fill(egui::Color32::from_rgb(150, 30, 25)).rounding(egui::Rounding::same(5.0)).inner_margin(egui::Margin::same(6.0)).show(ui, |ui| {
+            ui.set_width(ui.available_width());
+            ui.add(egui::Label::new(egui::RichText::new(format!("⚠ {}", tr(lang, if n_sel == 1 { "sauve_avert1" } else { "sauve_avert" }).replace("{n}", &n_tot.to_string()).replace("{s}", &n_sel.to_string())))
+                .size(12.0).strong().color(egui::Color32::WHITE)).wrap(true));
+        });
+    } else {
+        let t = if n_sel > 0 { format!("{} : {n_sel}", tr(lang, "sauve_sel")) } else { tr(lang, "sauve_tout").to_string() };
+        ui.label(egui::RichText::new(t).size(11.5).color(egui::Color32::from_rgb(250, 200, 90)));
+    }
+    for rangee in FORMATS_SAUVE.chunks(4) {
+        ui.horizontal(|ui| {
+            for &(ext, nom) in rangee {
+                if ui.add_sized(egui::vec2(73.0, 26.0), egui::Button::new(egui::RichText::new(nom).size(11.5))).on_hover_text(format!(".{ext}")).clicked() {
+                    choix = Some(ext); ui.memory_mut(|m| m.close_popup());
+                }
+            }
+        });
+    }
+    choix
+}
 /// Menu de la barre ouvert JUSTE AU-DESSUS de son bouton (aligné à gauche du bouton).
 /// Renvoie le rectangle du menu (pour savoir si la souris est dessus).
 fn bar_menu_above(ctx: &egui::Context, id: egui::Id, btn: &egui::Response, w: f32, add: impl FnOnce(&mut egui::Ui)) -> Option<egui::Rect> {
@@ -2262,6 +2418,10 @@ fn place_at_origin(m: &mut stl::Mesh) {
 static GRILLE_MODE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 fn grille_mode() -> u8 { GRILLE_MODE.load(std::sync::atomic::Ordering::Relaxed) }
 fn show_axes() -> bool { matches!(grille_mode(), 0 | 2) }
+/// Mode visionneuse (sans les outils) : la grille reste, les axes X / Y / Z ne sont pas tracés.
+static EXPORT_TEST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false); // clic simulé (PATCH3D_OPEN=export) déjà fait
+static VISIONNEUSE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+fn axes_visibles() -> bool { show_axes() && !VISIONNEUSE.load(std::sync::atomic::Ordering::Relaxed) }
 
 /// Logo « grille 3D » : plan quadrillé en perspective + axes X rouge, Y vert, Z bleu.
 /// `grille` / `axes` : parties allumées (les autres en gris atténué).
@@ -2336,7 +2496,7 @@ unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[O
         gl.draw_arrays(glow::TRIANGLES, 0, o.nverts);
     }
     gl.uniform_matrix_4_f32_slice(u.model.as_ref(), false, &Mat4::IDENTITY.to_cols_array());
-    grid.draw(gl, &a, show_grid, show_axes());
+    grid.draw(gl, &a, show_grid, axes_visibles());
     if show_ruler { rule.draw(gl, &a); }
 }
 fn view_mvp(k: ViewKind, orbit: &Orbit, ortho: &[Ortho; 3], base: Vec3, aspect: f32) -> (Mat4, Vec3) {
@@ -2382,7 +2542,8 @@ unsafe fn build_grid_ruler(gl: &glow::Context, (step, lines, majors): (f32, i32,
 /// Ouverture / sauvegarde : sélecteur + lecture/écriture dans un fil séparé (la fenêtre
 /// reste réactive ; sinon le bureau la déclare « ne répond pas »).
 /// Ouverture : liste d'objets (un 3MF peut en contenir plusieurs, séparés), chacun (sommets, couleurs).
-enum FileOut { Opened(std::path::PathBuf, Vec<(Vec<f32>, Option<Vec<f32>>)>, bool), Saved(std::path::PathBuf), Cancelled, Failed(String) }
+/// Opened : (fichier, objets, ajout à la scène, défauts du dernier objet déjà analysés dans le fil).
+enum FileOut { Opened(std::path::PathBuf, Vec<(Vec<f32>, Option<Vec<f32>>)>, bool, Option<defects::Defects>), Saved(std::path::PathBuf), Cancelled, Failed(String) }
 
 /// Texte à incruster dans une copie d'écran : (x, y) en pixels de l'image, ancrage
 /// 0 = centré, 1 = aligné à droite (haut), 2 = aligné à gauche (haut) ; fond optionnel.
@@ -2474,7 +2635,10 @@ fn main() {
     // Sans argument : on démarre sur une primitive (aucun fichier requis → lancement fiable
     // par raccourci/double-clic, quel que soit le dossier courant).
     let path = std::env::args().nth(1).unwrap_or_else(|| "prim:logo".to_string()); // démarrage : le logo 3D en couleur
-    let mut cur_mesh = mesh_from_arg(&path);
+    // visionneuse lancée avec un fichier seul (double-clic) : la fenêtre s'ouvre d'abord, le fichier se charge
+    // ensuite en arrière-plan (jauge CHARGEMENT) ; avec des options (--check…), chargement immédiat comme avant
+    let charge_differe = !path.starts_with("prim:") && path != "logo" && path != "demo" && std::env::args().count() == 2;
+    let mut cur_mesh = if charge_differe { stl::Mesh { verts: Vec::new(), min: Vec3::splat(-50.0), max: Vec3::splat(50.0) } } else { mesh_from_arg(&path) };
     if path == "prim:logo" || path == "logo" {
         // mise en scène demandée (capture 2026-10-16) : logo tourné face à −Y (vers la caméra), posé
         // coin à l'origine comme un objet importé (x 0→60, y 0→35, z 0→60), X vers la droite à l'écran
@@ -2596,7 +2760,16 @@ fn main() {
     let titre = if viewer_start {
         format!("3D-Patch — {}", std::path::Path::new(&path).file_name().map_or(path.clone(), |n| n.to_string_lossy().into_owned()))
     } else { "3D-Patch".to_string() };
-    let win_builder = WindowBuilder::new().with_title(titre).with_inner_size(LogicalSize::new(1024.0, 768.0)).with_window_icon(win_icon);
+    // taille au démarrage : 2560 × 1440 (pixels réels) si l'écran le permet ; écran pile à cette taille :
+    // fenêtre agrandie (la barre de titre la ferait déborder) ; écran plus petit : taille habituelle
+    let ecran = event_loop.primary_monitor().or_else(|| event_loop.available_monitors().max_by_key(|m| { let s = m.size(); s.width as u64 * s.height as u64 }))
+        .map(|m| m.size());
+    let mut win_builder = WindowBuilder::new().with_title(titre).with_inner_size(LogicalSize::new(1024.0, 768.0)).with_window_icon(win_icon);
+    match ecran {
+        Some(e) if e.width > 2560 && e.height >= 1440 + 120 => win_builder = win_builder.with_inner_size(winit::dpi::PhysicalSize::new(2560u32, 1440u32)),
+        Some(e) if e.width >= 2560 && e.height >= 1440 => win_builder = win_builder.with_maximized(true),
+        _ => {}
+    }
     let template = ConfigTemplateBuilder::new().with_depth_size(24);
     let (window, gl_config) = DisplayBuilder::new()
         .with_window_builder(Some(win_builder))
@@ -2674,7 +2847,7 @@ fn main() {
     // image 3D gardée entre deux images (voir cache3d) ; créée tant que le framebuffer de la fenêtre est lié
     let mut cache = unsafe { cache3d::Cache3d::new(&gl) };
     let plaque = unsafe { plaque::Plaque::new(&gl) };
-    let mut evt_recu = true; // événement de fenêtre reçu depuis la dernière image : on redessine la scène
+    let mut evt_recu = true; // taille / échelle / thème changés depuis la dernière image : on redessine toute la scène
     let u = Uniforms {
         light: unsafe { gl.get_uniform_location(program, "uLight") },
         mvp: unsafe { gl.get_uniform_location(program, "uMVP") },
@@ -2840,6 +3013,25 @@ fn main() {
     let mut last_left: Option<(std::time::Instant, (f64, f64))> = None; // double-clic gauche (visionneuse)
     let mut job: Option<Job> = None;
     let mut file_job: Option<std::thread::JoinHandle<FileOut>> = None;
+    let mut chargement_initial = charge_differe; // fichier de la visionneuse en cours de chargement (jauge CHARGEMENT)
+    // jauge CHARGEMENT des formats sans avancement : durée typique estimée d'après la taille (≈ 50 Mo/s, mesuré)
+    let debut_appli = std::time::Instant::now();
+    let taille_chargement = {
+        let ext = std::path::Path::new(&path).extension().and_then(|e| e.to_str()).unwrap_or("").to_ascii_lowercase();
+        // conception SolidCraft paramétrique : petit fichier mais long calcul par SolidCraft (congés…)
+        let taille = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0) as f32;
+        if matches!(ext.as_str(), "solidcraft" | "solvecraft") { 15.0 }
+        // CAO à convertir (couture + maillage OpenCASCADE) : ≈ 1 Mo/s mesuré
+        else if matches!(ext.as_str(), "3dm" | "step" | "stp" | "iges" | "igs") { (taille / 1.0e6).max(0.3) }
+        else { (taille / 50.0e6).max(0.3) }
+    };
+    if charge_differe {
+        let p = std::path::PathBuf::from(&path);
+        file_job = Some(std::thread::spawn(move || match charger_objets(&p) {
+            Ok(objs) => { paths::remember(&p); let d = analyse_ouverture(&objs); FileOut::Opened(p, objs, false, d) }
+            Err(e) => FileOut::Failed(format!("{} — {e}", trc("err_import"))),
+        }));
+    }
     let mut bar_row: Option<(f32, f32)> = None; // (haut, hauteur) réels de la rangée de boutons de la barre
     let mut bar_wr1: f32 = 270.0; // largeur NATURELLE (échelle 1) mesurée du groupe droit de la barre
     let mut job_done: Option<std::time::Instant> = None; // jauge à 100 % un court instant
@@ -2863,6 +3055,8 @@ fn main() {
     let mut snap_size = 1.0f32;
     let snap_direct = false;
     let mut disp = DisplayMode::Textured; // à l'ouverture : objet toujours affiché en texturé
+    // test : PATCH3D_OPEN=fil démarre en fil de fer (bouton de la visionneuse)
+    if std::env::var("PATCH3D_OPEN").as_deref() == Ok("fil") { disp = DisplayMode::Wireframe; }
     let mut bnd_lines = unsafe { defects::LineSet::new(&gl) };
     let mut err_lines = unsafe { defects::LineSet::new(&gl) };
     let mut defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
@@ -2955,7 +3149,6 @@ fn main() {
     let mut txt_k = ViewKind::ThreeD;
     let mut outil_ann: Option<(usize, OutilAnn)> = None; // (étape d'historique de l'opération, outil à rétablir)
     let (mut txt_lance, mut coupe_lance): (Option<CadreTexte>, Option<booleen::Cadre>) = (None, None);
-    let mut txt_k_cur = ViewKind::ThreeD;
     let mut txt_police_ui: Option<usize> = None; // police chargée dans l'interface (champ de saisie)
     let mut txt_deplace: Option<Vec3> = None;     // cadre de texte déplacé : décalage (centre − point saisi)
     let mut txt_sel = false;                      // cadre de texte sélectionné (contour jaune ; Suppr l'efface) // fenêtre où se trouve la souris pendant le tracé
@@ -2964,6 +3157,9 @@ fn main() {
     let mut txt_contours: (String, Vec<Vec<[f64; 2]>>) = (String::new(), Vec::new());
     let mut coupe: Option<booleen::Cadre> = None;
     let mut coupe_tir: Option<ViewKind> = None; // tracé en cours dans cette vue
+    let (mut export_apres_rep, mut ouvrir_export) = (false, false);
+    // jauge EXPORTATION de la visionneuse : écriture du fichier lancée depuis l'icône Export, fin (100 % un instant)
+    let (mut export_fichier, mut export_fin): (bool, Option<std::time::Instant>) = (false, None); // icône Export de la visionneuse : réparer d'abord, puis le menu
     let mut coupe_etape = 0u8; // 1 = clic 1 fait, le trait L suit la souris ; 2 = clic 2 fait, l se déplie
     let mut coupe_garder: u8 = 0; // 0 = les deux morceaux, 1 = côté flèche, 2 = autre côté
     let mut coupe_ecart = true;
@@ -3051,7 +3247,10 @@ fn main() {
             else { elwt.set_control_flow(winit::event_loop::ControlFlow::WaitUntil(t)); }
         }
         if let Event::WindowEvent { event, .. } = event {
-            if !matches!(event, WindowEvent::RedrawRequested) { evt_recu = true; }
+            // l'image 3D gardée n'est plus valable qu'après un changement de taille, d'échelle, de thème ou une
+            // réapparition (tout le reste est dans sa clé) : un simple mouvement de souris ne relance plus le
+            // rendu complet de la scène (coûteux sur un gros maillage)
+            if matches!(event, WindowEvent::Resized(_) | WindowEvent::ScaleFactorChanged { .. } | WindowEvent::ThemeChanged(_) | WindowEvent::Occluded(false)) { evt_recu = true; }
             let resp = egui_state.on_window_event(&window, &event);
             // egui-winit répond « repaint » même à RedrawRequested : le suivre relancerait une image sans fin
             if resp.repaint && !matches!(event, WindowEvent::RedrawRequested) { window.request_redraw(); }
@@ -3475,7 +3674,6 @@ fn main() {
                     if panneau_texte && (txt_rot.is_some() || txt_deplace.is_some() || txt_echelle.is_some() || txt_prof_glisse.is_some()) {
                         // la souris est lue dans la fenêtre où elle se trouve (on peut changer de vue en cours de tracé)
                         let kc = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32).unwrap_or(txt_k);
-                        txt_k_cur = kc;
                         if let (Some(rect), Some(c)) = (rect_of(mode, kc), txt_cadre.as_mut()) {
                             let (mvp, _) = view_mvp(kc, &orbit, &ortho, base, aspect_of(mode, kc));
                             let mut prof_axe = false;
@@ -3671,6 +3869,7 @@ fn main() {
                 }
                 WindowEvent::RedrawRequested => {
                     langue_regler(lang);
+                    VISIONNEUSE.store(viewer, std::sync::atomic::Ordering::Relaxed);
                     if let Some((g, rx)) = &gpu { unsafe { g.serve(&gl, rx); } }
                     let cur_mode = mode;
                     // outil de rotation : objet disparu => fermé ; sinon recalé sur l'objet (hors geste)
@@ -3706,13 +3905,16 @@ fn main() {
                     // sélection multiple : objets disparus oubliés ; une sélection simple ailleurs l'annule
                     multi.retain(|&i| i < scene.len() && scene[i].nverts > 0);
                     if multi.len() < 2 || !sel.map_or(false, |s| multi.contains(&s)) { multi.clear(); }
-                    macro_rules! cle_scene { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {} {} {} {:?} {:?} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {coupe_etape} {:?} {surf_survol:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
-                        cache3d::generation(), code_de_vue(mode), disp as u8, dark, show_ruler, show_grid, show_axes(),
-                        sel, orbit.yaw, orbit.pitch, orbit.dist, orbit.target,
-                        ortho.iter().map(|o| (o.pan, o.scale)).collect::<Vec<_>>(), base, lumiere_courante(),
+                    // clé commune (tout sauf les caméras) + caméra de chaque vue : une vue n'est redessinée que si
+                    // la clé commune ou SA caméra change
+                    macro_rules! cle_commune { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {coupe_etape} {:?} {surf_survol:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
+                        cache3d::generation(), code_de_vue(mode), disp as u8, dark, show_ruler, show_grid, axes_visibles(),
+                        sel, base, lumiere_courante(),
                         gizmo.as_ref().and_then(|g| g.matrix().map(|m| (g.obj, m))), surf.as_ref().map(|s| (s.0, s.1.len())), imp_an.0) } }
-                    let cle_3d = cle_scene!();
-                    let cle_dessinee = cle_3d.clone();
+                    macro_rules! cles_vues { () => { view::ALL_VIEWS.map(|k| if k == ViewKind::ThreeD { format!("{} {} {} {:?}", orbit.yaw, orbit.pitch, orbit.dist, orbit.target) }
+                                                                           else { let o = &ortho[view::oidx(k)]; format!("{:?} {}", o.pan, o.scale) }) } }
+                    macro_rules! cle_scene { () => { format!("{} {:?}", cle_commune!(), cles_vues!()) } }
+                    let cle_dessinee = cle_scene!();
                     *SEL_PLUS.lock().unwrap() = multi.clone();
                     // fin d'un booléen / d'une découpe, ou panneau refermé : outils désarmés, cadre retiré,
                     // boîte à outils normale et vue d'avant la découpe
@@ -3822,7 +4024,7 @@ fn main() {
                         let cle = format!("{c:?} {}", cache3d::generation());
                         if coupe_section.0 != cle { coupe_section = (cle, section_cadre(&c, &scene)); }
                     } else if !coupe_section.1.is_empty() { coupe_section = (String::new(), Vec::new()); }
-                    unsafe { if cache.debut(&gl, size.width as i32, size.height as i32, cle_3d, evt_recu) {
+                    unsafe { if let Some(a_faire) = cache.debut(&gl, size.width as i32, size.height as i32, cle_commune!(), cles_vues!(), evt_recu) {
                         // egui laisse l'état GL modifié (depth test off, blend on, scissor on) :
                         // on le remet pour notre rendu 3D, sinon les faces s'occultent mal.
                         gl.enable(glow::DEPTH_TEST);
@@ -3833,11 +4035,15 @@ fn main() {
                         gl.disable(glow::SCISSOR_TEST);
                         let (bg_o, bg_v) = if dark { ((0.20, 0.22, 0.26), (0.10, 0.12, 0.15)) }
                                            else { ((0.80, 0.82, 0.86), (0.90, 0.91, 0.94)) };
-                        gl.viewport(0, 0, size.width as i32, size.height as i32);
-                        gl.clear_color(bg_o.0, bg_o.1, bg_o.2, 1.0);
-                        gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+                        // fond général (bordures entre les vues) seulement quand tout est refait
+                        if !a_faire.contains(&false) {
+                            gl.viewport(0, 0, size.width as i32, size.height as i32);
+                            gl.clear_color(bg_o.0, bg_o.1, bg_o.2, 1.0);
+                            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+                        }
                         gl.enable(glow::SCISSOR_TEST);
-                        for k in view::ALL_VIEWS {
+                        for (iv, k) in view::ALL_VIEWS.into_iter().enumerate() {
+                            if !a_faire[iv] { continue; } // image de cette vue toujours valable
                             if let Some(sr) = view::screen_rect(cur_mode, k, wf, hf, bar_px, side_px) {
                                 let (gx, gy, gw, gh) = view::gl_rect(sr, hf);
                                 if gw <= 2 || gh <= 2 { continue; }
@@ -4203,12 +4409,12 @@ fn main() {
                             });
                         }
                         // icône seulement dans la PREMIÈRE fenêtre (en haut à gauche) ; les autres fenêtres
-                        // n'affichent que le réglage (dôme). Visible au survol de n'importe quelle vue.
+                        // n'affichent que le réglage (dôme). Visible au survol de n'importe quelle vue, visionneuse comprise.
                         let premiere = view::ALL_VIEWS.iter().copied().filter_map(|k| rect_of(cur_mode, k).map(|r| (k, r)))
                             .min_by(|a, b| (a.1 .1, a.1 .0).partial_cmp(&(b.1 .1, b.1 .0)).unwrap_or(std::cmp::Ordering::Equal));
                         let survol_vues = ptr.map_or(false, |p| view::ALL_VIEWS.iter().any(|&k| rect_of(cur_mode, k).map_or(false, |sr| {
                             egui::Rect::from_min_size(egui::pos2(sr.0 / ppp, sr.1 / ppp), egui::vec2(sr.2 / ppp, sr.3 / ppp)).contains(p) })));
-                        if !viewer { if let Some((k, sr)) = premiere {
+                        { if let Some((k, sr)) = premiere {
                             {
                                 let rpts = egui::Rect::from_min_size(egui::pos2(sr.0 / ppp, sr.1 / ppp), egui::vec2(sr.2 / ppp, sr.3 / ppp));
                                 let survol = survol_vues;
@@ -4226,6 +4432,62 @@ fn main() {
                                             else if resp.clicked() { light_mode = !light_mode; if light_mode { gizmo = None; } }
                                         });
                                 }
+                            }
+                        } }
+                        // VISIONNEUSE : icône Export (disquette) en bas à gauche ; un clic corrige d'office les défauts
+                        // (réparation habituelle) puis ouvre le menu de sauvegarde
+                        if viewer { if let Some((_, sr)) = premiere {
+                            let rpts = egui::Rect::from_min_size(egui::pos2(sr.0 / ppp, sr.1 / ppp), egui::vec2(sr.2 / ppp, sr.3 / ppp));
+                            let eid = egui::Id::new("pop_export_vis");
+                            egui::Area::new(eid.with("btn")).order(egui::Order::Foreground).fixed_pos(rpts.left_bottom() + egui::vec2(10.0, -10.0))
+                                .pivot(egui::Align2::LEFT_BOTTOM).show(ctx, |ui| {
+                                    let lib = if busy && export_apres_rep { tr(lang, "export_rep") } else { tr(lang, "export") };
+                                    let r = icon_button_w(ui, lib, ui.memory(|m| m.is_popup_open(eid)) || export_apres_rep, draw_floppy, 1.0, 72.0).on_hover_text(tr(lang, "export_tip"));
+                                    // test sans clic : PATCH3D_OPEN=export simule UN clic dès l'image 4 (objet chargé)
+                                    let test = std::env::var("PATCH3D_OPEN").as_deref() == Ok("export") && !busy && scene.iter().any(|o| o.nverts > 0);
+                                    if test && !EXPORT_TEST.load(std::sync::atomic::Ordering::Relaxed) { ui.ctx().request_repaint(); }
+                                    let clic = r.clicked() || (test && ui.ctx().frame_nr() >= 4 && !EXPORT_TEST.swap(true, std::sync::atomic::Ordering::Relaxed));
+                                    if clic && !busy {
+                                        if defects.holes + defects.face_errors > 0 { repair_req = true; export_apres_rep = true; }
+                                        else { ui.memory_mut(|m| m.toggle_popup(eid)); }
+                                    }
+                                    if ouvrir_export { ui.memory_mut(|m| m.open_popup(eid)); ouvrir_export = false; }
+                                    let n_tot = scene.iter().filter(|o| o.nverts > 0).count();
+                                    bar_menu_above(ui.ctx(), eid, &r, 330.0, |ui| { if let Some(e) = menu_sauver(ui, lang, 0, n_tot) { export_req = Some(e); export_fichier = true; } });
+                                });
+                            // bouton Fil de fer / Plein en haut à droite (même style que l'icône d'éclairage) : logo fil de fer
+                            // pour passer en fil de fer, logo facettes pour revenir au rendu plein
+                            let fil = disp == DisplayMode::Wireframe;
+                            egui::Area::new(egui::Id::new("vis_fil")).order(egui::Order::Foreground)
+                                .fixed_pos(egui::pos2(rpts.right() - 8.0, rpts.top() + 26.0)).pivot(egui::Align2::RIGHT_TOP).show(ctx, |ui| {
+                                    let (rect, resp) = ui.allocate_exact_size(egui::vec2(40.0, 40.0), egui::Sense::click());
+                                    let pnt = ui.painter();
+                                    let fond = if resp.hovered() { egui::Color32::from_gray(70) } else { egui::Color32::from_rgba_unmultiplied(40, 44, 52, 200) };
+                                    pnt.rect_filled(rect, 7.0, fond);
+                                    pnt.rect_stroke(rect, 7.0, egui::Stroke::new(1.2, egui::Color32::from_gray(120)));
+                                    let ir = rect.shrink(7.0);
+                                    if fil { draw_facettes(pnt, ir) } else { draw_fil_de_fer(pnt, ir) }
+                                    if resp.on_hover_text(tr(lang, if fil { "vis_plein_tip" } else { "vis_fil_tip" })).clicked() {
+                                        disp = if fil { DisplayMode::Textured } else { DisplayMode::Wireframe };
+                                    }
+                                });
+                            // jauge EXPORTATION : la jauge de calcul de l'interface, 1,5 fois plus grande, centrée en bas
+                            let etat = if chargement_initial && file_job.is_some() {
+                                let t = debut_appli.elapsed().as_secs_f32();
+                                let estime = 0.9 * (1.0 - (-t / taille_chargement).exp());
+                                let f = progress::get().max(estime);
+                                Some((f, format!("{} {} %", tr(lang, "chargement"), (f * 100.0) as u32), true))
+                            }
+                                       else if export_apres_rep && job.is_some() { let f = progress::get(); Some((f, format!("{} {} %", tr(lang, "exportation"), (f * 100.0) as u32), false)) }
+                                       else if export_fichier && file_job.is_some() { Some((1.0, tr(lang, "exportation").to_string(), true)) }
+                                       else if export_fin.map_or(false, |t| t.elapsed().as_secs_f32() < 1.2) { Some((1.0, format!("{} 100 %", tr(lang, "exportation")), true)) }
+                                       else { None };
+                            if let Some((frac, txt, vert)) = etat {
+                                let w = ((PANEL_W - 22.0) * 1.5).min(rpts.width() - 2.0 * 110.0).max(200.0);
+                                egui::Area::new(egui::Id::new("jauge_export")).order(egui::Order::Foreground)
+                                    .fixed_pos(egui::pos2(rpts.center().x, rpts.bottom() - 14.0)).pivot(egui::Align2::CENTER_BOTTOM).interactable(false)
+                                    .show(ctx, |ui| thermo_gauge_k(ui, frac, true, &txt, w, vert, 1.5));
+                                ctx.request_repaint_after(std::time::Duration::from_millis(60));
                             }
                         } }
                         for k in view::ALL_VIEWS {
@@ -5148,35 +5410,9 @@ fn main() {
                                 let sr_ = icon_button_s(ui, tr(lang, "sauver"), ui.memory(|m| m.is_popup_open(sid)), draw_floppy, sc);
                                 if sr_.clicked() && !busy { ui.memory_mut(|m| m.toggle_popup(sid)); }
                                 if std::env::var("PATCH3D_OPEN").as_deref() == Ok("sauver") && ui.ctx().frame_nr() == 2 { ui.memory_mut(|m| m.open_popup(sid)); }
-                                bar_menu_at(ui.ctx(), sid, &sr_, bar_top, false, 330.0, |ui| {
-                                    yellow_title(ui, tr(lang, "enreg_sous"));
-                                    // ce qui part dans le fichier : la sélection, sinon toute la scène
-                                    let n_sel = if multi.len() >= 2 { multi.len() } else if sel.map_or(false, |i| i < scene.len()) { 1 } else { 0 };
-                                    let n_tot = scene.iter().filter(|o| o.nverts > 0).count();
-                                    if n_sel >= 2 || (n_sel == 0 && n_tot >= 2) {
-                                        ui.label(egui::RichText::new(tr(lang, "sauve_3mf")).size(11.5).color(egui::Color32::from_rgb(150, 200, 255)));
-                                    }
-                                    if n_sel > 0 && n_tot > n_sel {
-                                        // plusieurs objets sur le plateau (ex. après une découpe) : avertissement bien visible
-                                        egui::Frame::none().fill(egui::Color32::from_rgb(150, 30, 25)).rounding(egui::Rounding::same(5.0)).inner_margin(egui::Margin::same(6.0)).show(ui, |ui| {
-                                            ui.set_width(ui.available_width());
-                                            ui.add(egui::Label::new(egui::RichText::new(format!("⚠ {}", tr(lang, if n_sel == 1 { "sauve_avert1" } else { "sauve_avert" }).replace("{n}", &n_tot.to_string()).replace("{s}", &n_sel.to_string())))
-                                                .size(12.0).strong().color(egui::Color32::WHITE)).wrap(true));
-                                        });
-                                    } else {
-                                        let t = if n_sel > 0 { format!("{} : {n_sel}", tr(lang, "sauve_sel")) } else { tr(lang, "sauve_tout").to_string() };
-                                        ui.label(egui::RichText::new(t).size(11.5).color(egui::Color32::from_rgb(250, 200, 90)));
-                                    }
-                                    for rangee in FORMATS_SAUVE.chunks(4) {
-                                        ui.horizontal(|ui| {
-                                            for &(ext, nom) in rangee {
-                                                if ui.add_sized(egui::vec2(73.0, 26.0), egui::Button::new(egui::RichText::new(nom).size(11.5))).on_hover_text(format!(".{ext}")).clicked() {
-                                                    export_req = Some(ext); ui.memory_mut(|m| m.close_popup());
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
+                                let n_sel = if multi.len() >= 2 { multi.len() } else if sel.map_or(false, |i| i < scene.len()) { 1 } else { 0 };
+                                let n_tot = scene.iter().filter(|o| o.nverts > 0).count();
+                                bar_menu_at(ui.ctx(), sid, &sr_, bar_top, false, 330.0, |ui| { if let Some(e) = menu_sauver(ui, lang, n_sel, n_tot) { export_req = Some(e); } });
                                 // 3D-IMP : préparation à l'impression (panneau qui occupe toute la colonne de droite)
                                 let ib = icon_button_s(ui, "3D-IMP", true, draw_imprimante, sc).on_hover_text(tr(lang, "imp_tip"));
                                 if panneau_imp { ui.painter().rect_stroke(ib.rect.shrink(1.0), 6.0, egui::Stroke::new(2.0, JAUNE)); }
@@ -5408,9 +5644,9 @@ fn main() {
                         let mut cols = Vec::new();
                         let (mut lo, mut hi) = (Vec3::splat(f32::MAX), Vec3::splat(f32::MIN));
                         for o in &a_sauver { lo = lo.min(o.min); hi = hi.max(o.max); }
-                        // 3MF : chaque objet reste SÉPARÉ dans le fichier (positions et couleurs) ;
+                        // 3MF, SolidCraft : chaque objet reste SÉPARÉ dans le fichier (positions et couleurs) ;
                         // les autres formats les réunissent en un seul maillage
-                        let separes: Vec<(Vec<f32>, Option<Vec<f32>>)> = if ext_choisie == "3mf" {
+                        let separes: Vec<(Vec<f32>, Option<Vec<f32>>)> = if ext_choisie == "3mf" || ext_choisie == "solidcraft" {
                             a_sauver.iter().map(|o| (o.verts.clone(), if o.has_colors() { Some(o.cols.clone()) } else { None })).collect()
                         } else { Vec::new() };
                         for o in a_sauver {
@@ -5435,6 +5671,7 @@ fn main() {
                             let res = match ext.as_str() {
                                 "obj" => stl::write_obj(&p, &m), "ply" => stl::write_ply(&p, &m),
                                 "3mf" => threemf::write_objets(&p, &separes.iter().map(|(v, c)| (v.as_slice(), c.as_deref())).collect::<Vec<_>>()),
+                                "solidcraft" => solidcraft::ecrire(&p, &separes.iter().map(|(v, c)| (v.as_slice(), c.as_deref())).collect::<Vec<_>>()),
                                 "3dm" | "3dm8" => rhino::export(&p, &m.verts, if couleurs { Some(&cols) } else { None }, if ext == "3dm8" { 8 } else { 5 }).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
                                 "skp" => sketchup::export(&p, &m.verts, if couleurs { Some(&cols) } else { None }).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)),
                                 e if assimp::export_id(e).is_some() => assimp::export(&p, e, &m.verts, if couleurs { Some(&cols) } else { None })
@@ -5458,20 +5695,10 @@ fn main() {
                                 .add_filter("3DM (Rhino / MoI)", &["3dm"]).add_filter("SketchUp", &["skp","skb"]).add_filter("3DS", &["3ds"]).add_filter("DAE (Collada / SketchUp)", &["dae"]).add_filter("FBX", &["fbx"]).add_filter("glTF", &["gltf","glb"])
                                 .add_filter("STEP", &["step","stp"]).add_filter("IGES", &["iges","igs"])
                                 .add_filter("Blender", &["blend"]).add_filter("FreeCAD", &["fcstd","fcstd1"])
-                                .add_filter("Fusion 360", &["f3d","f3z"]).add_filter("AutoCAD", &["dxf","dwg"]).pick_file())
+                                .add_filter("Fusion 360", &["f3d","f3z"]).add_filter("AutoCAD", &["dxf","dwg"]).add_filter("SolidCraft", &["solidcraft","solvecraft"]).pick_file())
                             else { return FileOut::Cancelled };
-                            match load_model(p.to_str().unwrap_or("")) {
-                                Ok((nm, c)) => {
-                                    // 3MF à plusieurs objets : chacun reste séparé (positions relatives gardées)
-                                    let est_3mf = p.extension().and_then(|e| e.to_str()).map_or(false, |e| e.eq_ignore_ascii_case("3mf"));
-                                    let mut objs = match threemf::read_objets(p.to_str().unwrap_or("")) { Ok(o) if est_3mf && o.len() > 1 => o, _ => vec![(nm.verts, c)] };
-                                    // le groupe est posé à l'origine (coin bas à 0), comme un objet seul
-                                    let mut lo = Vec3::splat(f32::INFINITY);
-                                    for (v, _) in &objs { for q in v.chunks_exact(6) { lo = lo.min(Vec3::new(q[0], q[1], q[2])); } }
-                                    for (v, _) in objs.iter_mut() { for q in v.chunks_exact_mut(6) { q[0] -= lo.x; q[1] -= lo.y; q[2] -= lo.z; } }
-                                    paths::remember(&p);
-                                    FileOut::Opened(p, objs, ajout)
-                                }
+                            match charger_objets(&p) {
+                                Ok(objs) => { paths::remember(&p); let d = if ajout { None } else { analyse_ouverture(&objs) }; FileOut::Opened(p, objs, ajout, d) }
                                 Err(e) => FileOut::Failed(format!("{} — {e}", tr(lang, "err_import"))),
                             }
                         }));
@@ -5624,8 +5851,10 @@ fn main() {
                     if assoc_job.is_some() { window.request_redraw(); }
                     // Fin d'une ouverture / sauvegarde en arrière-plan.
                     if file_job.as_ref().map_or(false, |h| h.is_finished()) {
+                        if export_fichier { export_fichier = false; export_fin = Some(std::time::Instant::now()); }
+                        let initial = chargement_initial;
                         match file_job.take().unwrap().join() {
-                            Ok(FileOut::Opened(p, objs, ajout)) => {
+                            Ok(FileOut::Opened(p, objs, ajout, pre)) => {
                                 let mut nouveaux: Vec<Obj> = objs.into_iter().map(|(v, c)| unsafe { Obj::with_colors(&gl, v, c.unwrap_or_default()) }).collect();
                                 if ajout && scene.iter().any(|o| o.nverts > 0) {
                                     // Importer : le(s) objet(s) posé(s) à droite de la scène existante (comme une forme créée)
@@ -5644,8 +5873,13 @@ fn main() {
                                 // plusieurs objets (3MF) : tous sélectionnés ensemble
                                 multi = if scene.len() - debut >= 2 { (debut..scene.len()).collect() } else { Vec::new() };
                                 sel = Some(scene.len() - 1);
-                                disp = DisplayMode::Textured; // à l'import : objet affiché en texturé
-                                defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
+                                // à l'import : objet affiché en texturé (le fichier de la visionneuse garde l'affichage de départ)
+                                if !chargement_initial { disp = DisplayMode::Textured; }
+                                defects = match pre {
+                                    // défauts déjà analysés dans le fil de chargement : seulement les traits à envoyer au GPU
+                                    Some(d) => unsafe { bnd_lines.update(&gl, &d.boundary); err_lines.update(&gl, &d.errors); d },
+                                    None => unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) },
+                                };
                                 let (lo, hi) = scene_bounds(&scene); base = (lo + hi) * 0.5; r = ((hi - lo) * 0.5).length().max(1e-3);
                                 orbit = Orbit { yaw: CAM_YAW, pitch: CAM_PITCH, dist: r * 3.2, target: base };
                                 ortho = [Ortho { pan: Vec2::ZERO, scale: r * 1.4 }; 3];
@@ -5656,7 +5890,13 @@ fn main() {
                                 let no = scene.len() - debut;
                                 println!("Importé {} — {no} objet(s), {} triangles. Défauts : {} face(s), {} trou(s)", p.display(), nt, defects.face_errors, defects.holes);
                                 let objets = if no > 1 { format!("{no} {} · ", tr(lang, "sauve_objets")) } else { String::new() };
-                                status_msg = Some((format!("{} : {objets}{} {}", tr(lang, "importe"), nt, tr(lang, "triangles")), false, std::time::Instant::now()));
+                                if chargement_initial {
+                                    // fichier ouvert par double-clic : affiché comme au démarrage, sans annonce ni étape d'annulation
+                                    if no == 1 { sel = None; }
+                                    history = vec![snapshot(&scene)]; hist_idx = 0;
+                                } else {
+                                    status_msg = Some((format!("{} : {objets}{} {}", tr(lang, "importe"), nt, tr(lang, "triangles")), false, std::time::Instant::now()));
+                                }
                             }
                             Ok(FileOut::Saved(p)) => {
                                 println!("Exporté : {}", p.display());
@@ -5667,6 +5907,7 @@ fn main() {
                             Ok(FileOut::Failed(e)) => { eprintln!("{e}"); status_msg = Some((e, true, std::time::Instant::now())); }
                             Err(_) => { status_msg = Some((tr(lang, "err_io").into(), true, std::time::Instant::now())); }
                         }
+                        if initial { chargement_initial = false; }
                         window.request_redraw();
                     }
                     if file_job.is_some() { window.request_redraw(); }
@@ -5802,6 +6043,8 @@ fn main() {
                             Err(_) => { status_msg = Some((tr(lang, "err_calc").into(), true, std::time::Instant::now())); }
                         }
                         progress::reset();
+                        // icône Export de la visionneuse : la réparation d'office finie (même en échec), le menu de sauvegarde s'ouvre
+                        if j.kind == JobKind::Repair && export_apres_rep { export_apres_rep = false; ouvrir_export = true; }
                         job_done = Some(std::time::Instant::now());
                         window.request_redraw();
                     }
@@ -5988,7 +6231,10 @@ fn main() {
                     // objet actif recalculé : la fin d'un calcul (booléen) a pu retirer un objet dans cette image
                     let active = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 && scene[0].nverts > 0 { Some(0) } else { None });
                     if job.is_none() && file_job.is_none() { if let Some(i) = active {
-                        let v = scene[i].verts.clone();
+                        // copie des sommets seulement si un calcul est demandé (sinon, à chaque image, un gros
+                        // maillage serait recopié entièrement : des dizaines de ms perdues par image)
+                        let demande = lissage_req || repair_req || simp_req || relief_req || creux_req || wire_req;
+                        let v = if demande { scene[i].verts.clone() } else { Vec::new() };
                         if lissage_req {
                             job = Some(spawn_job(i, JobKind::Lissage, move || {
                                 let (out, n) = defects::remove_internal(&v, perf::liss_res());

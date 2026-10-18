@@ -39,6 +39,8 @@ pub struct Cache3d {
     dep: Option<glow::NativeRenderbuffer>,
     tex: Option<glow::NativeTexture>,
     cle: Option<String>,
+    /// caméra de chaque vue (ordre de view::ALL_VIEWS) lors de son dernier dessin
+    cles_vues: [Option<String>; 4],
 }
 
 impl Cache3d {
@@ -54,7 +56,7 @@ impl Cache3d {
         gl.link_program(prog);
         let vao = gl.create_vertex_array().unwrap();
         let samples = gl.get_parameter_i32(glow::SAMPLES).max(0).min(gl.get_parameter_i32(glow::MAX_SAMPLES).max(0));
-        Cache3d { prog, vao, samples, w: 0, h: 0, ms_fbo: None, ms_rb: Vec::new(), fbo: None, dep: None, tex: None, cle: None }
+        Cache3d { prog, vao, samples, w: 0, h: 0, ms_fbo: None, ms_rb: Vec::new(), fbo: None, dep: None, tex: None, cle: None, cles_vues: Default::default() }
     }
 
     unsafe fn liberer(&mut self, gl: &glow::Context) {
@@ -68,7 +70,7 @@ impl Cache3d {
     unsafe fn preparer(&mut self, gl: &glow::Context, w: i32, h: i32) {
         if self.tex.is_some() && w == self.w && h == self.h { return; }
         self.liberer(gl);
-        self.w = w; self.h = h; self.cle = None;
+        self.w = w; self.h = h; self.cle = None; self.cles_vues = Default::default();
         let tex = gl.create_texture().unwrap();
         gl.bind_texture(glow::TEXTURE_2D, Some(tex));
         gl.tex_image_2d(glow::TEXTURE_2D, 0, glow::RGBA8 as i32, w, h, 0, glow::RGBA, glow::UNSIGNED_BYTE, None);
@@ -101,14 +103,19 @@ impl Cache3d {
         self.fbo = Some(fbo); self.tex = Some(tex);
     }
 
-    /// Faut-il redessiner la scène ? `cle` résume tout ce qui la compose ; `forcer` = événement reçu.
-    /// Si oui, le framebuffer hors écran est lié : dessiner la scène, puis appeler `fin`.
-    pub unsafe fn debut(&mut self, gl: &glow::Context, w: i32, h: i32, cle: String, forcer: bool) -> bool {
+    /// Quelles vues redessiner ? `cle` résume ce qui compose la scène hors caméras, `vues` la caméra de
+    /// chaque vue ; `forcer` = tout redessiner. Une vue dont seule la caméra d'une AUTRE vue a changé
+    /// garde son image (zoomer dans une fenêtre ne redessine pas les trois autres).
+    /// Si une vue est à refaire, le framebuffer hors écran est lié : la dessiner, puis appeler `fin`.
+    pub unsafe fn debut(&mut self, gl: &glow::Context, w: i32, h: i32, cle: String, vues: [String; 4], forcer: bool) -> Option<[bool; 4]> {
         self.preparer(gl, w.max(1), h.max(1));
-        if !forcer && self.cle.as_deref() == Some(cle.as_str()) { return false; }
+        let tout = forcer || self.cle.as_deref() != Some(cle.as_str());
+        let a_faire: [bool; 4] = std::array::from_fn(|i| tout || self.cles_vues[i].as_deref() != Some(vues[i].as_str()));
+        if !a_faire.contains(&true) { return None; }
         self.cle = Some(cle);
+        self.cles_vues = vues.map(Some);
         gl.bind_framebuffer(glow::FRAMEBUFFER, self.ms_fbo.or(self.fbo));
-        true
+        Some(a_faire)
     }
 
     pub unsafe fn fin(&self, gl: &glow::Context) {
