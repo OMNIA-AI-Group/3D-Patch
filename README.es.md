@@ -20,6 +20,7 @@ Funciona en Linux y Windows, completamente sin conexión, y su interfaz está di
 - **Reparación**: detección de agujeros y caras erróneas, limpieza interna, reparación automática en un clic y reparación «A.I.» que reconstruye una envolvente cerrada (estanca).
 - **Edición**: booleanas (unión, resta, intersección), corte por un plano, vaciado con orificios de drenaje, simplificación, objetos alámbricos (celosía), grabado de relieve/textura, texto 3D.
 - **Colocación**: gizmo mover/girar/escalar, cotas exactas en mm/cm/pulgadas, centrado, regla, colocación en la cama con una simulación de gravedad realista.
+- **Piezas y grupos**: clic en una pieza de un objeto de varias piezas y clic derecho → *Desagrupar*; Mayús+clic en varios objetos y clic derecho → *Agrupar*; copiar/pegar (Ctrl+C / Ctrl+V), borrar con Supr o Retroceso.
 - **Preparación para imprimir**: comprobaciones (estanqueidad, voladizos, paredes finas, tamaño), orientación recomendada, estimación del peso de material, envío directo a los laminadores instalados (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Modo visor**: 3D-Patch puede ser la aplicación predeterminada para archivos 3D (doble clic para verlos).
 

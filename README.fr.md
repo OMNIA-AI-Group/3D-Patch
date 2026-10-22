@@ -20,6 +20,7 @@ Il fonctionne sous Linux et Windows, entièrement hors ligne, et son interface e
 - **Réparation** : détection des trous et des faces en erreur, nettoyage interne, réparation automatique en un clic, et réparation « A.I » qui reconstruit une enveloppe fermée (étanche).
 - **Modification** : booléens (union, soustraction, intersection), découpe selon un plan, évidement avec trous d'évacuation, simplification, objets filaires (treillis), gravure de relief/texture, texte 3D.
 - **Placement** : gizmo déplacer/tourner/redimensionner, cotes exactes en mm/cm/pouces, centrage, règle, pose sur le plateau avec une simulation de gravité réaliste.
+- **Pièces et groupes** : clic sur une pièce d'un objet à plusieurs pièces puis clic droit → *Dégrouper* ; Maj+clic sur plusieurs objets puis clic droit → *Grouper* ; copier/coller (Ctrl+C / Ctrl+V), suppression par Suppr ou Retour arrière.
 - **Préparation à l'impression** : vérifications (étanchéité, surplombs, parois fines, dimensions), orientation conseillée, estimation du poids de matière, envoi direct aux trancheurs installés (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Mode visionneuse** : 3D-Patch peut devenir l'application par défaut des fichiers 3D (double-clic pour les afficher).
 

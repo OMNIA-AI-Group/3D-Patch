@@ -296,6 +296,13 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "refaire"    => ["Refaire", "Rehacer", "Ripeti", "Redo", "Vor"],
         "pp_copie"   => ["Copié (Ctrl+V pour coller)", "Copiado (Ctrl+V para pegar)", "Copiato (Ctrl+V per incollare)", "Copied (Ctrl+V to paste)", "Kopiert (Strg+V zum Einfügen)"],
         "pp_coupe"   => ["Coupé (Ctrl+V pour coller)", "Cortado (Ctrl+V para pegar)", "Tagliato (Ctrl+V per incollare)", "Cut (Ctrl+V to paste)", "Ausgeschnitten (Strg+V zum Einfügen)"],
+        "piece_sel"     => ["Pièce {k} sur {n} choisie — clic droit : Dégrouper", "Pieza {k} de {n} elegida — clic derecho: Desagrupar", "Pezzo {k} di {n} scelto — clic destro: Separa", "Part {k} of {n} picked — right-click: Ungroup", "Teil {k} von {n} gewählt — Rechtsklick: Trennen"],
+        "grouper"       => ["Grouper les objets ({n})", "Agrupar los objetos ({n})", "Raggruppa gli oggetti ({n})", "Group objects ({n})", "Objekte gruppieren ({n})"],
+        "grouper_ok"    => ["Groupé : {n} objets en un seul", "Agrupado: {n} objetos en uno", "Raggruppato: {n} oggetti in uno", "Grouped: {n} objects into one", "Gruppiert: {n} Objekte zu einem"],
+        "piece_titre"   => ["Pièce {k} sur {n}", "Pieza {k} de {n}", "Pezzo {k} di {n}", "Part {k} of {n}", "Teil {k} von {n}"],
+        "degroup_piece" => ["Dégrouper la pièce", "Desagrupar la pieza", "Separa il pezzo", "Ungroup this part", "Teil abtrennen"],
+        "degroup_tout"  => ["Dégrouper tout ({n})", "Desagrupar todas las piezas ({n})", "Separa tutti i pezzi ({n})", "Ungroup all parts ({n})", "Alle Teile trennen ({n})"],
+        "degroup_ok"    => ["Dégroupé : {n} objets — déplacer, Suppr / Retour arrière, Ctrl+C / Ctrl+V", "Desagrupado: {n} objetos — mover, Supr / Retroceso, Ctrl+C / Ctrl+V", "Separato: {n} oggetti — sposta, Canc / Backspace, Ctrl+C / Ctrl+V", "Ungrouped: {n} objects — move, Del / Backspace, Ctrl+C / Ctrl+V", "Getrennt: {n} Objekte — verschieben, Entf / Rücktaste, Strg+C / Strg+V"],
         "pp_colle"   => ["Collé", "Pegado", "Incollato", "Pasted", "Eingefügt"],
         "effacer"    => ["Effacer", "Borrar", "Cancella", "Clear", "Löschen"],
         "effacer_tip"=> ["Efface tout : les objets et les outils (cadre de coupe…). ANNULER les rend.\nUn seul objet : sélectionne-le puis touche Suppr",
@@ -2461,6 +2468,52 @@ enum FormeOp { Pos(Vec3), Poser, Rot(usize, f32), Miroir(usize), Echelle(Vec3), 
 
 /// Sélection multiple (Ctrl+clic, comme 3D Builder) : objets surlignés en plus de `sel`.
 static SEL_PLUS: std::sync::Mutex<Vec<usize>> = std::sync::Mutex::new(Vec::new());
+/// Pièce surlignée d'un objet fait de plusieurs pièces : (objet, VAO de la pièce, nombre de sommets).
+static PIECE_SEL: std::sync::Mutex<Option<(usize, glow::NativeVertexArray, i32)>> = std::sync::Mutex::new(None);
+
+/// Pièces séparées d'un objet (triangles reliés par des sommets communs) : pièce de chaque triangle, nombre de pièces.
+fn pieces(verts: &[f32]) -> (Vec<u32>, usize) {
+    let nt = verts.len() / 18;
+    let mut id: fasthash::HashMap<(u32, u32, u32), u32> = fasthash::HashMap::default();
+    let mut parent: Vec<u32> = Vec::new();
+    fn racine(p: &mut [u32], mut x: u32) -> u32 { while p[x as usize] != x { p[x as usize] = p[p[x as usize] as usize]; x = p[x as usize]; } x }
+    let mut tri_v = Vec::with_capacity(nt);
+    for t in 0..nt {
+        let mut v = [0u32; 3];
+        for k in 0..3 {
+            let o = t * 18 + k * 6;
+            let key = (verts[o].to_bits(), verts[o + 1].to_bits(), verts[o + 2].to_bits());
+            let n = parent.len() as u32;
+            v[k] = *id.entry(key).or_insert_with(|| { parent.push(n); n });
+        }
+        for k in 1..3 { let (a, b) = (racine(&mut parent, v[0]), racine(&mut parent, v[k])); if a != b { parent[b as usize] = a; } }
+        tri_v.push(v[0]);
+    }
+    let mut num: fasthash::HashMap<u32, u32> = fasthash::HashMap::default();
+    let comp: Vec<u32> = tri_v.iter().map(|&v| { let r = racine(&mut parent, v); let n = num.len() as u32; *num.entry(r).or_insert(n) }).collect();
+    let n = num.len();
+    (comp, n)
+}
+
+/// Triangle d'un objet touché par le rayon du curseur (le plus proche).
+fn tri_vise(mvp: &Mat4, cursor: (f64, f64), rect: (f32, f32, f32, f32), o: &Obj) -> Option<usize> {
+    let (orig, dir) = ray_from(mvp, cursor, rect);
+    let mut best: Option<(usize, f32)> = None;
+    for (k, t) in o.tris.iter().enumerate() { if let Some(d) = ray_tri(orig, dir, t) { if best.map_or(true, |b| d < b.1) { best = Some((k, d)); } } }
+    best.map(|b| b.0)
+}
+
+/// Sommets (et couleurs) des triangles d'un objet dont la pièce vaut (`garder` = true) ou ne vaut pas `c`.
+fn tris_piece(o: &Obj, comp: &[u32], c: u32, garder: bool) -> (Vec<f32>, Vec<f32>) {
+    let cols = o.has_colors();
+    let (mut v, mut col) = (Vec::new(), Vec::new());
+    for (t, &k) in comp.iter().enumerate() {
+        if (k == c) != garder { continue; }
+        v.extend_from_slice(&o.verts[t * 18..t * 18 + 18]);
+        if cols { col.extend_from_slice(&o.cols[t * 9..t * 9 + 9]); }
+    }
+    (v, col)
+}
 unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[Obj], sel: Option<usize>,
                     u: &Uniforms, grid: &grid::Grid, rule: &ruler::Ruler, mvp: &Mat4, eye: Vec3,
                     show_ruler: bool, show_grid: bool, reflect: f32, dim: f32, gray: f32, tex_highlight: bool, alpha: f32, xf: Option<(usize, Mat4)>) {
@@ -2475,8 +2528,11 @@ unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[O
     gl.uniform_1_f32(u.dim.as_ref(), dim);
     gl.uniform_1_f32(u.gray.as_ref(), gray);
     gl.uniform_1_f32(u.alpha.as_ref(), alpha);
+    let piece_sel = *PIECE_SEL.lock().unwrap();
     for (i, o) in scene.iter().enumerate() {
         if o.nverts == 0 { continue; }
+        // pièce choisie : seule elle est surlignée (l'objet, lui, s'affiche comme sélectionné sans orange)
+        let piece_ici = piece_sel.filter(|p| p.0 == i);
         let choisi = sel == Some(i) || (sel.is_some() && SEL_PLUS.lock().unwrap().contains(&i));
         if tex_highlight {
             // Mode Texturé : l'objet sélectionné est en couleur, les autres restent sombres.
@@ -2485,7 +2541,7 @@ unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[O
             gl.uniform_1_f32(u.dim.as_ref(), if dark { 0.38 } else { 1.0 });
             gl.uniform_1_f32(u.sel.as_ref(), 0.0);
         } else {
-            gl.uniform_1_f32(u.sel.as_ref(), if choisi { 1.0 } else { 0.0 });
+            gl.uniform_1_f32(u.sel.as_ref(), if choisi && piece_ici.is_none() { 1.0 } else { 0.0 });
         }
         gl.uniform_1_f32(u.usecol.as_ref(), if o.has_colors() { 1.0 } else { 0.0 });
         gl.uniform_4_f32(u.tint.as_ref(), 0.0, 0.0, 0.0, 0.0);
@@ -2494,6 +2550,15 @@ unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[O
         gl.uniform_matrix_4_f32_slice(u.model.as_ref(), false, &m.to_cols_array());
         gl.bind_vertex_array(Some(o.vao));
         gl.draw_arrays(glow::TRIANGLES, 0, o.nverts);
+        if let Some((_, vao, n)) = piece_ici {
+            // la pièce choisie, en orange de sélection, juste devant l'objet
+            gl.uniform_1_f32(u.sel.as_ref(), 1.0); gl.uniform_1_f32(u.usecol.as_ref(), 0.0);
+            gl.uniform_1_f32(u.gray.as_ref(), 0.0); gl.uniform_1_f32(u.dim.as_ref(), 1.0);
+            gl.enable(glow::POLYGON_OFFSET_FILL); gl.polygon_offset(-1.0, -2.0);
+            gl.bind_vertex_array(Some(vao));
+            gl.draw_arrays(glow::TRIANGLES, 0, n);
+            gl.disable(glow::POLYGON_OFFSET_FILL);
+        }
     }
     gl.uniform_matrix_4_f32_slice(u.model.as_ref(), false, &Mat4::IDENTITY.to_cols_array());
     grid.draw(gl, &a, show_grid, axes_visibles());
@@ -3104,6 +3169,14 @@ fn main() {
     let mut gizmo: Option<gizmo::Gizmo> = None;
     let mut rot_view = ViewKind::ThreeD;
     let mut last_right: Option<(std::time::Instant, (f64, f64))> = None; // double clic droit
+    // PIÈCES d'un objet : pièce choisie au clic gauche (objet, pièce, pièce de chaque triangle, nombre, signature),
+    // son surlignage, le menu du clic droit (position, objet, pièce, nombre) et la demande de dégroupage
+    let mut piece: Option<(usize, u32, Vec<u32>, usize, (Vec3, Vec3, usize))> = None;
+    let mut piece_vue: Option<(Obj, (Vec3, Vec3, usize))> = None;
+    let mut menu_piece: Option<(egui::Pos2, usize, u32, usize, Vec<usize>)> = None; // + objets à grouper (Maj+clic)
+    let mut degroup_req: Option<(usize, u32, bool)> = None;
+    let mut grouper_req: Option<Vec<usize>> = None;
+    let mut clic_droit: Option<(std::time::Instant, (f64, f64))> = None; // appui droit (menu si relâché sans glisser)
     // test sans clic : PATCH3D_GRAV=1 appuie sur GRAVITÉ (outil de rotation ouvert sur l'objet 0)
     let mut grav_test = std::env::var_os("PATCH3D_GRAV").is_some();
     let mut grav_anim: Option<GravAnim> = None;
@@ -3331,8 +3404,9 @@ fn main() {
                         }
                         Key::Named(NamedKey::Delete) if txt_sel && panneau_texte => { txt_cadre = None; txt_sel = false; window.request_redraw(); }
                         Key::Named(NamedKey::Delete) if coupe_sel => { coupe = None; coupe_sel = false; window.request_redraw(); }
-                        Key::Named(NamedKey::Delete) => {
+                        Key::Named(NamedKey::Delete) | Key::Named(NamedKey::Backspace) if !egui_ctx.wants_keyboard_input() && !splash && !viewer => {
                             if let Some(i) = sel.filter(|&i| i < scene.len()) {
+                                piece = None; menu_piece = None;
                                 // sélection multiple : tous les objets choisis sont supprimés
                                 let mut tous: Vec<usize> = if multi.len() >= 2 { std::mem::take(&mut multi) } else { vec![i] };
                                 tous.sort_unstable(); tous.dedup();
@@ -3496,11 +3570,19 @@ fn main() {
                                                 if !multi.contains(&i) { multi.clear(); }
                                                 if gizmo.as_ref().map_or(false, |g| g.obj != i) { gizmo = None; }
                                                 sel = Some(i); selection = Some(hit); face_normal = Some(nrm);
+                                                // objet fait de plusieurs pièces : la pièce touchée est choisie (clic droit = Dégrouper)
+                                                piece = None; menu_piece = None;
+                                                let sig = (scene[i].min, scene[i].max, scene[i].verts.len());
+                                                let (comp, n) = pieces(&scene[i].verts);
+                                                if n >= 2 { if let Some(t) = tri_vise(&mvp, cursor, rect, &scene[i]) {
+                                                    status_msg = Some((tr(lang, "piece_sel").replace("{k}", &(comp[t] + 1).to_string()).replace("{n}", &n.to_string()), false, std::time::Instant::now()));
+                                                    piece = Some((i, comp[t], comp, n, sig));
+                                                } }
                                                 drag = Some(Drag::Move(k));
                                                 last_ground = ground_point(&mvp, cursor, rect);
                                             }
                                             None if panneau_texte => { drag = None; } // l'objet à graver reste sélectionné
-                                            None => { sel = None; multi.clear(); selection = None; face_normal = None; drag = None; gizmo = None; }
+                                            None => { sel = None; multi.clear(); selection = None; face_normal = None; drag = None; gizmo = None; piece = None; menu_piece = None; }
                                         }
                                         if sur_cadre {
                                             // cadre choisi : on peut le faire glisser dans son plan de tracé
@@ -3518,9 +3600,10 @@ fn main() {
                                             Some((i, _, _)) => { gizmo = Some(gizmo::Gizmo::new(i, scene[i].min, scene[i].max)); sel = Some(i); light_mode = false; }
                                             None => gizmo = None,
                                         }
-                                        last_right = None; drag = None;
+                                        last_right = None; drag = None; clic_droit = None; menu_piece = None;
                                     } else {
                                         last_right = Some((std::time::Instant::now(), cursor));
+                                        clic_droit = Some((std::time::Instant::now(), cursor));
                                         drag = Some(if k == ViewKind::ThreeD { Drag::Orbit(k) } else { Drag::Pan(k) });
                                     }
                                 }
@@ -3540,6 +3623,33 @@ fn main() {
                             window.request_redraw();
                         }
                     } else {
+                        // clic droit simple (sans glisser) sur un objet à plusieurs pièces : menu Dégrouper
+                        if button == MouseButton::Right {
+                            if let Some((t0, p0)) = clic_droit.take() {
+                                let immobile = (p0.0 - cursor.0).abs() < 5.0 && (p0.1 - cursor.1).abs() < 5.0;
+                                if immobile && t0.elapsed().as_millis() < 400 && !splash && !viewer {
+                                    if let Some(k) = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32) {
+                                        let rect = rect_of(mode, k).unwrap();
+                                        let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
+                                        if let Some((i, _, _)) = pick_scene(&mvp, cursor, rect, &scene) {
+                                            let pos = egui::pos2(cursor.0 as f32 / sf, cursor.1 as f32 / sf);
+                                            // sélection multiple (Maj / Ctrl+clic) contenant l'objet : menu Grouper
+                                            let groupe: Vec<usize> = if multi.len() >= 2 && multi.contains(&i) { multi.clone() } else { Vec::new() };
+                                            let (comp, n) = pieces(&scene[i].verts);
+                                            let t = tri_vise(&mvp, cursor, rect, &scene[i]);
+                                            if n >= 2 && groupe.is_empty() { if let Some(t) = t {
+                                                let sig = (scene[i].min, scene[i].max, scene[i].verts.len());
+                                                sel = Some(i); multi.clear();
+                                                menu_piece = Some((pos, i, comp[t], n, Vec::new()));
+                                                piece = Some((i, comp[t], comp, n, sig));
+                                            } } else if !groupe.is_empty() {
+                                                menu_piece = Some((pos, i, 0, 1, groupe));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         if button == MouseButton::Left { light_drag = None; }
                         if button == MouseButton::Left { coupe_glisse = None; txt_rot = None; txt_deplace = None; txt_echelle = None; txt_prof_glisse = None; }
                         // fin de rotation : la rotation est cuite dans les sommets (l'objet garde son appui en Z)
@@ -4588,6 +4698,28 @@ fn main() {
                                     ui.ctx().request_repaint_after(std::time::Duration::from_millis(250));
                                     if resp.on_hover_text(tr(lang, "grav_tip")).clicked() { grav_req = true; }
                                 });
+                        }
+                        // Menu du clic droit sur une pièce : Dégrouper la pièce / toutes les pièces
+                        if let Some((pos, i, c, n, groupe)) = menu_piece.clone() {
+                            let r = egui::Area::new(egui::Id::new("menu_piece")).order(egui::Order::Foreground).fixed_pos(pos).show(ctx, |ui| {
+                                egui::Frame::menu(ui.style()).inner_margin(egui::Margin::symmetric(6.0, 4.0)).show(ui, |ui| {
+                                    ui.set_max_width(160.0);
+                                    ui.spacing_mut().button_padding = egui::vec2(6.0, 2.0);
+                                    let item = |ui: &mut egui::Ui, t: &str| ui.add(egui::Button::new(egui::RichText::new(t).size(12.5)).frame(false).wrap(false));
+                                    if !groupe.is_empty() {
+                                        if item(ui, &tr(lang, "grouper").replace("{n}", &groupe.len().to_string())).clicked() { grouper_req = Some(groupe.clone()); }
+                                    }
+                                    if n >= 2 {
+                                        ui.label(egui::RichText::new(tr(lang, "piece_titre").replace("{k}", &(c + 1).to_string()).replace("{n}", &n.to_string())).size(11.5).color(JAUNE));
+                                        if item(ui, tr(lang, "degroup_piece")).clicked() { degroup_req = Some((i, c, false)); }
+                                        if item(ui, &tr(lang, "degroup_tout").replace("{n}", &n.to_string())).clicked() { degroup_req = Some((i, c, true)); }
+                                    }
+                                });
+                            });
+                            // clic ailleurs ou Échap : le menu se ferme
+                            let ailleurs = ctx.input(|inp| inp.pointer.any_pressed()) && !r.response.hovered() && !ctx.is_pointer_over_area()
+                                || ctx.input(|inp| inp.key_pressed(egui::Key::Escape));
+                            if degroup_req.is_some() || grouper_req.is_some() || ailleurs { menu_piece = None; }
                         }
                         // Bouton SORTIR (modes OBJ-AXE et BOOLÉENS) : dans l'angle, à droite de GRAVITÉ
                         if grav_anim.is_none() && (gizmo.as_ref().map_or(false, |g| g.drag.is_none()) || panneau_bool || panneau_forme || panneau_imp) && !viewer {
@@ -6228,6 +6360,70 @@ fn main() {
                             }));
                         } else { status_msg = Some((tr(lang, "bool_choisir").into(), true, std::time::Instant::now())); }
                     }}
+                    // DÉGROUPER : la pièce (ou chaque pièce) devient un objet à part, sélectionné, déplaçable
+                    if let Some((i, c, tout)) = degroup_req.take() {
+                        if i < scene.len() && job.is_none() {
+                            let (comp, n) = pieces(&scene[i].verts);
+                            if n >= 2 {
+                                let mut nouveaux: Vec<(Vec<f32>, Vec<f32>)> = Vec::new();
+                                if tout { for k in 0..n as u32 { if k != c { nouveaux.push(tris_piece(&scene[i], &comp, k, true)); } } }
+                                let (reste, reste_c) = if tout { tris_piece(&scene[i], &comp, c, true) } else { tris_piece(&scene[i], &comp, c, false) };
+                                if !tout { nouveaux.push(tris_piece(&scene[i], &comp, c, true)); }
+                                let has = scene[i].has_colors();
+                                scene[i].verts = reste; scene[i].cols = if has { reste_c } else { Vec::new() }; scene[i].refresh(); unsafe { scene[i].upload(&gl); }
+                                for (v, col) in nouveaux { scene.push(unsafe { Obj::with_colors(&gl, v, col) }); }
+                                // sélection : la pièce dégroupée (ou la pièce cliquée quand tout est dégroupé)
+                                sel = Some(if tout { i } else { scene.len() - 1 }); multi.clear(); selection = None; gizmo = None;
+                                piece = None;
+                                defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
+                                history.truncate(hist_idx + 1); history.push(snapshot(&scene));
+                                if history.len() > 40 { history.remove(0); } hist_idx = history.len() - 1;
+                                status_msg = Some((tr(lang, "degroup_ok").replace("{n}", &(if tout { n } else { 2 }).to_string()), false, std::time::Instant::now()));
+                                window.request_redraw();
+                            }
+                        }
+                    }
+                    // GROUPER : les objets choisis (Maj / Ctrl+clic) deviennent un seul objet (positions gardées)
+                    if let Some(mut g) = grouper_req.take() {
+                        g.sort_unstable(); g.dedup(); g.retain(|&k| k < scene.len());
+                        if g.len() >= 2 && job.is_none() {
+                            let couleurs = g.iter().any(|&k| scene[k].has_colors());
+                            let (mut v, mut col) = (Vec::new(), Vec::new());
+                            for &k in &g {
+                                v.extend_from_slice(&scene[k].verts);
+                                if couleurs {
+                                    // objet sans couleurs propres dans un groupe coloré : jaune de 3D-Patch
+                                    if scene[k].has_colors() { col.extend_from_slice(&scene[k].cols); }
+                                    else { for _ in 0..scene[k].verts.len() / 6 { col.extend([0.93f32, 0.80, 0.33]); } }
+                                }
+                            }
+                            let i0 = g[0];
+                            for &k in g.iter().skip(1).rev() { unsafe { scene[k].delete(&gl); } scene.remove(k); }
+                            scene[i0].verts = v; scene[i0].cols = col; scene[i0].refresh(); unsafe { scene[i0].upload(&gl); }
+                            sel = Some(i0); multi.clear(); selection = None; gizmo = None; piece = None;
+                            defects = unsafe { recompute_defects(&gl, &scene, sel, &mut bnd_lines, &mut err_lines) };
+                            history.truncate(hist_idx + 1); history.push(snapshot(&scene));
+                            if history.len() > 40 { history.remove(0); } hist_idx = history.len() - 1;
+                            status_msg = Some((tr(lang, "grouper_ok").replace("{n}", &g.len().to_string()), false, std::time::Instant::now()));
+                            window.request_redraw();
+                        }
+                    }
+                    // pièce choisie : surlignage (refait si l'objet a bougé) ; abandonnée si l'objet change de sélection ou de forme
+                    if let Some((i, _, _, _, sig)) = piece.as_ref() {
+                        let i = *i;
+                        if sel != Some(i) || i >= scene.len() || scene[i].verts.len() != sig.2 { piece = None; }
+                    }
+                    let voulu = piece.as_ref().map(|(i, c, _, _, _)| (*i, *c, (scene[*i].min, scene[*i].max, scene[*i].verts.len())));
+                    let a_jour = match (&piece_vue, &voulu) { (Some((_, s1)), Some((_, _, s2))) => s1 == s2, (None, None) => true, _ => false };
+                    if !a_jour || (voulu.is_some() && PIECE_SEL.lock().unwrap().map(|p| p.0) != voulu.map(|v| v.0)) {
+                        if let Some((o, _)) = piece_vue.take() { unsafe { o.delete(&gl); } }
+                        if let (Some((i, c, sig)), Some((_, _, comp, _, _))) = (voulu, piece.as_ref()) {
+                            let (v, _) = tris_piece(&scene[i], comp, c, true);
+                            piece_vue = Some((unsafe { Obj::new(&gl, v) }, sig));
+                        }
+                        window.request_redraw();
+                    }
+                    *PIECE_SEL.lock().unwrap() = piece_vue.as_ref().zip(voulu).map(|((o, _), (i, _, _))| (i, o.vao, o.nverts));
                     // objet actif recalculé : la fin d'un calcul (booléen) a pu retirer un objet dans cette image
                     let active = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 && scene[0].nverts > 0 { Some(0) } else { None });
                     if job.is_none() && file_job.is_none() { if let Some(i) = active {

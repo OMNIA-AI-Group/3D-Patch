@@ -20,6 +20,7 @@ Er läuft unter Linux und Windows, vollständig offline, und die Oberfläche ist
 - **Reparatur**: Erkennung von Löchern und fehlerhaften Flächen, interne Bereinigung, automatische Reparatur per Klick und eine „A.I.“-Reparatur, die eine geschlossene (wasserdichte) Hülle neu aufbaut.
 - **Bearbeitung**: Boolesche Operationen (Vereinigung, Subtraktion, Schnittmenge), Schnitt entlang einer Ebene, Aushöhlen mit Ablauflöchern, Vereinfachung, Gitterobjekte, Relief-/Texturgravur, 3D-Text.
 - **Platzierung**: Gizmo zum Verschieben/Drehen/Skalieren, exakte Maße in mm/cm/Zoll, Zentrieren, Lineal, Ablegen auf dem Druckbett mit realistischer Schwerkraftsimulation.
+- **Teile & Gruppen**: ein Teil eines mehrteiligen Objekts anklicken und Rechtsklick → *Trennen*; mehrere Objekte mit Umschalt+Klick wählen und Rechtsklick → *Gruppieren*; Kopieren/Einfügen (Strg+C / Strg+V), Löschen mit Entf oder Rücktaste.
 - **Druckvorbereitung**: Prüfungen (Dichtheit, Überhänge, dünne Wände, Größe), empfohlene Ausrichtung, Schätzung des Materialgewichts, direkte Übergabe an installierte Slicer (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Betrachtermodus**: 3D-Patch kann zur Standardanwendung für 3D-Dateien werden (Doppelklick zum Anzeigen).
 

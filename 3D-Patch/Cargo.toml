@@ -1,6 +1,6 @@
 [package]
 name = "patch3d"
-version = "0.1.2"
+version = "0.1.3"
 license = "GPL-3.0-or-later"
 authors = ["Alain Valette-Clary (ΩiA-Group)"]
 repository = "https://github.com/OMNIA-AI-Group/3D-Patch"
