@@ -1814,7 +1814,7 @@ dependencies = [
 
 [[package]]
 name = "patch3d"
-version = "0.1.4"
+version = "0.2.0"
 dependencies = [
  "ab_glyph",
  "cc",
@@ -1828,6 +1828,7 @@ dependencies = [
  "image",
  "manifold-rust",
  "raw-window-handle 0.5.2",
+ "rayon",
  "rfd",
  "serde_json",
  "sha2",

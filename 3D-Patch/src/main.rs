@@ -33,6 +33,8 @@ mod vectorise;
 mod impression;
 mod plaque;
 mod solidcraft;
+mod matiere;
+mod atelier;
 #[cfg(test)]
 mod tests_precision;
 
@@ -62,6 +64,7 @@ const CAM_YAW: f32 = 2.89;
 const CAM_PITCH: f32 = 0.25;
 const BAR_H: f32 = 60.0; // hauteur de la barre du bas (une rangée de boutons de 50 px)
 const PANEL_W: f32 = 212.0; // largeur du panneau d'outils de droite (points egui)
+const PANEL_TEX_W: f32 = 340.0; // mode Texture : colonne élargie (galerie de vignettes 4 par rangée)
 
 const VS: &str = r#"#version 330 core
 layout(location=0) in vec3 aPos;
@@ -78,14 +81,14 @@ void main(){
     if(dot(N,V)<0.0) N=-N;
     float diff=max(dot(N,L),0.0);
     vec3 base=mix(vec3(0.93,0.80,0.33), vec3(0.98,0.52,0.16), uSel);  // Texturé = jaune ; sélection = orange
-    base=mix(base, vCol, uUseCol);                                    // objet coloré (ex. logo) : ses propres couleurs
+    base=mix(base, vCol, min(uUseCol, 1.0));                          // objet coloré (ex. logo) : ses propres couleurs
     base=mix(base, uTint.rgb, uTint.a);                               // booléens : A orange, B bleu
     base=mix(base, vec3(0.74,0.77,0.84), uReflect*0.8);               // Reflets = acier métallique
     float g=dot(base, vec3(0.33));
     base=mix(base, vec3(g*0.65), uGray);                              // Défauts = gris désaturé (jaune/rouge ressortent)
     base=mix(base, vec3(0.55,0.78,1.0), step(uAlpha, 0.999));          // Transparent = bleu clair
     // objet coloré : éclairage plus doux (couleurs proches de l'original, néons lisibles)
-    vec3 col=base*mix(0.35+0.65*diff, 0.62+0.38*diff, uUseCol);
+    vec3 col=base*mix(0.35+0.65*diff, 0.62+0.38*diff, uUseCol*step(uUseCol, 1.5)); // 2 = couleurs + éclairage normal
     vec3 H=normalize(L+V);
     float shin=mix(32.0,96.0,uReflect);
     col+=vec3(0.25+0.45*uReflect)*pow(max(dot(N,H),0.0),shin);
@@ -249,6 +252,8 @@ const LANGS: [Lang; 5] = [Lang::Fr, Lang::Es, Lang::It, Lang::Us, Lang::De];
 /// Langue affichée, lisible par les modules (messages d'erreur) sans la leur passer.
 static LANGUE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 fn langue_regler(l: Lang) { LANGUE.store(LANGS.iter().position(|&x| x == l).unwrap_or(0) as u8, std::sync::atomic::Ordering::Relaxed); }
+/// Langue affichée (index FR, ES, IT, US, DE) pour les modules.
+pub(crate) fn langue_idx() -> usize { (LANGUE.load(std::sync::atomic::Ordering::Relaxed) as usize).min(LANGS.len() - 1) }
 /// Traduction dans la langue affichée (pour les modules).
 pub(crate) fn trc(key: &str) -> &'static str { tr(LANGS[(LANGUE.load(std::sync::atomic::Ordering::Relaxed) as usize).min(LANGS.len() - 1)], key) }
 /// Traduction d'une étiquette d'interface. Ordre des colonnes : FR, ES, IT, US, DE.
@@ -522,6 +527,17 @@ fn tr(l: Lang, key: &str) -> &'static str {
                          "Choose the flat face to lay the object on: possible faces turn red, clicking one lays the object on it (with the drop)",
                          "Ebene Fläche zum Auflegen wählen: mögliche Flächen werden rot, ein Klick legt das Objekt darauf (mit Fall)"],
         "surf_nosel" => ["SURFACE : sélectionne d'abord un objet (clic gauche)", "SUPERFICIE: selecciona primero un objeto (clic izquierdo)", "SUPERFICIE: seleziona prima un oggetto (clic sinistro)", "SURFACE: select an object first (left click)", "FLÄCHE: zuerst ein Objekt wählen (Linksklick)"],
+        "surf_analyse" => ["Analyse des surfaces", "Análisis de superficies", "Analisi delle superfici", "Surface analysis", "Flächenanalyse"],
+        "surf_encours" => ["Recherche des faces planes où poser l'objet", "Buscando las caras planas donde apoyar el objeto", "Ricerca delle facce piane su cui appoggiare l'oggetto", "Looking for flat faces to lay the object on", "Suche nach ebenen Flächen zum Auflegen"],
+        "surf_trouvees" => ["surfaces où poser l'objet (de la plus grande à la plus petite)", "superficies donde apoyar el objeto (de mayor a menor)", "superfici su cui appoggiare l'oggetto (dalla più grande)", "surfaces to lay the object on (largest first)", "Flächen zum Auflegen (größte zuerst)"],
+        "surf_poser_tip" => ["Poser l'objet sur cette surface (avec la chute)", "Apoyar el objeto sobre esta superficie (con la caída)", "Appoggia l'oggetto su questa superficie (con la caduta)", "Lay the object on this surface (with the drop)", "Objekt auf diese Fläche legen (mit Fall)"],
+        "surf_o_dessous" => ["dessous (actuel)", "debajo (actual)", "sotto (attuale)", "bottom (current)", "unten (aktuell)"],
+        "surf_o_dessus" => ["dessus", "arriba", "sopra", "top", "oben"],
+        "surf_o_gauche" => ["côté gauche", "lado izquierdo", "lato sinistro", "left side", "linke Seite"],
+        "surf_o_droite" => ["côté droit", "lado derecho", "lato destro", "right side", "rechte Seite"],
+        "surf_o_avant" => ["avant", "delante", "davanti", "front", "vorne"],
+        "surf_o_arriere" => ["arrière", "detrás", "dietro", "back", "hinten"],
+        "surf_o_incline" => ["face inclinée", "cara inclinada", "faccia inclinata", "slanted face", "schräge Fläche"],
         "surf_aucune"=> ["Aucune face plane sur laquelle poser cet objet", "Ninguna cara plana sobre la que apoyar este objeto", "Nessuna faccia piana su cui appoggiare l'oggetto", "No flat face to lay this object on", "Keine ebene Fläche zum Auflegen"],
         "surf_choisir"=> ["Clique une face rouge : elle sera posée sur le plateau (Échap = annuler)", "Haz clic en una cara roja: se apoyará en la bandeja (Esc = cancelar)", "Clicca una faccia rossa: verrà appoggiata sul piatto (Esc = annulla)", "Click a red face: it will be laid on the plate (Esc = cancel)", "Rote Fläche anklicken: sie wird auf die Platte gelegt (Esc = abbrechen)"],
         "grav_btn"   => ["GRAVITÉ", "GRAVEDAD", "GRAVITÀ", "GRAVITY", "SCHWERKRAFT"],
@@ -641,6 +657,219 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "coupe_effacer" => ["Effacer le cadre", "Borrar el marco", "Cancella il riquadro", "Clear the frame", "Rahmen löschen"],
         "coupe_rate"    => ["Le cadre ne traverse pas l'objet : place la ligne à travers la pièce", "El marco no atraviesa el objeto: coloca la línea a través de la pieza", "Il riquadro non attraversa l'oggetto: metti la linea attraverso il pezzo", "The frame does not cross the object: draw the line across the part", "Der Rahmen schneidet das Objekt nicht: Linie quer durch das Teil ziehen"],
         "coupe_morceaux"=> ["morceaux", "piezas", "pezzi", "pieces", "Teile"],
+        "at_quitter" => ["Quitter les textures", "Salir de texturas", "Esci dalle texture", "Leave textures", "Texturen verlassen"],
+        "at_cible" => ["Clique sur l'objet à habiller (ou sélectionne-le) pour commencer", "Haz clic en el objeto a texturizar (o selecciónalo) para empezar", "Clicca sull'oggetto da rivestire (o selezionalo) per iniziare", "Click the object to texture (or select it) to start", "Klicke auf das zu texturierende Objekt (oder wähle es), um zu beginnen"],
+        "at_s_texture" => ["1 · Texture", "1 · Textura", "1 · Texture", "1 · Texture", "1 · Textur"],
+        "at_vide" => ["(aucune texture)", "(sin textura)", "(nessuna texture)", "(no texture)", "(keine Textur)"],
+        "at_mes_images" => ["Mes images", "Mis imágenes", "Le mie immagini", "My images", "Meine Bilder"],
+        "at_ajouter_image" => ["+ Ajouter une image…", "+ Añadir una imagen…", "+ Aggiungi un'immagine…", "+ Add an image…", "+ Bild hinzufügen…"],
+        "at_ajouter_image_tip" => ["PNG, JPEG ou BMP : le clair forme les bosses, le sombre les creux. L'image reste dans ta bibliothèque.", "PNG, JPEG o BMP: lo claro forma los relieves, lo oscuro los huecos. La imagen queda en tu biblioteca.", "PNG, JPEG o BMP: il chiaro forma i rilievi, lo scuro gli incavi. L'immagine resta nella tua libreria.", "PNG, JPEG or BMP: light makes bumps, dark makes hollows. The image stays in your library.", "PNG, JPEG oder BMP: Hell ergibt Erhebungen, Dunkel Vertiefungen. Das Bild bleibt in deiner Bibliothek."],
+        "at_retirer_image" => ["Retirer de ma bibliothèque", "Quitar de mi biblioteca", "Rimuovi dalla mia libreria", "Remove from my library", "Aus meiner Bibliothek entfernen"],
+        "at_taille" => ["Taille", "Tamaño", "Dimensione", "Size", "Größe"],
+        "at_taille_tip" => ["Largeur d'un motif sur l'objet", "Anchura de un motivo sobre el objeto", "Larghezza di un motivo sull'oggetto", "Width of one pattern tile on the object", "Breite eines Musters auf dem Objekt"],
+        "at_prof" => ["Profondeur", "Profundidad", "Profondità", "Depth", "Tiefe"],
+        "at_prof_tip" => ["Hauteur entre le creux et le sommet du relief", "Altura entre el hueco y la cima del relieve", "Altezza tra l'incavo e la cima del rilievo", "Height between the hollow and the top of the relief", "Höhe zwischen Vertiefung und Spitze des Reliefs"],
+        "at_relief" => ["En relief", "En relieve", "In rilievo", "Raised", "Erhaben"],
+        "at_grave" => ["Gravé", "Grabado", "Inciso", "Engraved", "Graviert"],
+        "at_s_pinceau" => ["2 · Exclure : zones lisses", "2 · Excluir: zonas lisas", "2 · Escludere: zone lisce", "2 · Exclude: smooth areas", "2 · Ausschließen: glatte Bereiche"],
+        "at_peindre" => ["Pinceau", "Pincel", "Pennello", "Brush", "Pinsel"],
+        "at_peindre_tip" => ["Peins en rouge les parties de l'objet qui doivent rester lisses (Maj : gommer)", "Pinta en rojo las partes del objeto que deben quedar lisas (Mayús: borrar)", "Dipingi in rosso le parti dell'oggetto che devono restare lisce (Maiusc: cancella)", "Paint in red the parts of the object that must stay smooth (Shift: erase)", "Male rot die Teile des Objekts, die glatt bleiben sollen (Umschalt: radieren)"],
+        "at_gommer" => ["Gomme", "Goma", "Gomma", "Eraser", "Radierer"],
+        "at_gommer_tip" => ["Rends la texture aux parties peintes en rouge", "Devuelve la textura a las partes pintadas en rojo", "Restituisci la texture alle parti dipinte in rosso", "Give the texture back to the parts painted red", "Gib den rot bemalten Teilen die Textur zurück"],
+        "at_rayon" => ["Pinceau", "Pincel", "Pennello", "Brush", "Pinsel"],
+        "at_dessus" => ["Dessus lisse", "Arriba lisa", "Sopra liscio", "Smooth top", "Oben glatt"],
+        "at_dessous" => ["Dessous lisse", "Abajo lisa", "Sotto liscio", "Smooth bottom", "Unten glatt"],
+        "at_lisse_tip" => ["Garde lisses les faces tournées vers le haut / vers le bas (le dessous reste bien à plat sur le plateau)", "Mantiene lisas las caras orientadas hacia arriba / abajo (la base queda plana sobre la cama)", "Mantiene lisce le facce rivolte verso l'alto / il basso (la base resta piatta sul piatto)", "Keeps faces pointing up / down smooth (the bottom stays flat on the bed)", "Hält nach oben / unten zeigende Flächen glatt (die Unterseite bleibt flach auf dem Druckbett)"],
+        "at_effacer" => ["Tout effacer", "Borrar todo", "Cancella tutto", "Clear all", "Alles löschen"],
+        "at_effacer_tip" => ["Retire toutes les zones peintes", "Quita todas las zonas pintadas", "Rimuove tutte le zone dipinte", "Removes all painted areas", "Entfernt alle bemalten Bereiche"],
+        "at_aide_pinceau" => ["Clic gauche sur l'objet : pinceau · Maj : outil inverse · clic droit : tourner la vue", "Clic izquierdo en el objeto: pincel · Mayús: herramienta inversa · clic derecho: girar la vista", "Clic sinistro sull'oggetto: pennello · Maiusc: strumento inverso · clic destro: ruota la vista", "Left-click the object: brush · Shift: opposite tool · right-click: turn the view", "Linksklick aufs Objekt: Pinsel · Umschalt: Gegenwerkzeug · Rechtsklick: Ansicht drehen"],
+        "at_appliquer" => ["Appliquer la texture", "Aplicar la textura", "Applica la texture", "Apply the texture", "Textur anwenden"],
+        "at_appliquer_tip" => ["Grave la texture dans l'objet (annulable)", "Graba la textura en el objeto (se puede deshacer)", "Incide la texture nell'oggetto (annullabile)", "Bakes the texture into the object (can be undone)", "Prägt die Textur ins Objekt (rückgängig machbar)"],
+        "at_calcul" => ["Aperçu en cours de calcul…", "Calculando la vista previa…", "Anteprima in calcolo…", "Computing preview…", "Vorschau wird berechnet…"],
+        "at_s_motif" => ["Réglages du motif", "Ajustes del motivo", "Impostazioni del motivo", "Pattern settings", "Mustereinstellungen"],
+        "at_joint" => ["Joints", "Juntas", "Giunti", "Joints", "Fugen"],
+        "at_arrondi" => ["Arrondi", "Redondeo", "Arrotondamento", "Roundness", "Rundung"],
+        "at_densite" => ["Densité", "Densidad", "Densità", "Density", "Dichte"],
+        "at_variante" => ["Variante", "Variante", "Variante", "Variant", "Variante"],
+        "at_inverser" => ["Inverser creux et bosses", "Invertir huecos y relieves", "Inverti incavi e rilievi", "Swap hollows and bumps", "Vertiefungen und Erhebungen tauschen"],
+        "at_contraste" => ["Contraste", "Contraste", "Contrasto", "Contrast", "Kontrast"],
+        "at_s_placement" => ["Placement", "Colocación", "Posizionamento", "Placement", "Platzierung"],
+        "at_projection" => ["Enveloppe", "Envoltura", "Avvolgimento", "Wrapping", "Umhüllung"],
+        "at_axe" => ["Axe", "Eje", "Asse", "Axis", "Achse"],
+        "at_fondu" => ["Fondu entre faces", "Fundido entre caras", "Sfumatura tra facce", "Blend between faces", "Übergang zwischen Flächen"],
+        "at_rotation" => ["Rotation", "Rotación", "Rotazione", "Rotation", "Drehung"],
+        "at_decalage_u" => ["Décalage horizontal", "Desplazamiento horizontal", "Spostamento orizzontale", "Horizontal offset", "Horizontaler Versatz"],
+        "at_decalage_v" => ["Décalage vertical", "Desplazamiento vertical", "Spostamento verticale", "Vertical offset", "Vertikaler Versatz"],
+        "at_proportion" => ["Garder les proportions", "Mantener proporciones", "Mantieni le proporzioni", "Keep proportions", "Proportionen beibehalten"],
+        "at_taille_v" => ["Hauteur du motif", "Altura del motivo", "Altezza del motivo", "Pattern height", "Musterhöhe"],
+        "at_s_finesse" => ["Finesse", "Finura", "Finezza", "Fineness", "Feinheit"],
+        "at_auto" => ["Réglage automatique", "Ajuste automático", "Regolazione automatica", "Automatic setting", "Automatische Einstellung"],
+        "at_resolution" => ["Plus petit détail", "Detalle más pequeño", "Dettaglio più piccolo", "Smallest detail", "Kleinstes Detail"],
+        "at_resolution_tip" => ["Longueur d'arête la plus fine produite : plus petit = plus net, plus lourd", "Arista más fina producida: más pequeño = más nítido, más pesado", "Spigolo più fine prodotto: più piccolo = più nitido, più pesante", "Finest edge produced: smaller = sharper, heavier", "Feinste erzeugte Kante: kleiner = schärfer, schwerer"],
+        "at_tolerance" => ["Précision", "Precisión", "Precisione", "Accuracy", "Genauigkeit"],
+        "at_tolerance_tip" => ["Écart toléré entre le relief voulu et le relief obtenu : plus petit = plus fidèle, plus de triangles", "Desviación tolerada entre el relieve deseado y el obtenido: más pequeño = más fiel, más triángulos", "Scarto tollerato tra rilievo voluto e ottenuto: più piccolo = più fedele, più triangoli", "Allowed gap between wanted and obtained relief: smaller = more faithful, more triangles", "Erlaubte Abweichung zwischen gewolltem und erhaltenem Relief: kleiner = genauer, mehr Dreiecke"],
+        "at_max" => ["Triangles au maximum", "Triángulos como máximo", "Triangoli al massimo", "Maximum triangles", "Höchstens Dreiecke"],
+        "at_adoucir" => ["Fondu au bord des zones lisses", "Fundido en el borde de las zonas lisas", "Sfumatura al bordo delle zone lisce", "Fade at the edge of smooth areas", "Übergang am Rand glatter Bereiche"],
+        "at_angle" => ["Angle du dessus / dessous", "Ángulo de arriba / abajo", "Angolo sopra / sotto", "Top / bottom angle", "Winkel oben / unten"],
+        "at_s_calques" => ["Calques", "Capas", "Livelli", "Layers", "Ebenen"],
+        "at_ajouter_calque" => ["+ Ajouter un calque", "+ Añadir una capa", "+ Aggiungi un livello", "+ Add a layer", "+ Ebene hinzufügen"],
+        "at_ajoute" => ["ajoute", "suma", "aggiunge", "adds", "addiert"],
+        "at_remplace" => ["remplace", "reemplaza", "sostituisce", "replaces", "ersetzt"],
+        "at_melange_tip" => ["Ajoute : s'additionne aux calques du dessous · Remplace : prend leur place", "Suma: se añade a las capas inferiores · Reemplaza: ocupa su lugar", "Aggiunge: si somma ai livelli sotto · Sostituisce: prende il loro posto", "Adds: stacks on the layers below · Replaces: takes their place", "Addiert: kommt zu den Ebenen darunter hinzu · Ersetzt: nimmt ihren Platz ein"],
+        "p_triplanaire" => ["Triplanaire (raccords fondus)", "Triplanar (uniones fundidas)", "Triplanare (raccordi sfumati)", "Triplanar (blended seams)", "Triplanar (weiche Übergänge)"],
+        "p_cube" => ["Cube (raccords nets)", "Cubo (uniones nítidas)", "Cubo (raccordi netti)", "Cube (sharp seams)", "Würfel (scharfe Übergänge)"],
+        "p_plan" => ["À plat, comme un tampon", "Plano, como un sello", "Piatto, come un timbro", "Flat, like a stamp", "Flach, wie ein Stempel"],
+        "p_cylindre" => ["Cylindre", "Cilindro", "Cilindro", "Cylinder", "Zylinder"],
+        "p_sphere" => ["Sphère", "Esfera", "Sfera", "Sphere", "Kugel"],
+        "m_briques" => ["Briques", "Ladrillos", "Mattoni", "Bricks", "Ziegel"],
+        "m_dalles" => ["Dalles", "Losas", "Piastrelle", "Tiles", "Fliesen"],
+        "m_hexagones" => ["Hexagones", "Hexágonos", "Esagoni", "Hexagons", "Sechsecke"],
+        "m_losanges" => ["Moletage en losanges", "Moleteado en rombos", "Zigrinatura a rombi", "Diamond knurling", "Rautenrändel"],
+        "m_stries" => ["Stries", "Estrías", "Scanalature", "Ridges", "Rillen"],
+        "m_vagues" => ["Vagues", "Olas", "Onde", "Waves", "Wellen"],
+        "m_ondulations" => ["Ondulations", "Ondulaciones", "Increspature", "Ripples", "Kreiswellen"],
+        "m_pois" => ["Pois", "Lunares", "Pois", "Dots", "Punkte"],
+        "m_ecailles" => ["Écailles", "Escamas", "Squame", "Scales", "Schuppen"],
+        "m_chevrons" => ["Chevrons", "Espiga", "Spina di pesce", "Chevrons", "Fischgrät"],
+        "m_tissage" => ["Vannerie", "Cestería", "Intreccio", "Basket weave", "Korbgeflecht"],
+        "m_carbone" => ["Fibre de carbone", "Fibra de carbono", "Fibra di carbonio", "Carbon fibre", "Kohlefaser"],
+        "m_pierres" => ["Pierres", "Piedras", "Pietre", "Stones", "Steine"],
+        "m_craquelures" => ["Craquelures", "Grietas", "Crepe", "Cracks", "Risse"],
+        "m_grain" => ["Grain", "Grano", "Grana", "Grain", "Körnung"],
+        "m_bois" => ["Bois", "Madera", "Legno", "Wood", "Holz"],
+        "m_cuir" => ["Cuir", "Cuero", "Pelle", "Leather", "Leder"],
+        "m_martele" => ["Martelé", "Martillado", "Martellato", "Hammered", "Gehämmert"],
+        "m_pyramides" => ["Pyramides", "Pirámides", "Piramidi", "Pyramids", "Pyramiden"],
+        "m_grillage" => ["Grillage", "Malla", "Rete", "Mesh", "Gitter"],
+        "m_damier" => ["Damier", "Damero", "Scacchiera", "Checkerboard", "Schachbrett"],
+        "m_triangles" => ["Triangles", "Triángulos", "Triangoli", "Triangles", "Dreiecke"],
+        "m_terrasses" => ["Terrasses", "Terrazas", "Terrazze", "Terraces", "Terrassen"],
+        "m_tressage" => ["Tresse", "Trenza", "Treccia", "Braid", "Zopf"],
+        "at_surface" => ["Surface", "Superficie", "Superficie", "Surface", "Fläche"],
+        "at_surface_tip" => ["Clic sur une face : toute la surface reste lisse, petites marches comprises (Maj : retirer)", "Clic en una cara: toda la superficie queda lisa, pequeños escalones incluidos (Mayús: quitar)", "Clic su una faccia: tutta la superficie resta liscia, piccoli gradini compresi (Maiusc: togli)", "Click a face: the whole surface stays smooth, small steps included (Shift: remove)", "Klick auf eine Fläche: die ganze Fläche bleibt glatt, kleine Stufen inbegriffen (Umschalt: entfernen)"],
+        "at_marche" => ["Marches franchies", "Escalones salvados", "Gradini superati", "Steps crossed", "Überbrückte Stufen"],
+        "at_marche_tip" => ["Hauteur de marche jusqu'à laquelle la surface continue (escaliers, paliers) ; 0 = surface strictement continue", "Altura de escalón hasta la que la superficie continúa (escaleras); 0 = superficie estrictamente continua", "Altezza del gradino fino a cui la superficie continua (scale); 0 = superficie strettamente continua", "Step height up to which the surface carries on (stairs, terraces); 0 = strictly continuous surface", "Stufenhöhe, bis zu der die Fläche weitergeht (Treppen, Absätze); 0 = streng zusammenhängende Fläche"],
+        "at_s_reglages_tex" => ["Réglages de la texture", "Ajustes de la textura", "Impostazioni della texture", "Texture settings", "Textureinstellungen"],
+        "at_s_reglages_pinceau" => ["Réglages du pinceau", "Ajustes del pincel", "Impostazioni del pennello", "Brush settings", "Pinseleinstellungen"],
+        "m_batons" => ["Bâtons rompus", "Espiga de madera", "Spina di pesce", "Herringbone planks", "Fischgrätparkett"],
+        "m_toler" => ["Tôle larmée", "Chapa lagrimada", "Lamiera mandorlata", "Tread plate", "Tränenblech"],
+        "m_golf" => ["Balle de golf", "Pelota de golf", "Pallina da golf", "Golf ball", "Golfball"],
+        "m_plots" => ["Plots", "Tetones", "Bottoni", "Studs", "Noppen"],
+        "m_croix" => ["Croix", "Cruces", "Croci", "Crosses", "Kreuze"],
+        "m_etoiles" => ["Étoiles", "Estrellas", "Stelle", "Stars", "Sterne"],
+        "m_capitonne" => ["Capitonné", "Capitoné", "Capitonné", "Quilted", "Gesteppt"],
+        "m_grecque" => ["Frise grecque", "Greca", "Greca", "Greek key", "Mäander"],
+        "m_zigzag" => ["Zigzag", "Zigzag", "Zigzag", "Zigzag", "Zickzack"],
+        "m_cercles" => ["Cercles", "Círculos", "Cerchi", "Circles", "Kreise"],
+        "m_spirale" => ["Spirale", "Espiral", "Spirale", "Spiral", "Spirale"],
+        "m_truchet" => ["Arcs de Truchet", "Arcos de Truchet", "Archi di Truchet", "Truchet arcs", "Truchet-Bögen"],
+        "m_labyrinthe" => ["Labyrinthe", "Laberinto", "Labirinto", "Maze", "Labyrinth"],
+        "m_niveaux" => ["Courbes de niveau", "Curvas de nivel", "Curve di livello", "Contour lines", "Höhenlinien"],
+        "m_ecorce" => ["Écorce", "Corteza", "Corteccia", "Bark", "Rinde"],
+        "m_sable" => ["Sable", "Arena", "Sabbia", "Sand", "Sand"],
+        "m_crepi" => ["Crépi", "Gotelé", "Intonaco", "Stucco", "Putz"],
+        "m_beton" => ["Béton", "Hormigón", "Calcestruzzo", "Concrete", "Beton"],
+        "m_eponge" => ["Éponge", "Esponja", "Spugna", "Sponge", "Schwamm"],
+        "m_peau_orange" => ["Peau d'orange", "Piel de naranja", "Buccia d'arancia", "Orange peel", "Orangenhaut"],
+        "m_alveoles" => ["Nid d'abeille", "Panal", "Nido d'ape", "Honeycomb", "Waben"],
+        "m_oeufs" => ["Boîte à œufs", "Huevera", "Portauova", "Egg crate", "Eierkarton"],
+        "m_gaufre" => ["Gaufre", "Gofre", "Waffle", "Waffle", "Waffel"],
+        "m_pneu" => ["Pneu", "Neumático", "Pneumatico", "Tyre tread", "Reifenprofil"],
+        "m_crampons" => ["Crampons", "Tacos", "Tasselli", "Lugs", "Stollen"],
+        "m_picots" => ["Grip · picots", "Grip · púas", "Grip · punte", "Grip · spikes", "Grip · Spitzen"],
+        "m_obliques" => ["Rainures obliques", "Ranuras oblicuas", "Scanalature oblique", "Slanted grooves", "Schrägrillen"],
+        "m_toile" => ["Toile", "Lona", "Tela", "Canvas", "Leinwand"],
+        "m_jean" => ["Jean", "Vaquero", "Jeans", "Denim", "Jeansstoff"],
+        "m_tricot" => ["Tricot", "Punto", "Maglia", "Knit", "Strick"],
+        "m_corde" => ["Corde", "Cuerda", "Corda", "Rope", "Seil"],
+        "m_mailles" => ["Cotte de mailles", "Cota de malla", "Cotta di maglia", "Chainmail", "Kettenhemd"],
+        "m_bambou" => ["Bambou", "Bambú", "Bambù", "Bamboo", "Bambus"],
+        "m_paves" => ["Pavés", "Adoquines", "Sampietrini", "Cobbles", "Pflaster"],
+        "m_tuiles" => ["Tuiles", "Tejas", "Tegole", "Roof tiles", "Dachziegel"],
+        "m_artdeco" => ["Art déco", "Art déco", "Art déco", "Art Deco", "Art déco"],
+        "m_argyle" => ["Losanges écossais", "Rombos escoceses", "Rombi scozzesi", "Argyle", "Argyle"],
+        "m_ondes" => ["Ondes croisées", "Ondas cruzadas", "Onde incrociate", "Cross waves", "Kreuzwellen"],
+        "m_bulles" => ["Bulles", "Burbujas", "Bolle", "Bubbles", "Blasen"],
+        "m_hachures" => ["Hachures", "Rayado cruzado", "Tratteggio", "Cross-hatch", "Schraffur"],
+        "m_quadrillage" => ["Grip · quadrillage", "Grip · cuadriculado", "Grip · zigrinatura", "Grip · checkering", "Grip · Fischhaut"],
+        "m_pointillage" => ["Grip · pointillage", "Grip · punteado", "Grip · puntinatura", "Grip · stippling", "Grip · Punzierung"],
+        "m_vulcanise" => ["Caoutchouc vulcanisé", "Caucho vulcanizado", "Gomma vulcanizzata", "Vulcanised rubber", "Vulkanisiertes Gummi"],
+        "m_micropointes" => ["Grip · micro-pointes", "Grip · micropúas", "Grip · micropunte", "Grip · micro-spikes", "Grip · Mikrospitzen"],
+        "m_pointes_diamant" => ["Grip · pointes de diamant", "Grip · puntas de diamante", "Grip · punte di diamante", "Grip · diamond points", "Grip · Diamantspitzen"],
+        "m_rape" => ["Grip · râpe", "Grip · escofina", "Grip · raspa", "Grip · rasp", "Grip · Raspel"],
+        "m_ventouses" => ["Ventouses", "Ventosas", "Ventose", "Suction cups", "Saugnäpfe"],
+        "m_griptape" => ["Grip · ruban antidérapant", "Grip · cinta antideslizante", "Grip · nastro antiscivolo", "Grip · grip tape", "Grip · Griptape"],
+        "m_anneaux" => ["Anneaux de manche", "Anillos de mango", "Anelli di manico", "Handle rings", "Griffringe"],
+        "f_toutes" => ["Toutes", "Todas", "Tutte", "All", "Alle"],
+        "f_geo" => ["Géométriques", "Geométricas", "Geometriche", "Geometric", "Geometrisch"],
+        "f_prise" => ["Prise & pneus", "Agarre y neumáticos", "Presa e pneumatici", "Traction & tyres", "Halt & Reifen"],
+        "f_grip" => ["Grip", "Grip", "Grip", "Grip", "Grip"],
+        "m_moletage_pointu" => ["Grip · moletage pointu", "Grip · moleteado afilado", "Grip · zigrinatura appuntita", "Grip · sharp knurl", "Grip · spitze Rändelung"],
+        "m_pyramides_tri" => ["Grip · pyramides triangulaires", "Grip · pirámides triangulares", "Grip · piramidi triangolari", "Grip · triangular pyramids", "Grip · Dreieckspyramiden"],
+        "m_epines" => ["Grip · épines", "Grip · espinas", "Grip · spine", "Grip · thorns", "Grip · Dornen"],
+        "at_grip_titre" => ["GRIP — pointes qui accrochent la peau et les gants", "GRIP — puntas que se agarran a la piel y los guantes", "GRIP — punte che fanno presa su pelle e guanti", "GRIP — points that bite into skin and gloves", "GRIP — Spitzen, die an Haut und Handschuhen greifen"],
+        "at_autres" => ["Autres textures", "Otras texturas", "Altre texture", "Other textures", "Weitere Texturen"],
+        "f_nature" => ["Nature", "Naturaleza", "Natura", "Nature", "Natur"],
+        "f_textile" => ["Tissus", "Tejidos", "Tessuti", "Fabrics", "Stoffe"],
+        "f_pavage" => ["Pavages", "Pavimentos", "Pavimentazioni", "Tilings", "Pflaster"],
+        "at_aide_exclure" => ["Choisis un outil puis clique sur l'objet : les zones rouges restent lisses. Clic droit : annuler la dernière action.", "Elige una herramienta y haz clic en el objeto: las zonas rojas quedan lisas. Clic derecho: deshacer la última acción.", "Scegli uno strumento e clicca sull'oggetto: le zone rosse restano lisce. Clic destro: annulla l'ultima azione.", "Pick a tool and click the object: red areas stay smooth. Right-click: undo the last action.", "Werkzeug wählen und aufs Objekt klicken: rote Bereiche bleiben glatt. Rechtsklick: letzte Aktion rückgängig."],
+        "at_negatif" => ["Négatif", "Negativo", "Negativo", "Negative", "Negativ"],
+        "at_negatif_tip" => ["Inverse la texture sur l'objet : les creux deviennent des bosses et inversement", "Invierte la textura sobre el objeto: los huecos se vuelven relieves y viceversa", "Inverte la texture sull'oggetto: gli incavi diventano rilievi e viceversa", "Inverts the texture on the object: hollows become bumps and vice versa", "Kehrt die Textur auf dem Objekt um: Vertiefungen werden Erhebungen und umgekehrt"],
+        "tx_titre" => ["Textures", "Texturas", "Texture", "Textures", "Texturen"],
+        "tx_tip" => ["Habille l'objet d'une texture en relief : motifs calculés ou tes propres images, zones lisses au pinceau", "Viste el objeto con una textura en relieve: motivos calculados o tus propias imágenes, zonas lisas con el pincel", "Riveste l'oggetto con una texture in rilievo: motivi calcolati o le tue immagini, zone lisce col pennello", "Gives the object a relief texture: generated patterns or your own images, smooth areas with the brush", "Versieht das Objekt mit einer Relieftextur: berechnete Muster oder eigene Bilder, glatte Bereiche mit dem Pinsel"],
+        "tx_toutes" => ["Toutes", "Todas", "Tutte", "All", "Alle"],
+        "tx_cherche" => ["Rechercher…", "Buscar…", "Cerca…", "Search…", "Suchen…"],
+        "tx_perso" => ["Image perso…", "Imagen propia…", "Immagine propria…", "Custom image…", "Eigenes Bild…"],
+        "tx_perso_tip" => ["Utiliser ta propre image (PNG, JPG) comme carte de hauteur : blanc = haut, noir = bas", "Usar tu propia imagen (PNG, JPG) como mapa de altura: blanco = alto, negro = bajo", "Usa una tua immagine (PNG, JPG) come mappa di altezza: bianco = alto, nero = basso", "Use your own image (PNG, JPG) as a height map: white = high, black = low", "Eigenes Bild (PNG, JPG) als Höhenkarte: Weiß = hoch, Schwarz = tief"],
+        "tx_proj" => ["Projection", "Proyección", "Proiezione", "Projection", "Projektion"],
+        "tx_p_tri" => ["Triplanaire", "Triplanar", "Triplanare", "Triplanar", "Triplanar"],
+        "tx_p_cube" => ["Cubique", "Cúbica", "Cubica", "Cubic (box)", "Kubisch"],
+        "tx_p_cyl" => ["Cylindrique", "Cilíndrica", "Cilindrica", "Cylindrical", "Zylindrisch"],
+        "tx_p_sph" => ["Sphérique", "Esférica", "Sferica", "Spherical", "Sphärisch"],
+        "tx_p_xy" => ["Plan XY", "Plano XY", "Piano XY", "Planar XY", "Ebene XY"],
+        "tx_p_xz" => ["Plan XZ", "Plano XZ", "Piano XZ", "Planar XZ", "Ebene XZ"],
+        "tx_p_yz" => ["Plan YZ", "Plano YZ", "Piano YZ", "Planar YZ", "Ebene YZ"],
+        "tx_proj_tip" => ["Triplanaire : formes complexes · Cubique : pièces à faces planes · Cylindrique : objets de révolution (axe Z)", "Triplanar: formas complejas · Cúbica: piezas de caras planas · Cilíndrica: objetos de revolución (eje Z)", "Triplanare: forme complesse · Cubica: pezzi a facce piane · Cilindrica: oggetti di rivoluzione (asse Z)", "Triplanar: complex shapes · Cubic: flat-faced parts · Cylindrical: turned objects (Z axis)", "Triplanar: komplexe Formen · Kubisch: Teile mit ebenen Flächen · Zylindrisch: Drehteile (Z-Achse)"],
+        "tx_taille" => ["Taille du motif", "Tamaño del motivo", "Dimensione motivo", "Pattern size", "Mustergröße"],
+        "tx_lier" => ["Lier U et V", "Vincular U y V", "Collega U e V", "Link U and V", "U und V koppeln"],
+        "tx_decal" => ["Décalage", "Desplazamiento", "Spostamento", "Offset", "Versatz"],
+        "tx_rot" => ["Rotation", "Rotación", "Rotazione", "Rotation", "Drehung"],
+        "tx_haut" => ["Hauteur du relief", "Altura del relieve", "Altezza rilievo", "Texture depth", "Relieftiefe"],
+        "tx_creuser" => ["Relief rentrant (creuse)", "Relieve hacia dentro", "Rilievo rientrante", "Inward (engrave)", "Nach innen (gravieren)"],
+        "tx_sym" => ["Symétrique (gris 50 % neutre)", "Simétrico (gris 50 % neutro)", "Simmetrico (grigio 50 % neutro)", "Symmetric (50 % grey = neutral)", "Symmetrisch (50 % Grau neutral)"],
+        "tx_sym_tip" => ["Le blanc ressort, le noir rentre : le volume de l'objet est conservé", "El blanco sale, el negro entra: se conserva el volumen", "Il bianco esce, il nero rientra: il volume è conservato", "White pushes out, black pushes in: volume is preserved", "Weiß nach außen, Schwarz nach innen: Volumen bleibt erhalten"],
+        "tx_inv" => ["Inverser la texture", "Invertir la textura", "Inverti la texture", "Invert texture", "Textur invertieren"],
+        "tx_lisse" => ["Lissage de la texture", "Suavizado de la textura", "Ammorbidimento texture", "Texture smoothing", "Textur-Glättung"],
+        "tx_fondu" => ["Fondu des raccords", "Fundido de uniones", "Sfumatura giunzioni", "Seam blending", "Nahtüberblendung"],
+        "tx_bande" => ["Largeur de raccord", "Ancho de unión", "Larghezza giunzione", "Seam band width", "Nahtbreite"],
+        "tx_cap" => ["Angle des capots", "Ángulo de tapas", "Angolo dei tappi", "Cap angle", "Deckelwinkel"],
+        "tx_masque" => ["Laisser lisse les faces", "Dejar lisas las caras", "Lasciare lisce le facce", "Keep faces smooth", "Flächen glatt lassen"],
+        "tx_bas" => ["Dessous jusqu'à", "Inferior hasta", "Sotto fino a", "Bottom up to", "Unten bis"],
+        "tx_dessus" => ["Dessus jusqu'à", "Superior hasta", "Sopra fino a", "Top up to", "Oben bis"],
+        "tx_masque_tip" => ["Faces inclinées de moins de cet angle par rapport à l'horizontale laissées sans texture (0 = tout texturer). Le dessous reste ainsi bien à plat sur le plateau.", "Las caras con inclinación menor que este ángulo quedan sin textura (0 = todo)", "Le facce inclinate meno di questo angolo restano senza texture (0 = tutto)", "Faces tilted less than this angle from horizontal stay untextured (0 = texture everything). Keeps the bottom flat on the bed.", "Flächen mit weniger Neigung als dieser Winkel bleiben ohne Textur (0 = alles)"],
+        "tx_surplomb" => ["Pas de nouveau porte-à-faux", "Sin nuevos voladizos", "Nessuno sbalzo nuovo", "No new overhangs", "Keine neuen Überhänge"],
+        "tx_surplomb_tip" => ["Aucun point ne descend : le relief part sur le côté au lieu de créer un porte-à-faux", "Ningún punto baja: el relieve va hacia el lado", "Nessun punto scende: il rilievo va di lato", "No vertex moves down: texture is pushed sideways instead of creating overhangs", "Kein Punkt sinkt: Relief geht zur Seite statt Überhang"],
+        "tx_plat" => ["Dessous parfaitement plat", "Base perfectamente plana", "Base perfettamente piana", "Perfectly flat bottom", "Perfekt flache Unterseite"],
+        "tx_res" => ["Résolution", "Resolución", "Risoluzione", "Resolution", "Auflösung"],
+        "tx_res_tip" => ["Longueur d'arête maxi après subdivision : plus petit = détails plus fins, calcul plus long", "Longitud máx. de arista tras subdividir: más pequeño = más detalle", "Lunghezza max spigolo dopo suddivisione: più piccolo = più dettaglio", "Max edge length after subdivision: smaller = finer detail, slower", "Max. Kantenlänge nach Unterteilung: kleiner = feiner, langsamer"],
+        "tx_max" => ["Triangles maxi", "Triángulos máx.", "Triangoli max", "Max triangles", "Max. Dreiecke"],
+        "tx_avance" => ["Réglages avancés", "Ajustes avanzados", "Impostazioni avanzate", "Advanced settings", "Erweiterte Einstellungen"],
+        "tx_apercu" => ["Aperçu en direct", "Vista previa en vivo", "Anteprima dal vivo", "Live preview", "Live-Vorschau"],
+        "tx_apercu_tip" => ["Calcule un aperçu allégé à chaque réglage ; l'objet n'est modifié qu'avec APPLIQUER", "Calcula una vista previa ligera; el objeto solo cambia con APLICAR", "Calcola un'anteprima leggera; l'oggetto cambia solo con APPLICA", "Computes a light preview on every change; the object only changes with APPLY", "Berechnet eine leichte Vorschau; das Objekt ändert sich erst mit ANWENDEN"],
+        "tx_appliquer" => ["Appliquer la texture", "Aplicar textura", "Applica texture", "Apply texture", "Textur anwenden"],
+        "tx_retirer" => ["Retirer l'aperçu", "Quitar vista previa", "Rimuovi anteprima", "Remove preview", "Vorschau entfernen"],
+        "tx_calcul" => ["Aperçu en calcul…", "Calculando vista previa…", "Calcolo anteprima…", "Computing preview…", "Vorschau wird berechnet…"],
+        "tx_vu" => ["Aperçu", "Vista previa", "Anteprima", "Preview", "Vorschau"],
+        "tx_ok" => ["Texture appliquée", "Textura aplicada", "Texture applicata", "Texture applied", "Textur angewendet"],
+        "tx_plafond" => ["plafond de subdivision atteint : augmente la résolution", "límite de subdivisión alcanzado: aumenta la resolución", "limite di suddivisione raggiunto: aumenta la risoluzione", "subdivision cap reached: increase the resolution", "Unterteilungsgrenze erreicht: Auflösung erhöhen"],
+        "tx_c_geometric" => ["Géométriques", "Geométricas", "Geometriche", "Geometric", "Geometrisch"],
+        "tx_c_patterns" => ["Motifs", "Motivos", "Motivi", "Patterns", "Muster"],
+        "tx_c_organic" => ["Organiques", "Orgánicas", "Organiche", "Organic", "Organisch"],
+        "tx_c_fabric" => ["Tissus", "Tejidos", "Tessuti", "Fabric", "Stoff"],
+        "tx_c_natural" => ["Naturelles", "Naturales", "Naturali", "Natural", "Natürlich"],
+        "tx_c_grip" => ["Grip", "Agarre", "Presa", "Grip", "Griff"],
+        "tx_c_mold" => ["Grains de moule", "Granos de molde", "Grane stampo", "Mold grains", "Formnarben"],
+        "tx_c_tires" => ["Pneus", "Neumáticos", "Pneumatici", "Tires", "Reifen"],
         "creux_btn"     => ["Creuser", "Vaciar", "Svuota", "Hollow", "Aushöhlen"],
         "creux_tip"     => ["L'objet devient une coque de l'épaisseur choisie : moins de matière et d'impression, même aspect extérieur",
                             "El objeto se convierte en una carcasa del grosor elegido: menos material y tiempo de impresión, mismo aspecto exterior",
@@ -1715,6 +1944,8 @@ fn title_box(ui: &mut egui::Ui, text: &str, size: f32, w: f32) -> egui::Response
 fn section(ui: &mut egui::Ui, key: &str, text: &str) -> bool {
     let id = ui.make_persistent_id(key);
     let mut open = ui.data_mut(|d| *d.get_persisted_mut_or(id, false));
+    // test sans clic : PATCH3D_SECTION=<clé> ouvre cette section au démarrage
+    if ui.ctx().frame_nr() < 3 && std::env::var("PATCH3D_SECTION").as_deref() == Ok(key) { open = true; ui.data_mut(|d| d.insert_persisted(id, true)); }
     let blue = title_blue(ui);
     let (r, resp) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 24.0), egui::Sense::click());
     if resp.clicked() { open = !open; ui.data_mut(|d| d.insert_persisted(id, open)); }
@@ -2446,6 +2677,15 @@ fn draw_sortir(p: &egui::Painter, r: egui::Rect, col: egui::Color32) {
 }
 
 /// Logo SURFACE : deux surfaces parallèles en perspective, flèche vers le bas entre les deux.
+/// Aire en mm² avec séparateur des milliers (2 173,4).
+fn fmt_aire(a: f32) -> String {
+    let e = a.round() as i64;
+    let s = e.to_string();
+    let mut o = String::new();
+    for (k, c) in s.chars().enumerate() { if k > 0 && (s.len() - k) % 3 == 0 { o.push(' '); } o.push(c); }
+    if a < 100.0 { format!("{a:.1}") } else { o }
+}
+
 fn draw_surface(p: &egui::Painter, r: egui::Rect, col: egui::Color32) {
     let st = egui::Stroke::new(2.0, col);
     let plaque = |yh: f32, yb: f32| vec![egui::pos2(r.left() + r.width() * 0.22, yh), egui::pos2(r.right() - r.width() * 0.02, yh),
@@ -2530,6 +2770,8 @@ enum FormeOp { Pos(Vec3), Poser, Rot(usize, f32), Miroir(usize), Echelle(Vec3), 
 
 /// Sélection multiple (Ctrl+clic, comme 3D Builder) : objets surlignés en plus de `sel`.
 static SEL_PLUS: std::sync::Mutex<Vec<usize>> = std::sync::Mutex::new(Vec::new());
+/// Aperçu TEXTURES : (objet remplacé à l'affichage, VAO de l'aperçu, nombre de sommets).
+static APERCU_TX: std::sync::Mutex<Option<(usize, glow::NativeVertexArray, i32, bool)>> = std::sync::Mutex::new(None);
 /// Pièce surlignée d'un objet fait de plusieurs pièces : (objet, VAO de la pièce, nombre de sommets).
 static PIECE_SEL: std::sync::Mutex<Option<(usize, glow::NativeVertexArray, i32)>> = std::sync::Mutex::new(None);
 
@@ -2610,8 +2852,16 @@ unsafe fn draw_view(gl: &glow::Context, program: glow::NativeProgram, scene: &[O
         // aperçu de rotation (outil de rotation) : matrice de modèle sur l'objet concerné seulement
         let m = xf.filter(|x| x.0 == i).map_or(Mat4::IDENTITY, |x| x.1);
         gl.uniform_matrix_4_f32_slice(u.model.as_ref(), false, &m.to_cols_array());
-        gl.bind_vertex_array(Some(o.vao));
-        gl.draw_arrays(glow::TRIANGLES, 0, o.nverts);
+        match *APERCU_TX.lock().unwrap() {
+            Some((k, vao, n, cols)) if k == i => {
+                // couleurs du mode Texture (masques) avec l'éclairage normal : uUseCol = 2
+                gl.uniform_1_f32(u.usecol.as_ref(), if cols { 2.0 } else { 0.0 });
+                gl.uniform_1_f32(u.sel.as_ref(), 0.0);
+                gl.bind_vertex_array(Some(vao));
+                gl.draw_arrays(glow::TRIANGLES, 0, n);
+            }
+            _ => { gl.bind_vertex_array(Some(o.vao)); gl.draw_arrays(glow::TRIANGLES, 0, o.nverts); }
+        }
         if let Some((_, vao, n)) = piece_ici {
             // la pièce choisie, en orange de sélection, juste devant l'objet
             gl.uniform_1_f32(u.sel.as_ref(), 1.0); gl.uniform_1_f32(u.usecol.as_ref(), 0.0);
@@ -2746,7 +2996,7 @@ fn stamp_logo(rgb: &mut [u8], w: u32, h: u32) {
 
 /// Calcul lourd lancé en arrière-plan (la fenêtre reste fluide, la jauge avance).
 #[derive(Clone, Copy, PartialEq)]
-enum JobKind { Lissage, Repair, Simp, Relief, Wire, Bool, Coupe, Creux, Texte }
+enum JobKind { Lissage, Repair, Simp, Relief, Wire, Bool, Coupe, Creux, Texte, Texture }
 type JobOut = Result<(Vec<f32>, String), String>;
 struct Job { obj: usize, kind: JobKind, t0: std::time::Instant, handle: std::thread::JoinHandle<JobOut> }
 fn spawn_job(obj: usize, kind: JobKind, f: impl FnOnce() -> JobOut + Send + 'static) -> Job {
@@ -2754,7 +3004,7 @@ fn spawn_job(obj: usize, kind: JobKind, f: impl FnOnce() -> JobOut + Send + 'sta
     Job { obj, kind, t0: std::time::Instant::now(), handle: std::thread::spawn(f) }
 }
 fn job_key(k: JobKind) -> &'static str {
-    match k { JobKind::Lissage => "lissage", JobKind::Repair => "repair", JobKind::Simp => "simplif", JobKind::Relief => "relief_j", JobKind::Wire => "wireframe", JobKind::Bool => "bool_j", JobKind::Coupe => "coupe_btn", JobKind::Creux => "creux_btn", JobKind::Texte => "texte_btn" }
+    match k { JobKind::Lissage => "lissage", JobKind::Repair => "repair", JobKind::Simp => "simplif", JobKind::Relief => "relief_j", JobKind::Wire => "wireframe", JobKind::Bool => "bool_j", JobKind::Coupe => "coupe_btn", JobKind::Creux => "creux_btn", JobKind::Texte => "texte_btn", JobKind::Texture => "tx_titre" }
 }
 
 fn main() {
@@ -2883,7 +3133,7 @@ fn main() {
     });
     // MODE VISIONNEUSE : lancé avec un fichier (double-clic sur un objet 3D) -> l'objet seul, sans
     // outils ni règles ; la souris tourne autour ; double-clic gauche = toute l'interface.
-    let viewer_start = !path.starts_with("prim:") && path != "logo" && path != "demo";
+    let viewer_start = !path.starts_with("prim:") && path != "logo" && path != "demo" && std::env::var_os("PATCH3D_EDIT").is_none(); // test : PATCH3D_EDIT = fichier ouvert directement en édition
     let titre = if viewer_start {
         format!("3D-Patch — {}", std::path::Path::new(&path).file_name().map_or(path.clone(), |n| n.to_string_lossy().into_owned()))
     } else { "3D-Patch".to_string() };
@@ -3204,6 +3454,12 @@ fn main() {
     // CREUSER : épaisseur de paroi, trou d'évacuation (Ø), retour visible dans le panneau
     let (mut creux_ep, mut creux_trou, mut creux_diam) = (2.0f32, false, 3.0f32); // trou décoché par défaut
     let mut creux_msg: Option<String> = None;
+    // MODE TEXTURE (atelier.rs, moteur matiere) : état et panneau ; aperçu GL affiché à la place de l'objet
+    let mut tex = atelier::Atelier::new();
+    tex.actif = matches!(std::env::var("PATCH3D_OPEN").as_deref(), Ok("texture") | Ok("pinceau")); // test sans clic (pinceau = armé)
+    if std::env::var("PATCH3D_OPEN").as_deref() == Ok("pinceau") { tex.armer_pinceau(); }
+    let mut tx_vue: Option<(usize, Obj)> = None;
+    let mut tx_curseur: Option<(egui::Pos2, f32)> = None; // cercle du pinceau à l'écran (points)
     // marqueur temporaire du trou d'évacuation (fil de fer rouge) : (objet, son coin min, segments) ;
     // disparaît quand l'objet est désélectionné, déplacé ou modifié
     let mut trou_marque: Option<(usize, Vec3, Vec<[Vec3; 2]>)> = None; // retour visible (succès / erreur) dans le panneau
@@ -3245,6 +3501,10 @@ fn main() {
     // SURFACE : (objet, faces planes de pose affichées en rouge), face sous la souris
     let mut surf: Option<(usize, Vec<gravite::FacePose>)> = None;
     let mut surf_survol: Option<usize> = None;
+    // ANALYSE DES SURFACES (bouton SURFACE d'OBJ-AXE) : calcul en arrière-plan (objet, départ, fil) ;
+    // ligne de la liste survolée (la face s'allume sur l'objet comme au survol de la vue)
+    let mut surf_analyse: Option<(usize, std::time::Instant, std::thread::JoinHandle<Vec<gravite::FacePose>>)> = None;
+    let mut surf_liste: Option<usize> = None;
     // Panneau BOOLÉENS : remplace le panneau d'outils ; A = objet gardé, B = objet outil
     // PRÉPARATION À L'IMPRESSION (3D-IMP) : panneau qui occupe toute la colonne de droite
     let mut panneau_imp = std::env::var("PATCH3D_OPEN").as_deref() == Ok("impression");
@@ -3317,7 +3577,7 @@ fn main() {
     let mut fin_outil = false; // booléen / découpe terminé : retour à la boîte à outils normale
     let mut panneau_prec = false;
     // une seule fonction ouverte à la fois : OBJ-AXE, BOOLÉENS, FORME, 3D-IMP, éclairage, outils de tracé
-    let mut modes_prec = [false; 6]; // état du panneau Booléens à l'image précédente (ouverture = passage en 4 vues)
+    let mut modes_prec = [false; 7]; // état du panneau Booléens à l'image précédente (ouverture = passage en 4 vues)
     let mut coupe_glisse: Option<(ViewKind, Vec3)> = None; // cadre déplacé à la souris
     let mut coupe_ecart_job: Option<(Vec3, u8)> = None; // écart et choix au lancement du calcul
     let mut bool_suppr: Vec<usize> = Vec::new(); // objets à retirer de la scène quand le calcul aboutit
@@ -3408,7 +3668,9 @@ fn main() {
             let sf = window.scale_factor() as f32;
             // visionneuse : ni barre ni panneau -> la vue occupe toute la fenêtre
             let bar_px = if viewer { 0.0 } else { BAR_H * sf };
-            let side_px = if viewer { 0.0 } else { PANEL_W * sf };
+            // mode Texture : colonne élargie + bandeau en haut (les vues 3D commencent dessous)
+            let panel_w = if tex.actif && !viewer { PANEL_TEX_W } else { PANEL_W };
+            let side_px = if viewer { 0.0 } else { panel_w * sf };
             let rect_of = |m: ViewMode, k: ViewKind| view::screen_rect(m, k, wf, hf, bar_px, side_px);
             let aspect_of = |m: ViewMode, k: ViewKind| rect_of(m, k).map(|(_, _, w, h)| w / h.max(1.0)).unwrap_or(1.0);
 
@@ -3419,7 +3681,7 @@ fn main() {
                     match event.logical_key {
                         // Échap : ferme d'abord l'outil de rotation (sinon quitte)
                         Key::Named(NamedKey::Escape) if panneau_texte && txt_sel => { txt_sel = false; window.request_redraw(); }
-                        Key::Named(NamedKey::Escape) if surf.is_some() => { surf = None; surf_survol = None; window.request_redraw(); }
+                        Key::Named(NamedKey::Escape) if surf.is_some() || surf_analyse.is_some() => { surf = None; surf_survol = None; surf_analyse = None; window.request_redraw(); }
                         Key::Named(NamedKey::Escape) => if coupe_arme || coupe.is_some() { coupe_arme = false; coupe = None; coupe_tir = None; coupe_etape = 0; window.request_redraw(); }
                             else if light_mode { light_mode = false; window.request_redraw(); }
                             else if gizmo.is_some() { gizmo = None; window.request_redraw(); } else { elwt.exit() },
@@ -3505,6 +3767,7 @@ fn main() {
                 }
                 WindowEvent::MouseInput { state, button, .. } if !egui_grab => {
                     let pressed = state == ElementState::Pressed;
+                    if !pressed && button == MouseButton::Left && tex.peinture { tex.peinture = false; window.request_redraw(); }
                     if pressed {
                         if let Some(k) = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32) {
                             let rect = rect_of(mode, k).unwrap();
@@ -3529,6 +3792,19 @@ fn main() {
                                 rot_view = k; drag = None;
                             } else {
                             match button {
+                                // MODE TEXTURE : pinceau des zones lisses (Maj = l'outil inverse)
+                                MouseButton::Left if tex.actif && tex.outil.is_some() && nav_tool.is_none() && !viewer => {
+                                    let cible = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 { Some(0) } else { None });
+                                    match cible.and_then(|i| atelier::Atelier::viser(ro, rd, &scene[i].tris).map(|h| (i, h))) {
+                                        Some((i, (t, p))) => {
+                                            // SURFACE : un clic prend toute la surface (marches franchies) ; sinon pinceau rond
+                                            if tex.outil == Some(atelier::Outil::Surface) { tex.surface(&scene[i].verts, t, mods.shift_key()); }
+                                            else { tex.peindre(&scene[i].tris, &scene[i].verts, p, rd, mods.shift_key()); tex.peinture = true; }
+                                            drag = None;
+                                        }
+                                        None => drag = Some(if k == ViewKind::ThreeD { Drag::Orbit(k) } else { Drag::Pan(k) }),
+                                    }
+                                }
                                 MouseButton::Left if viewer => {
                                     let dbl = last_left.map_or(false, |(t, p)| t.elapsed().as_millis() < 400 && (p.0 - cursor.0).abs() < 6.0 && (p.1 - cursor.1).abs() < 6.0);
                                     if dbl {
@@ -3708,7 +3984,10 @@ fn main() {
                                     if let Some(k) = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32) {
                                         let rect = rect_of(mode, k).unwrap();
                                         let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
-                                        if let Some((i, _, _)) = pick_scene(&mvp, cursor, rect, &scene) {
+                                        // MODE TEXTURE : clic droit = annuler la dernière action sur les zones lisses (dans l'ordre)
+                                        if tex.actif {
+                                            tex.annuler_exclusion();
+                                        } else if let Some((i, _, _)) = pick_scene(&mvp, cursor, rect, &scene) {
                                             let pos = egui::pos2(cursor.0 as f32 / sf, cursor.1 as f32 / sf);
                                             // sélection multiple (Maj / Ctrl+clic) contenant l'objet : menu Grouper
                                             let groupe: Vec<usize> = if multi.len() >= 2 && multi.contains(&i) { multi.clone() } else { Vec::new() };
@@ -3818,6 +4097,27 @@ fn main() {
                 }
                 WindowEvent::CursorMoved { position, .. } => {
                     cursor = (position.x, position.y);
+                    // MODE TEXTURE : coup de pinceau en glissant, cercle du pinceau sous le curseur
+                    if tex.actif && tex.outil.is_some() {
+                        let sf = window.scale_factor() as f32;
+                        let mut c = None;
+                        if let Some(k) = view::view_at(mode, wf, hf, bar_px, side_px, cursor.0 as f32, cursor.1 as f32) {
+                            let rect = rect_of(mode, k).unwrap();
+                            let (mvp, _) = view_mvp(k, &orbit, &ortho, base, aspect_of(mode, k));
+                            let (ro, rd) = ray_from(&mvp, cursor, rect);
+                            if let Some(i) = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 { Some(0) } else { None }) {
+                                if let Some((_, p)) = atelier::Atelier::viser(ro, rd, &scene[i].tris) {
+                                    if tex.peinture { tex.peindre(&scene[i].tris, &scene[i].verts, p, rd, mods.shift_key()); }
+                                    if let Some(rp) = tex.rayon_pinceau() {
+                                        // rayon à l'écran : projection d'un point du cercle perpendiculaire au regard
+                                        let side = rd.cross(Vec3::Z).normalize_or(Vec3::X);
+                                        if let (Some(a), Some(b)) = (project(&mvp, p, rect, sf), project(&mvp, p + side * rp, rect, sf)) { c = Some((a, (b - a).length())); }
+                                    }
+                                }
+                            }
+                        }
+                        if c != tx_curseur || tex.peinture { tx_curseur = c; window.request_redraw(); }
+                    } else { tx_curseur = None; }
                     // Projecteur : glisser sur le dôme
                     if let Some(k) = light_drag {
                         if let Some(rect) = rect_of(mode, k) {
@@ -4096,7 +4396,7 @@ fn main() {
                     if multi.len() < 2 || !sel.map_or(false, |s| multi.contains(&s)) { multi.clear(); }
                     // clé commune (tout sauf les caméras) + caméra de chaque vue : une vue n'est redessinée que si
                     // la clé commune ou SA caméra change
-                    macro_rules! cle_commune { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {coupe_etape} {:?} {surf_survol:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
+                    macro_rules! cle_commune { () => { format!("{} {} {} {} {} {} {} {:?} {wf} {hf} {bar_px} {side_px} {:?} {:?} {:?} {multi:?} {coupe:?} {coupe_sel} {coupe_etape} {:?} {surf_survol:?} {surf_liste:?} {panneau_imp} {imp_voir_s} {imp_voir_f} {}",
                         cache3d::generation(), code_de_vue(mode), disp as u8, dark, show_ruler, show_grid, axes_visibles(),
                         sel, base, lumiere_courante(),
                         gizmo.as_ref().and_then(|g| g.matrix().map(|m| (g.obj, m))), surf.as_ref().map(|s| (s.0, s.1.len())), imp_an.0) } }
@@ -4106,7 +4406,7 @@ fn main() {
                     let cle_dessinee = cle_scene!();
                     // outils et panneaux ouverts (ce qui change les tracés par-dessus les vues sans toucher à la 3D) :
                     // tout changement pendant l'image, au début ou dans l'interface, redemande une image tout de suite
-                    macro_rules! cle_outils { () => { format!("{:?} {:?}", (panneau_bool, panneau_texte, txt_image, panneau_forme, panneau_imp, light_mode, draw_tool.is_some()), (
+                    macro_rules! cle_outils { () => { format!("{:?} {:?}", (panneau_bool, panneau_texte, txt_image, panneau_forme, panneau_imp, light_mode, draw_tool.is_some(), tex.actif), (
                         gizmo.is_some(), coupe_arme, coupe_etape, viewer, code_de_vue(mode), txt_cadre.is_some(), txt_sel, coupe.is_some())) } }
                     let outils_avant = cle_outils!();
                     *SEL_PLUS.lock().unwrap() = multi.clone();
@@ -4115,16 +4415,17 @@ fn main() {
                     if fin_outil { panneau_bool = false; fin_outil = false; }
                     // une seule fonction ouverte : celle qui vient de s'ouvrir ferme toutes les autres
                     {
-                        let ouverts = [gizmo.is_some(), panneau_bool, panneau_forme, panneau_imp, light_mode, draw_tool.is_some()];
-                        if let Some(k) = (0..6).find(|&k| ouverts[k] && !modes_prec[k]) {
+                        let ouverts = [gizmo.is_some(), panneau_bool, panneau_forme, panneau_imp, light_mode, draw_tool.is_some(), tex.actif];
+                        if let Some(k) = (0..7).find(|&k| ouverts[k] && !modes_prec[k]) {
                             if k != 0 { gizmo = None; surf = None; surf_survol = None; }
                             if k != 1 { panneau_bool = false; }
                             if k != 2 { panneau_forme = false; }
                             if k != 3 { panneau_imp = false; }
                             if k != 4 { light_mode = false; }
                             if k != 5 { draw_tool = None; }
+                            if k != 6 { tex.fermer(); }
                         }
-                        modes_prec = [gizmo.is_some(), panneau_bool, panneau_forme, panneau_imp, light_mode, draw_tool.is_some()];
+                        modes_prec = [gizmo.is_some(), panneau_bool, panneau_forme, panneau_imp, light_mode, draw_tool.is_some(), tex.actif];
                     }
                     // ouverture du panneau Booléens : passage en 4 vues ; à sa sortie, retour à la vue 3D standard
                     if panneau_bool && !panneau_prec && mode != ViewMode::Quad { mode_avant_coupe = Some(mode); mode = ViewMode::Quad; }
@@ -4298,7 +4599,7 @@ fn main() {
                                 // SURFACE : faces de pose en rouge sur l'objet (celle sous la souris plus vive)
                                 if let Some((_, faces)) = surf.as_ref() {
                                     for (fi, f) in faces.iter().enumerate() {
-                                        let vif = surf_survol == Some(fi);
+                                        let vif = surf_survol.or(surf_liste) == Some(fi);
                                         plaque.sur_objet(&gl, &a, &f.tris, if vif { [1.0, 0.10, 0.10, 0.85] } else { [0.95, 0.15, 0.15, 0.55] });
                                     }
                                 }
@@ -4341,6 +4642,7 @@ fn main() {
                     let mut relief_req = false;
                     let mut wire_req = false;
                     let mut creux_req = false;
+                    let mut tx_act = atelier::Actions::default();
                     let mut resize_final = false;
                     // molette sur TAILLE : historique une fois la série de crans terminée (0,6 s sans cran)
                     if let Some(t) = taille_molette {
@@ -4363,7 +4665,7 @@ fn main() {
                         // (panneaux fixes = hors de la zone de vue 3D : à droite du panneau ou dans la barre du bas ;
                         //  is_pointer_over_area ne voit que les fenêtres flottantes : menus, bulles)
                         let sr = ctx.screen_rect();
-                        let hors_vue = ctx.input(|i| i.pointer.interact_pos()).map_or(false, |p| p.x > sr.right() - PANEL_W || p.y > sr.bottom() - BAR_H);
+                        let hors_vue = ctx.input(|i| i.pointer.interact_pos()).map_or(false, |p| p.x > sr.right() - panel_w || p.y > sr.bottom() - BAR_H);
                         ui_pressed = ctx.input(|i| i.pointer.any_pressed()) && (hors_vue || ctx.is_pointer_over_area());
                         // …sauf la barre de navigation de la vue (tourner/zoomer = permis) et le bandeau d'info
                         if ui_pressed {
@@ -4748,7 +5050,7 @@ fn main() {
                             if ctx.frame_nr() >= 8 { grav_req = true; grav_test = false; }
                         }
                         // outil de rotation refermé : le choix de face s'arrête aussi
-                        if gizmo.is_none() && surf.is_some() { surf = None; surf_survol = None; }
+                        if gizmo.is_none() && (surf.is_some() || surf_analyse.is_some()) { surf = None; surf_survol = None; surf_analyse = None; }
                         let mut surf_req = false;
                         // largeur de SURFACE / GRAVITÉ selon la langue (SCHWERKRAFT…) : rien ne déborde
                         let larg_btn = |t: &str| (ctx.fonts(|f| f.layout_no_wrap(t.to_string(), egui::FontId::proportional(13.5), egui::Color32::BLACK).size().x) + 48.0).max(118.0);
@@ -4760,7 +5062,7 @@ fn main() {
                                 .fixed_pos(coin_s).pivot(egui::Align2::RIGHT_BOTTOM).show(ctx, |ui| {
                                     let (rect, resp) = ui.allocate_exact_size(egui::vec2(w_surf, 38.0), egui::Sense::click());
                                     let pnt = ui.painter();
-                                    let actif = surf.is_some();
+                                    let actif = surf.is_some() || surf_analyse.is_some();
                                     let fond = if actif { egui::Color32::from_rgb(220, 50, 45) } else if resp.hovered() { egui::Color32::from_rgb(250, 222, 110) } else { JAUNE };
                                     pnt.rect_filled(rect, 7.0, fond);
                                     pnt.rect_stroke(rect, 7.0, egui::Stroke::new(1.4, egui::Color32::from_rgb(255, 232, 150)));
@@ -4772,17 +5074,68 @@ fn main() {
                         }
                         if std::env::var("PATCH3D_OPEN").as_deref() == Ok("surface") && ctx.frame_nr() == 6 && gizmo.is_some() { surf_req = true; }
                         if surf_req {
-                            if surf.is_some() { surf = None; surf_survol = None; }
+                            if surf.is_some() || surf_analyse.is_some() { surf = None; surf_survol = None; surf_analyse = None; }
                             else {
                                 match gizmo.as_ref().map(|g| g.obj).or(sel).filter(|&i| i < scene.len() && scene[i].nverts > 0) {
                                     None => status_msg = Some((tr(lang, "surf_nosel").into(), true, std::time::Instant::now())),
                                     Some(i) => {
-                                        let f = gravite::faces_de_pose(&scene[i].verts);
-                                        if f.is_empty() { status_msg = Some((tr(lang, "surf_aucune").into(), true, std::time::Instant::now())); }
-                                        else { surf = Some((i, f)); surf_survol = None; status_msg = Some((tr(lang, "surf_choisir").into(), false, std::time::Instant::now())); }
+                                        // analyse en arrière-plan : l'appli reste fluide, la boîte montre l'avancement
+                                        let v = scene[i].verts.clone();
+                                        progress::reset(); // la jauge de la colonne de droite suit l'analyse
+                                        surf_analyse = Some((i, std::time::Instant::now(), std::thread::spawn(move || gravite::faces_de_pose(&v))));
                                     }
                                 }
                             }
+                        }
+                        if surf_analyse.as_ref().map_or(false, |a| a.2.is_finished()) {
+                            let (i, _, h) = surf_analyse.take().unwrap();
+                            let f = h.join().unwrap_or_default();
+                            if i >= scene.len() {}
+                            else if f.is_empty() { status_msg = Some((tr(lang, "surf_aucune").into(), true, std::time::Instant::now())); }
+                            else { surf = Some((i, f)); surf_survol = None; }
+                        }
+                        if surf_analyse.is_some() { ctx.request_repaint_after(std::time::Duration::from_millis(100)); }
+                        // ===== boîte ANALYSE DES SURFACES (en haut de la zone de visualisation) =====
+                        let mut pose_req: Option<(usize, Vec3)> = None;
+                        let mut liste_survol = None;
+                        if (surf_analyse.is_some() || surf.is_some()) && !viewer {
+                            let centre_x = (wf - side_px) / ppp * 0.5;
+                            egui::Area::new(egui::Id::new("analyse_surfaces")).order(egui::Order::Foreground)
+                                .fixed_pos(egui::pos2(centre_x, 46.0)).pivot(egui::Align2::CENTER_TOP).show(ctx, |ui| {
+                                    egui::Frame::popup(ui.style()).fill(egui::Color32::from_rgb(24, 26, 30)).stroke(egui::Stroke::new(1.5, JAUNE))
+                                        .inner_margin(egui::Margin::same(10.0)).show(ui, |ui| {
+                                        ui.set_width(360.0);
+                                        title_box(ui, &tr(lang, "surf_analyse").to_uppercase(), 13.5, 360.0);
+                                        ui.add_space(4.0);
+                                        if let Some((i, t0, _)) = &surf_analyse {
+                                            ui.horizontal(|ui| {
+                                                ui.spinner();
+                                                ui.label(egui::RichText::new(format!("{} ({} {}) — {:.1} s", tr(lang, "surf_encours"), scene.get(*i).map_or(0, |o| o.tris.len()), tr(lang, "triangles"), t0.elapsed().as_secs_f32())).size(12.5));
+                                            });
+                                        } else if let Some((i, faces)) = &surf {
+                                            ui.label(egui::RichText::new(format!("{} {}", faces.len(), tr(lang, "surf_trouvees"))).size(12.5).strong());
+                                            ui.add(egui::Label::new(egui::RichText::new(tr(lang, "surf_choisir")).size(11.5).color(egui::Color32::from_gray(190))).wrap(true));
+                                            ui.add_space(4.0);
+                                            egui::ScrollArea::vertical().max_height(200.0).show(ui, |ui| {
+                                                for (k, f) in faces.iter().enumerate() {
+                                                    let vif = surf_survol.or(surf_liste) == Some(k);
+                                                    // orientation en mots : où se trouve cette face sur l'objet tel qu'il est posé
+                                                    let o = if f.n.z < -0.9 { "surf_o_dessous" } else if f.n.z > 0.9 { "surf_o_dessus" } else if f.n.x < -0.9 { "surf_o_gauche" }
+                                                        else if f.n.x > 0.9 { "surf_o_droite" } else if f.n.y < -0.9 { "surf_o_avant" } else if f.n.y > 0.9 { "surf_o_arriere" } else { "surf_o_incline" };
+                                                    let txt = format!("{:>2}.  {:>9} mm²   {}", k + 1, fmt_aire(f.aire), tr(lang, o));
+                                                    let r = ui.add_sized(egui::vec2(ui.available_width(), 22.0), egui::SelectableLabel::new(vif, egui::RichText::new(txt).size(12.0).monospace()));
+                                                    if r.hovered() { liste_survol = Some(k); }
+                                                    if r.on_hover_text(tr(lang, "surf_poser_tip")).clicked() { pose_req = Some((*i, f.n)); }
+                                                }
+                                            });
+                                        }
+                                    });
+                                });
+                        }
+                        if liste_survol != surf_liste { surf_liste = liste_survol; ctx.request_repaint(); }
+                        if let Some((i, n)) = pose_req {
+                            if i < scene.len() { grav_anim = Some(GravAnim::vers(i, &scene[i], n)); selection = None; }
+                            surf = None; surf_survol = None; surf_liste = None;
                         }
                         if grav_anim.is_none() && gizmo.as_ref().map_or(false, |g| g.drag.is_none()) {
                             let coin = egui::pos2((wf - side_px) / ppp - 14.0 - 46.0, (hf - bar_px) / ppp - 14.0);
@@ -4825,7 +5178,7 @@ fn main() {
                             if degroup_req.is_some() || grouper_req.is_some() || ailleurs { menu_piece = None; }
                         }
                         // Bouton SORTIR (modes OBJ-AXE et BOOLÉENS) : dans l'angle, à droite de GRAVITÉ
-                        if grav_anim.is_none() && (gizmo.as_ref().map_or(false, |g| g.drag.is_none()) || panneau_bool || panneau_forme || panneau_imp) && !viewer {
+                        if grav_anim.is_none() && (gizmo.as_ref().map_or(false, |g| g.drag.is_none()) || panneau_bool || panneau_forme || panneau_imp || tex.actif) && !viewer {
                             let coin_x = egui::pos2((wf - side_px) / ppp - 14.0, (hf - bar_px) / ppp - 14.0);
                             egui::Area::new(egui::Id::new("sortir")).order(egui::Order::Foreground)
                                 .fixed_pos(coin_x).pivot(egui::Align2::RIGHT_BOTTOM).show(ctx, |ui| {
@@ -4839,8 +5192,16 @@ fn main() {
                                     if resp.on_hover_text(format!("{} : {}", tr(lang, "sortir_btn"), tr(lang, "sortir_tip"))).clicked() {
                                         // ferme l'outil de rotation et le panneau Booléens (vue et outils d'avant rétablis)
                                         gizmo = None; surf = None; surf_survol = None; panneau_bool = false; panneau_forme = false; panneau_imp = false;
+                                        tex.fermer();
                                     }
                                 });
+                        }
+                        // MODE TEXTURE : cercle du pinceau (rouge en effacement, Maj)
+                        if let Some((c, r)) = tx_curseur {
+                            let col = if mods.shift_key() { egui::Color32::from_rgb(235, 90, 70) } else { JAUNE };
+                            let p = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::new("tx_pinceau")));
+                            p.circle_stroke(c, r.max(3.0), egui::Stroke::new(1.6, col));
+                            p.circle_filled(c, 1.8, col);
                         }
                         if grav_req && grav_anim.is_none() {
                             if let Some(i) = gizmo.as_ref().map(|g| g.obj).filter(|&i| i < scene.len()) {
@@ -4873,7 +5234,7 @@ fn main() {
                         if let Some((msg, is_err, t)) = &status_msg {
                             if t.elapsed().as_secs_f32() < 6.0 {
                                 let area = egui::Area::new(egui::Id::new("toast")).order(egui::Order::Foreground)
-                                    .anchor(egui::Align2::CENTER_TOP, egui::vec2(-PANEL_W * 0.5, 14.0)); // centré sur la zone de visualisation
+                                    .anchor(egui::Align2::CENTER_TOP, egui::vec2(-panel_w * 0.5, 14.0)); // centré sur la zone de visualisation
                                 let (bg, fg) = if *is_err { (egui::Color32::from_rgb(120, 40, 40), egui::Color32::from_rgb(255, 220, 210)) }
                                                else { (JAUNE, egui::Color32::BLACK) }; // bandeau d'info des actions : jaune, texte noir
                                 area.show(ctx, |ui| {
@@ -4885,19 +5246,21 @@ fn main() {
                             }
                         }
                         if !viewer {
-                        egui::SidePanel::right("outils").exact_width(PANEL_W).resizable(false).show(ctx, |ui| {
+                        egui::SidePanel::right("outils").exact_width(panel_w).resizable(false).show(ctx, |ui| {
                             // --- Bas fixe du panneau : Annuler / Refaire puis jauge de calcul ---
                             // Bas du panneau : ANNULER / REFAIRE exactement sur la rangée de boutons de la barre du bas
                             // (position relevée à l'image précédente), jauge « Calcul » juste au-dessus.
                             const GAUGE_H: f32 = 30.0;
                             egui::TopBottomPanel::bottom("calcul").show_separator_line(true).exact_height(BAR_H - 4.0 + GAUGE_H).show_inside(ui, |ui| {
                                 let x0 = ui.max_rect().left();
-                                let wpan = PANEL_W - 22.0;
+                                let wpan = panel_w - 22.0;
                                 let (row_top, row_h) = bar_row.unwrap_or((ui.ctx().screen_rect().bottom() - BAR_H + 5.0, 50.0));
                                 let (frac, txt) = match (&job, job_done) {
                                     (Some(j), _) => { let f = progress::get(); (f, format!("{} {} %", tr(lang, job_key(j.kind)), (f * 100.0) as u32)) }
                                     // menu Fichier (ouverture / sauvegarde) : jauge FIXE, pleine, VERTE
                                     (None, _) if file_job.is_some() => (1.0, tr(lang, "fichier_en_cours").to_string()),
+                                    // OBJ-AXE → SURFACE : avancement de l'analyse des surfaces
+                                    (None, _) if surf_analyse.is_some() => { let f = progress::get(); (f, format!("{} {} %", tr(lang, "surf_analyse").to_uppercase(), (f * 100.0) as u32)) }
                                     (None, Some(t)) if t.elapsed().as_secs_f32() < 1.2 => (1.0, "100 %".to_string()),
                                     _ => (0.0, String::new()),
                                 };
@@ -4919,7 +5282,7 @@ fn main() {
                             });
                             egui::ScrollArea::vertical().show(ui, |ui| {
                             // marge à droite : les boutons pleine largeur ne sont plus rognés par le bord
-                            ui.set_max_width(PANEL_W - 22.0);
+                            ui.set_max_width(panel_w - 22.0);
                             ui.add_space(6.0);
                             if panneau_imp {
                                 // ===== PRÉPARATION À L'IMPRESSION (3D-IMP) : toute la colonne de droite =====
@@ -5036,6 +5399,10 @@ fn main() {
                                 if let Some((m, err)) = &imp_msg {
                                     ui.add(egui::Label::new(egui::RichText::new(m).size(12.0).color(if *err { egui::Color32::from_rgb(240, 110, 90) } else { egui::Color32::from_rgb(130, 210, 140) })).wrap(true));
                                 }
+                            } else if tex.actif {
+                                // ===== MODE TEXTURE : texture, pinceau des zones lisses, appliquer ; le reste replié =====
+                                let cible = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 && scene[0].nverts > 0 { Some(0) } else { None });
+                                tx_act = tex.panneau(ui, lang, cible.map(|i| (i, &scene[i].verts[..])), busy);
                             } else if panneau_forme {
                                 // ===== Panneau MISE EN FORME (remplace le panneau d'outils) =====
                                 let retour = egui::Button::new(egui::RichText::new(format!("◀  {}", tr(lang, "bool_retour").to_uppercase())).size(12.5).strong().color(egui::Color32::WHITE))
@@ -5703,6 +6070,10 @@ fn main() {
                                     ui.add(egui::Label::new(egui::RichText::new(m).color(col)).wrap(true));
                                 }
                             }
+                            // --- TEXTURES : passe toute la colonne de droite en mode Texture ---
+                            ui.add_space(8.0);
+                            if ui.add_sized(egui::vec2(ui.available_width(), 30.0), yellow_btn(&tr(lang, "tx_titre").to_uppercase(), 13.0))
+                                .on_hover_text(tr(lang, "tx_tip")).clicked() { tex.ouvrir(); }
                             } // fin panneau d'outils
                             });
                         });
@@ -6348,6 +6719,7 @@ fn main() {
                                 let msg = match j.kind {
                                     JobKind::Repair => format!("{msg} : {} {}, {} {}", defects.face_errors, tr(lang, "faces_err"), defects.holes, tr(lang, "trous")),
                                     JobKind::Wire => { wire_msg = Some(format!("{} {} · {msg}", scene[i].tris.len(), tr(lang, "triangles"))); format!("{} : {} {}", tr(lang, "wireframe"), scene[i].tris.len(), tr(lang, "triangles")) }
+                                    JobKind::Texture => { tex.apres_application(msg.clone()); msg }
                                     JobKind::Texte => { txt_cadre = None; fin_outil = true; outil_ann = txt_lance.map(|c| (hist_idx, OutilAnn::Texte(c))); msg }
                                     JobKind::Creux => {
                                         creux_msg = Some(msg.clone());
@@ -6636,6 +7008,53 @@ fn main() {
                     *PIECE_SEL.lock().unwrap() = piece_vue.as_ref().zip(voulu).map(|((o, _), (i, _, _))| (i, o.vao, o.nverts));
                     // objet actif recalculé : la fin d'un calcul (booléen) a pu retirer un objet dans cette image
                     let active = sel.filter(|&i| i < scene.len()).or(if scene.len() == 1 && scene[0].nverts > 0 { Some(0) } else { None });
+                    // MODE TEXTURE : actions du panneau, aperçu en direct (dessiné à la place de l'objet), application
+                    {
+                        let cible = active.filter(|_| tex.actif).map(|i| (i, &scene[i].verts[..]));
+                        let (pret, retirer) = tex.tick(&egui_ctx, cible);
+                        // réveil demandé par l'aperçu (attente des réglages, calcul en cours) : programmé ici, car
+                        // le délai d'egui de cette image est déjà relevé (sinon plus rien ne bouge sans la souris)
+                        if let Some(d) = tex.reveil {
+                            let t = std::time::Instant::now() + d;
+                            prochain_repaint = Some(prochain_repaint.map_or(t, |p| p.min(t)));
+                            elwt.set_control_flow(winit::event_loop::ControlFlow::WaitUntil(prochain_repaint.unwrap()));
+                        }
+                        if retirer { if let Some((_, o)) = tx_vue.take() { unsafe { o.delete(&gl); } } window.request_redraw(); }
+                        if let Some((i, v, cols)) = pret {
+                            if v.is_empty() {
+                                if let Some((_, o)) = tx_vue.as_mut() { if cols.len() / 3 == o.verts.len() / 6 { o.cols = cols; unsafe { o.upload_colors(&gl); } } }
+                            } else {
+                                if let Some((_, o)) = tx_vue.take() { unsafe { o.delete(&gl); } }
+                                tx_vue = Some((i, unsafe { Obj::with_colors(&gl, v, cols) }));
+                            }
+                            window.request_redraw();
+                        }
+                        *APERCU_TX.lock().unwrap() = tx_vue.as_ref().filter(|_| tex.actif).map(|(i, o)| (*i, o.vao, o.nverts, o.has_colors()));
+                        if tx_act.quitter { tex.fermer(); }
+                        // APPLIQUER : calcul complet dans un fil (annulable comme les autres opérations)
+                        if let Some(i) = active {
+                            if tx_act.appliquer && job.is_none() && file_job.is_none() {
+                                if let Some(travail) = tex.preparer(&scene[i].verts) {
+                                    let v = scene[i].verts.clone();
+                                    // défauts de l'objet avant texture : déjà connus (analyse de l'objet actif)
+                                    let d0 = (defects.holes, defects.face_errors);
+                                    tex.msg = None;
+                                    job = Some(spawn_job(i, JobKind::Texture, move || {
+                                        let (mut out, avant) = travail.executer(&v)?;
+                                        // points quasi confondus au 1/1000 mm (zones très serrées) : réparation
+                                        // seulement si la texture a ajouté des défauts à l'objet
+                                        for _ in 0..5 {
+                                            let d = defects::analyze(&out);
+                                            if d.holes <= d0.0 && d.face_errors <= d0.1 { break; }
+                                            out = defects::repair(&out);
+                                        }
+                                        let n = out.len() / 18;
+                                        Ok((out, format!("{} : {avant} > {n} {}", tr(lang, "tx_titre"), tr(lang, "triangles"))))
+                                    }));
+                                }
+                            }
+                        }
+                    }
                     if job.is_none() && file_job.is_none() { if let Some(i) = active {
                         // copie des sommets seulement si un calcul est demandé (sinon, à chaque image, un gros
                         // maillage serait recopié entièrement : des dizaines de ms perdues par image)

@@ -1,0 +1,22 @@
+# Paquet Arch Linux de 3D-Patch (binaire précompilé de la page Releases).
+# Construction : makepkg -si
+pkgname=3d-patch-bin
+_nom=3d-patch
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="3D modeler for 3D printing: repair, edit, relief textures, prepare (Rust + OpenCASCADE)"
+arch=('x86_64')
+url="https://github.com/OMNIA-AI-Group/3D-Patch"
+license=('GPL-3.0-or-later')
+depends=('glibc' 'gcc-libs' 'zlib' 'libglvnd' 'libx11' 'libxkbcommon' 'libxcursor' 'libxi' 'libxrandr' 'wayland')
+optdepends=('xdg-desktop-portal: file open / save dialogs')
+provides=('3d-patch')
+conflicts=('3d-patch')
+options=('!strip' '!debug')
+source=("https://github.com/OMNIA-AI-Group/3D-Patch/releases/download/v${pkgver}/${_nom}-${pkgver}-linux-x86_64.tar.gz")
+sha256sums=('71b5eb9f0b36a0b117cab8178bb8453e7eb15ee7d8678d79f4867ecf48e7490b')
+
+package() {
+    # l'archive contient déjà l'arborescence finale : /opt/3d-patch (programme + bibliothèques), /usr (lanceur, icône)
+    cp -a "${srcdir}/opt" "${srcdir}/usr" "${pkgdir}/"
+}

@@ -4,7 +4,7 @@ Unicode true
 !define APPNAME   "3D-Patch"
 !define COMPANY   "OiA-Group - Alain Valette-Clary"
 !define EXE       "3d-patch.exe"
-!define VERSION   "0.1.4"
+!define VERSION   "0.2.0"
 
 Name "${APPNAME}"
 OutFile "3D-Patch-Setup.exe"

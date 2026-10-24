@@ -10,7 +10,7 @@
 
 ## What is 3D-Patch?
 
-3D-Patch is a desktop 3D modeler in the spirit of Microsoft 3D Builder, written in Rust on top of the industrial **OpenCASCADE** geometry kernel. It opens almost any 3D file, finds and repairs the defects that make a print fail (holes, inverted or broken faces), lets you modify the object (cut, combine, hollow, engrave, add text) and sends it to your slicer ready to print.
+3D-Patch is a desktop 3D modeler in the spirit of Microsoft 3D Builder, written in Rust on top of the industrial **OpenCASCADE** geometry kernel. It opens almost any 3D file, finds and repairs the defects that make a print fail (holes, inverted or broken faces), lets you modify the object (cut, combine, hollow, engrave, add text, images and relief textures such as grips) and sends it to your slicer ready to print.
 
 It runs on Linux and Windows, works fully offline, and its interface is available in French, English, Spanish, Italian and German.
 
@@ -19,7 +19,8 @@ It runs on Linux and Windows, works fully offline, and its interface is availabl
 - **Views**: textured, transparent, wireframe, and an *errors & defects* view that highlights problems in colour.
 - **Repair**: hole and faulty-face detection, internal cleanup, one-click auto-repair, and an “A.I.” repair that rebuilds a closed (watertight) shell.
 - **Editing**: booleans (union, subtraction, intersection), cutting along a plane, hollowing with drain holes, simplification, wireframe (lattice) objects, relief/texture engraving, 3D text, and images vectorised in black & white (threshold, automatic, adaptive or by colours, adjustable tolerance, negative, frame removal) embossed or engraved like text.
-- **Placement**: move/rotate/scale gizmo, exact dimensions in mm/cm/inch, centering, ruler, drop onto the bed with a realistic gravity simulation.
+- **Relief textures**: 76 built-in patterns computed by 3D-Patch (no image files) in tabs — including a **Grip** family of sharp micro-points that bite into skin and gloves (gun checkering, stippling, micro-spikes, diamond points, knurling, rasp, thorns, grip tape…) — plus your own images. Live preview, size slider, *Negative* button, raised or engraved, triplanar / cube / flat / cylinder / sphere wrapping, layers. Keep areas smooth with the **Brush**, **Surface** (one click selects a whole face, small steps up to 0.5 mm included) or **Eraser**; right-click undoes the last exclusion. The adaptive engine only adds triangles where the relief needs them, keeps the part watertight and the bottom flat on the bed.
+- **Placement**: move/rotate/scale gizmo, exact dimensions in mm/cm/inch, centering, ruler, drop onto the bed with a realistic gravity simulation, lay the object on any flat face (surface analysis with progress gauge and a list of faces).
 - **Parts & groups**: click one part of a multi-part object and right-click → *Ungroup*; Shift+click several objects and right-click → *Group*; copy/paste (Ctrl+C / Ctrl+V), delete with Del or Backspace.
 - **Print preparation**: checks (watertight, overhangs, thin walls, size), suggested orientation, material weight estimate, direct sending to installed slicers (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Viewer mode**: 3D-Patch can become the default application for 3D files (double-click to view).
@@ -32,7 +33,18 @@ SolidCraft designs: meshes and imported STEP parts are read directly, without So
 
 ## Download
 
-Ready-to-use builds (Linux AppImage and Windows installer) are on the [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases) page.
+Ready-to-use builds are on the [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases) page:
+
+| File | System | Install |
+|---|---|---|
+| `3D-Patch-x86_64.AppImage` | any Linux x86-64 | `chmod +x`, then double-click |
+| `3d-patch_<version>-1_amd64.deb` | Debian, Ubuntu, Mint, Zorin, Pop!_OS… | `sudo apt install ./3d-patch_<version>-1_amd64.deb` |
+| `3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` | Arch Linux, Manjaro, EndeavourOS… | `sudo pacman -U 3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` (or `makepkg -si` with [`paquets/PKGBUILD`](paquets/PKGBUILD)) |
+| `3d-patch-<version>-linux-x86_64.tar.gz` | any Linux (manual) | extract into `/`: `/opt/3d-patch` + launcher |
+| `3D-Patch-Setup.exe` | Windows 10/11 | installer |
+| `3D-Patch-Windows-portable.zip` | Windows 10/11 | unzip, run `3D-Patch\3d-patch.exe` |
+
+The Linux packages are built by [`paquets/construire-paquets.sh`](paquets/construire-paquets.sh).
 
 ## Building from source (Linux)
 

@@ -68,18 +68,24 @@ pub fn kind_name(k: ViewKind) -> &'static str {
 
 /// Rectangle écran (origine en haut-gauche) d'une vue : (x, y, w, h) en pixels.
 /// `bar` = hauteur réservée en bas, `right` = largeur réservée à droite (panneau d'outils).
+/// Hauteur réservée en haut (bandeau du mode Texture), en pixels ; 0 sinon.
+static HAUT: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+pub fn regler_haut(px: f32) { HAUT.store(px.to_bits(), std::sync::atomic::Ordering::Relaxed); }
+fn haut() -> f32 { f32::from_bits(HAUT.load(std::sync::atomic::Ordering::Relaxed)) }
+
 pub fn screen_rect(mode: ViewMode, k: ViewKind, w: f32, h: f32, bar: f32, right: f32) -> Option<(f32, f32, f32, f32)> {
-    let ch = (h - bar).max(1.0);
+    let top = haut();
+    let ch = (h - bar - top).max(1.0);
     let w = (w - right).max(1.0);
     match mode {
-        ViewMode::Single(sk) => if sk == k { Some((0.0, 0.0, w, ch)) } else { None },
+        ViewMode::Single(sk) => if sk == k { Some((0.0, top, w, ch)) } else { None },
         ViewMode::Quad => {
             let (hw, hh) = (w / 2.0, ch / 2.0);
             Some(match k {
-                ViewKind::Top => (0.0, 0.0, hw, hh),
-                ViewKind::ThreeD => (hw, 0.0, hw, hh),
-                ViewKind::Front => (0.0, hh, hw, hh),
-                ViewKind::Right => (hw, hh, hw, hh),
+                ViewKind::Top => (0.0, top, hw, hh),
+                ViewKind::ThreeD => (hw, top, hw, hh),
+                ViewKind::Front => (0.0, top + hh, hw, hh),
+                ViewKind::Right => (hw, top + hh, hw, hh),
             })
         }
     }

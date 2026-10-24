@@ -12,6 +12,7 @@
 !/docs/
 !/libs/
 !/winbuild/
+!/paquets/
 
 /3D-Patch/target/
 /3D-Patch/*.exe

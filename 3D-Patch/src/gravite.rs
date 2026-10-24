@@ -79,6 +79,7 @@ pub fn enveloppe(pts_in: &[DVec3]) -> Option<(Vec<DVec3>, Vec<[usize; 3]>)> {
         if n.dot(centre - p[a]) > 0.0 { ajoute(&mut faces, &mut aretes, a, c, b); } else { ajoute(&mut faces, &mut aretes, a, b, c); }
     }
     for i in 0..p.len() {
+        if i % 65_536 == 0 { crate::progress::set(0.15 * i as f32 / p.len().max(1) as f32); }
         if [i0, i1, i2, i3].contains(&i) { continue; }
         for f in faces.iter_mut() { if f.n.dot(p[i]) - f.d > eps { f.dehors.push(i); break; } }
     }
@@ -86,6 +87,8 @@ pub fn enveloppe(pts_in: &[DVec3]) -> Option<(Vec<DVec3>, Vec<[usize; 3]>)> {
     let mut garde = 0usize;
     while let Some(fi) = pile.pop() {
         garde += 1; if garde > 4_000_000 { break; }
+        // jauge : part des faces déjà traitées (la jauge ne recule jamais)
+        if garde % 256 == 0 { crate::progress::set(0.15 + 0.55 * garde as f32 / (garde + pile.len()) as f32); }
         if !faces[fi].vivant || faces[fi].dehors.is_empty() { continue; }
         // point le plus éloigné
         let f = &faces[fi];
@@ -338,6 +341,7 @@ pub fn faces_de_pose(verts: &[f32]) -> Vec<FacePose> {
     use glam::Vec3;
     let pts: Vec<DVec3> = verts.chunks_exact(6).map(|c| DVec3::new(c[0] as f64, c[1] as f64, c[2] as f64)).collect();
     let Some((p, tris)) = enveloppe(&pts) else { return Vec::new() };
+    crate::progress::set(0.7);
     let (mut lo, mut hi) = (DVec3::splat(f64::INFINITY), DVec3::splat(f64::NEG_INFINITY));
     for q in &p { lo = lo.min(*q); hi = hi.max(*q); }
     let tol = ((hi - lo).max_element() * 2e-4).max(1e-4);
@@ -364,8 +368,11 @@ pub fn faces_de_pose(verts: &[f32]) -> Vec<FacePose> {
         nt.push(n);
         if n != Vec3::ZERO { seau.entry(cle(n)).or_default().push(i); }
     }
+    crate::progress::set(0.8);
     let mut out: Vec<FacePose> = Vec::new();
-    for n in plans.values() {
+    let nb_plans = plans.len().max(1);
+    for (k, n) in plans.values().enumerate() {
+        crate::progress::set(0.8 + 0.2 * k as f32 / nb_plans as f32);
         let n32 = n.as_vec3();
         // plan d'appui : le plus loin de l'objet dans la direction n
         let appui = p.iter().map(|q| n.dot(*q)).fold(f64::MIN, f64::max) as f32;

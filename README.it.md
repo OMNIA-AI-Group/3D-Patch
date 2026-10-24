@@ -10,7 +10,7 @@
 
 ## Che cos'è 3D-Patch?
 
-3D-Patch è un modellatore 3D per desktop nello spirito di Microsoft 3D Builder, scritto in Rust sul nucleo geometrico industriale **OpenCASCADE**. Apre quasi ogni file 3D, individua e ripara i difetti che fanno fallire una stampa (buchi, facce invertite o danneggiate), permette di modificare l'oggetto (tagliare, unire, svuotare, incidere, aggiungere testo) e lo invia al tuo slicer pronto per la stampa.
+3D-Patch è un modellatore 3D per desktop nello spirito di Microsoft 3D Builder, scritto in Rust sul nucleo geometrico industriale **OpenCASCADE**. Apre quasi ogni file 3D, individua e ripara i difetti che fanno fallire una stampa (buchi, facce invertite o danneggiate), permette di modificare l'oggetto (tagliare, unire, svuotare, incidere, aggiungere testo, immagini e texture in rilievo come i grip) e lo invia al tuo slicer pronto per la stampa.
 
 Funziona su Linux e Windows, completamente offline, e la sua interfaccia è disponibile in francese, inglese, spagnolo, italiano e tedesco.
 
@@ -19,7 +19,8 @@ Funziona su Linux e Windows, completamente offline, e la sua interfaccia è disp
 - **Viste**: con texture, trasparente, wireframe e una vista *errori e difetti* che evidenzia i problemi a colori.
 - **Riparazione**: rilevamento di buchi e facce errate, pulizia interna, riparazione automatica con un clic e riparazione «A.I.» che ricostruisce un involucro chiuso (stagno).
 - **Modifica**: booleane (unione, sottrazione, intersezione), taglio lungo un piano, svuotamento con fori di drenaggio, semplificazione, oggetti a traliccio, incisione di rilievi/texture, testo 3D, e immagini vettorizzate in bianco e nero (soglia, automatica, adattiva o per colori, tolleranza regolabile, negativo, rimozione della cornice) in rilievo o incise come un testo.
-- **Posizionamento**: gizmo sposta/ruota/scala, quote esatte in mm/cm/pollici, centratura, righello, appoggio sul piatto con una simulazione realistica della gravità.
+- **Texture in rilievo**: 76 motivi integrati calcolati da 3D-Patch (nessun file immagine), in schede — tra cui una famiglia **Grip** di micropunte che fanno presa su pelle e guanti (zigrinatura d'arma, puntinatura, micropunte, punte di diamante, zigrinatura, raspa, spine, nastro antiscivolo…) — e le tue immagini. Anteprima dal vivo, cursore di dimensione, pulsante *Negativo*, in rilievo o inciso, avvolgimento triplanare / cubo / piatto / cilindro / sfera, livelli. Zone lisce con il **Pennello**, per **Superficie** (un clic prende un'intera faccia, piccoli gradini fino a 0,5 mm compresi) o con la **Gomma**; il clic destro annulla l'ultima esclusione. Il motore adattivo aggiunge triangoli solo dove il rilievo lo richiede, mantiene il pezzo chiuso e la base piatta sul piatto.
+- **Posizionamento**: gizmo sposta/ruota/scala, quote esatte in mm/cm/pollici, centratura, righello, appoggio sul piatto con una simulazione realistica della gravità, appoggio dell'oggetto su qualsiasi faccia piana (analisi delle superfici con barra di avanzamento ed elenco delle facce).
 - **Pezzi e gruppi**: clic su un pezzo di un oggetto a più pezzi e clic destro → *Separa*; Maiusc+clic su più oggetti e clic destro → *Raggruppa*; copia/incolla (Ctrl+C / Ctrl+V), eliminazione con Canc o Backspace.
 - **Preparazione alla stampa**: controlli (tenuta, sbalzi, pareti sottili, dimensioni), orientamento consigliato, stima del peso del materiale, invio diretto agli slicer installati (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Modalità visualizzatore**: 3D-Patch può diventare l'applicazione predefinita per i file 3D (doppio clic per visualizzarli).
@@ -32,7 +33,16 @@ Progetti SolidCraft: le mesh e i pezzi STEP importati vengono letti direttamente
 
 ## Download
 
-Le versioni pronte all'uso (AppImage per Linux e installer per Windows) sono nella pagina [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases).
+Le versioni pronte all'uso sono nella pagina [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases):
+
+| File | Sistema | Installazione |
+|---|---|---|
+| `3D-Patch-x86_64.AppImage` | qualsiasi Linux x86-64 | `chmod +x`, poi doppio clic |
+| `3d-patch_<version>-1_amd64.deb` | Debian, Ubuntu, Mint, Zorin, Pop!_OS… | `sudo apt install ./3d-patch_<version>-1_amd64.deb` |
+| `3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` | Arch Linux, Manjaro, EndeavourOS… | `sudo pacman -U 3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` (o `makepkg -si` con [`paquets/PKGBUILD`](paquets/PKGBUILD)) |
+| `3d-patch-<version>-linux-x86_64.tar.gz` | qualsiasi Linux (manuale) | estrarre in `/`: `/opt/3d-patch` + lanciatore |
+| `3D-Patch-Setup.exe` | Windows 10/11 | installer |
+| `3D-Patch-Windows-portable.zip` | Windows 10/11 | decomprimere, avviare `3D-Patch\3d-patch.exe` |
 
 ## Compilare dai sorgenti (Linux)
 

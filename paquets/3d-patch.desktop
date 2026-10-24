@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Application
+Name=3D-Patch
+GenericName=3D modeler
+GenericName[fr]=Modeleur 3D
+GenericName[es]=Modelador 3D
+GenericName[it]=Modellatore 3D
+GenericName[de]=3D-Modellierer
+Comment=3D modeler for 3D printing: repair, edit, textures, prepare
+Comment[fr]=Modeleur 3D pour l'impression 3D : réparer, modifier, texturer, préparer
+Comment[es]=Modelador 3D para impresión 3D: reparar, modificar, texturizar, preparar
+Comment[it]=Modellatore 3D per la stampa 3D: riparare, modificare, texturizzare, preparare
+Comment[de]=3D-Modellierer für den 3D-Druck: reparieren, bearbeiten, texturieren, vorbereiten
+Exec=/opt/3d-patch/bin/3d-patch %f
+TryExec=/opt/3d-patch/bin/3d-patch
+Icon=3d-patch
+Terminal=false
+Categories=Graphics;3DGraphics;Engineering;
+Keywords=3D;STL;OBJ;STEP;3MF;CAD;CAO;print;impression;texture;
+StartupNotify=true
+StartupWMClass=3d-patch
+MimeType=model/stl;model/x.stl-ascii;model/x.stl-binary;application/sla;model/obj;model/step;model/iges;model/3mf;

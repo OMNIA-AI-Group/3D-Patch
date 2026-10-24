@@ -10,7 +10,7 @@
 
 ## Was ist 3D-Patch?
 
-3D-Patch ist ein Desktop-3D-Modellierer im Stil von Microsoft 3D Builder, geschrieben in Rust auf Basis des industriellen Geometriekerns **OpenCASCADE**. Er öffnet nahezu jede 3D-Datei, findet und repariert die Fehler, an denen ein Druck scheitert (Löcher, umgedrehte oder defekte Flächen), erlaubt das Bearbeiten des Objekts (schneiden, vereinen, aushöhlen, gravieren, Text hinzufügen) und schickt es druckfertig an Ihren Slicer.
+3D-Patch ist ein Desktop-3D-Modellierer im Stil von Microsoft 3D Builder, geschrieben in Rust auf Basis des industriellen Geometriekerns **OpenCASCADE**. Er öffnet nahezu jede 3D-Datei, findet und repariert die Fehler, an denen ein Druck scheitert (Löcher, umgedrehte oder defekte Flächen), erlaubt das Bearbeiten des Objekts (schneiden, vereinen, aushöhlen, gravieren, Text, Bilder und Relieftexturen wie Grips hinzufügen) und schickt es druckfertig an Ihren Slicer.
 
 Er läuft unter Linux und Windows, vollständig offline, und die Oberfläche ist auf Französisch, Englisch, Spanisch, Italienisch und Deutsch verfügbar.
 
@@ -19,7 +19,8 @@ Er läuft unter Linux und Windows, vollständig offline, und die Oberfläche ist
 - **Ansichten**: texturiert, transparent, Drahtgitter sowie eine Ansicht *Fehler & Defekte*, die Probleme farbig hervorhebt.
 - **Reparatur**: Erkennung von Löchern und fehlerhaften Flächen, interne Bereinigung, automatische Reparatur per Klick und eine „A.I.“-Reparatur, die eine geschlossene (wasserdichte) Hülle neu aufbaut.
 - **Bearbeitung**: Boolesche Operationen (Vereinigung, Subtraktion, Schnittmenge), Schnitt entlang einer Ebene, Aushöhlen mit Ablauflöchern, Vereinfachung, Gitterobjekte, Relief-/Texturgravur, 3D-Text sowie in Schwarzweiß vektorisierte Bilder (Schwelle, automatisch, adaptiv oder nach Farben, einstellbare Toleranz, Negativ, Rahmen entfernen), erhaben oder graviert wie Text.
-- **Platzierung**: Gizmo zum Verschieben/Drehen/Skalieren, exakte Maße in mm/cm/Zoll, Zentrieren, Lineal, Ablegen auf dem Druckbett mit realistischer Schwerkraftsimulation.
+- **Relieftexturen**: 76 eingebaute, von 3D-Patch berechnete Muster (keine Bilddateien) in Registern — darunter eine **Grip**-Familie mit spitzen Mikrospitzen, die an Haut und Handschuhen greifen (Fischhaut, Punzierung, Mikrospitzen, Diamantspitzen, Rändelung, Raspel, Dornen, Griptape…) — sowie eigene Bilder. Live-Vorschau, Größenregler, Schaltfläche *Negativ*, erhaben oder graviert, Umhüllung triplanar / Würfel / flach / Zylinder / Kugel, Ebenen. Glatte Bereiche mit **Pinsel**, **Fläche** (ein Klick nimmt eine ganze Fläche, kleine Stufen bis 0,5 mm inbegriffen) oder **Radierer**; Rechtsklick macht die letzte Ausnahme rückgängig. Die adaptive Engine fügt nur dort Dreiecke hinzu, wo das Relief sie braucht, hält das Teil geschlossen und die Unterseite flach auf dem Druckbett.
+- **Platzierung**: Gizmo zum Verschieben/Drehen/Skalieren, exakte Maße in mm/cm/Zoll, Zentrieren, Lineal, Ablegen auf dem Druckbett mit realistischer Schwerkraftsimulation, Auflegen des Objekts auf jede ebene Fläche (Flächenanalyse mit Fortschrittsanzeige und Flächenliste).
 - **Teile & Gruppen**: ein Teil eines mehrteiligen Objekts anklicken und Rechtsklick → *Trennen*; mehrere Objekte mit Umschalt+Klick wählen und Rechtsklick → *Gruppieren*; Kopieren/Einfügen (Strg+C / Strg+V), Löschen mit Entf oder Rücktaste.
 - **Druckvorbereitung**: Prüfungen (Dichtheit, Überhänge, dünne Wände, Größe), empfohlene Ausrichtung, Schätzung des Materialgewichts, direkte Übergabe an installierte Slicer (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
 - **Betrachtermodus**: 3D-Patch kann zur Standardanwendung für 3D-Dateien werden (Doppelklick zum Anzeigen).
@@ -32,7 +33,16 @@ SolidCraft-Konstruktionen: Netze und importierte STEP-Teile werden direkt gelese
 
 ## Download
 
-Fertige Versionen (Linux-AppImage und Windows-Installer) gibt es auf der Seite [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases).
+Fertige Versionen gibt es auf der Seite [Releases](https://github.com/OMNIA-AI-Group/3D-Patch/releases):
+
+| Datei | System | Installation |
+|---|---|---|
+| `3D-Patch-x86_64.AppImage` | jedes Linux x86-64 | `chmod +x`, dann Doppelklick |
+| `3d-patch_<version>-1_amd64.deb` | Debian, Ubuntu, Mint, Zorin, Pop!_OS… | `sudo apt install ./3d-patch_<version>-1_amd64.deb` |
+| `3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` | Arch Linux, Manjaro, EndeavourOS… | `sudo pacman -U 3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` (oder `makepkg -si` mit [`paquets/PKGBUILD`](paquets/PKGBUILD)) |
+| `3d-patch-<version>-linux-x86_64.tar.gz` | jedes Linux (manuell) | nach `/` entpacken: `/opt/3d-patch` + Starter |
+| `3D-Patch-Setup.exe` | Windows 10/11 | Installer |
+| `3D-Patch-Windows-portable.zip` | Windows 10/11 | entpacken, `3D-Patch\3d-patch.exe` starten |
 
 ## Aus dem Quellcode bauen (Linux)
 
