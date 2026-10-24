@@ -18,7 +18,7 @@ It runs on Linux and Windows, works fully offline, and its interface is availabl
 
 - **Views**: textured, transparent, wireframe, and an *errors & defects* view that highlights problems in colour.
 - **Repair**: hole and faulty-face detection, internal cleanup, one-click auto-repair, and an “A.I.” repair that rebuilds a closed (watertight) shell.
-- **Editing**: booleans (union, subtraction, intersection), cutting along a plane, hollowing with drain holes, simplification, wireframe (lattice) objects, relief/texture engraving, 3D text.
+- **Editing**: booleans (union, subtraction, intersection), cutting along a plane, hollowing with drain holes, simplification, wireframe (lattice) objects, relief/texture engraving, 3D text, and images vectorised in black & white (threshold, automatic, adaptive or by colours, adjustable tolerance, negative, frame removal) embossed or engraved like text.
 - **Placement**: move/rotate/scale gizmo, exact dimensions in mm/cm/inch, centering, ruler, drop onto the bed with a realistic gravity simulation.
 - **Parts & groups**: click one part of a multi-part object and right-click → *Ungroup*; Shift+click several objects and right-click → *Group*; copy/paste (Ctrl+C / Ctrl+V), delete with Del or Backspace.
 - **Print preparation**: checks (watertight, overhangs, thin walls, size), suggested orientation, material weight estimate, direct sending to installed slicers (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).

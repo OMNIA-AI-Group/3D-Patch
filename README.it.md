@@ -18,7 +18,7 @@ Funziona su Linux e Windows, completamente offline, e la sua interfaccia è disp
 
 - **Viste**: con texture, trasparente, wireframe e una vista *errori e difetti* che evidenzia i problemi a colori.
 - **Riparazione**: rilevamento di buchi e facce errate, pulizia interna, riparazione automatica con un clic e riparazione «A.I.» che ricostruisce un involucro chiuso (stagno).
-- **Modifica**: booleane (unione, sottrazione, intersezione), taglio lungo un piano, svuotamento con fori di drenaggio, semplificazione, oggetti a traliccio, incisione di rilievi/texture, testo 3D.
+- **Modifica**: booleane (unione, sottrazione, intersezione), taglio lungo un piano, svuotamento con fori di drenaggio, semplificazione, oggetti a traliccio, incisione di rilievi/texture, testo 3D, e immagini vettorizzate in bianco e nero (soglia, automatica, adattiva o per colori, tolleranza regolabile, negativo, rimozione della cornice) in rilievo o incise come un testo.
 - **Posizionamento**: gizmo sposta/ruota/scala, quote esatte in mm/cm/pollici, centratura, righello, appoggio sul piatto con una simulazione realistica della gravità.
 - **Pezzi e gruppi**: clic su un pezzo di un oggetto a più pezzi e clic destro → *Separa*; Maiusc+clic su più oggetti e clic destro → *Raggruppa*; copia/incolla (Ctrl+C / Ctrl+V), eliminazione con Canc o Backspace.
 - **Preparazione alla stampa**: controlli (tenuta, sbalzi, pareti sottili, dimensioni), orientamento consigliato, stima del peso del materiale, invio diretto agli slicer installati (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).

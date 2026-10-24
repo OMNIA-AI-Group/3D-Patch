@@ -29,6 +29,7 @@ mod cache3d;
 mod booleen;
 mod forme;
 mod texte;
+mod vectorise;
 mod impression;
 mod plaque;
 mod solidcraft;
@@ -721,6 +722,40 @@ fn tr(l: Lang, key: &str) -> &'static str {
         "texte_taille"  => ["Taille", "Tamaño", "Dimensione", "Size", "Größe"],
         "texte_taille_tip"=> ["Hauteur de corps de la police", "Altura del cuerpo de la fuente", "Altezza del corpo del carattere", "Font body height", "Schriftgrad (Höhe)"],
         "texte_filtre"  => ["Rechercher une police…", "Buscar una fuente…", "Cerca un carattere…", "Search a font…", "Schrift suchen…"],
+        "img_btn"       => ["Insère image", "Insertar imagen", "Inserisci immagine", "Insert image", "Bild einfügen"],
+        "img_tip"       => ["Vectoriser une image (réduite en noir & blanc) et l'incruster dans l'objet comme un texte : en relief ou gravée, à plat ou en suivant sa forme", "Vectorizar una imagen (reducida a blanco y negro) e incrustarla en el objeto como un texto: en relieve o grabada, plana o siguiendo su forma", "Vettorizzare un'immagine (ridotta in bianco e nero) e inciderla nell'oggetto come un testo: in rilievo o incisa, piatta o seguendo la forma", "Vectorise an image (reduced to black & white) and emboss it into the object like text: raised or engraved, flat or following its shape", "Ein Bild vektorisieren (auf Schwarzweiß reduziert) und wie Text ins Objekt einprägen: erhaben oder graviert, flach oder der Form folgend"],
+        "img_choisir"   => ["Choisir une image…", "Elegir una imagen…", "Scegli un'immagine…", "Choose an image…", "Bild wählen…"],
+        "img_aucune"    => ["Aucune image : choisis un fichier PNG, JPEG ou BMP", "Ninguna imagen: elige un archivo PNG, JPEG o BMP", "Nessuna immagine: scegli un file PNG, JPEG o BMP", "No image: choose a PNG, JPEG or BMP file", "Kein Bild: PNG-, JPEG- oder BMP-Datei wählen"],
+        "img_illisible" => ["Image illisible", "Imagen ilegible", "Immagine illeggibile", "Unreadable image", "Bild nicht lesbar"],
+        "img_vide"      => ["Rien de plein dans l'image : change la réduction ou inverse", "Nada lleno en la imagen: cambia la reducción o invierte", "Niente di pieno nell'immagine: cambia la riduzione o inverti", "Nothing filled in the image: change the reduction or invert", "Nichts Gefülltes im Bild: Reduktion ändern oder umkehren"],
+        "img_vecto"     => ["Vectorisation", "Vectorización", "Vettorizzazione", "Vectorisation", "Vektorisierung"],
+        "img_reduc"     => ["Réduction en noir & blanc", "Reducción a blanco y negro", "Riduzione in bianco e nero", "Reduction to black & white", "Reduktion auf Schwarzweiß"],
+        "img_m_seuil"   => ["Seuil manuel", "Umbral manual", "Soglia manuale", "Manual threshold", "Manuelle Schwelle"],
+        "img_m_auto"    => ["Seuil automatique", "Umbral automático", "Soglia automatica", "Automatic threshold", "Automatische Schwelle"],
+        "img_m_adapt"   => ["Adaptatif (photos)", "Adaptativo (fotos)", "Adattivo (foto)", "Adaptive (photos)", "Adaptiv (Fotos)"],
+        "img_m_coul"    => ["Par couleurs", "Por colores", "Per colori", "By colours", "Nach Farben"],
+        "img_seuil"     => ["Seuil", "Umbral", "Soglia", "Threshold", "Schwelle"],
+        "img_seuil_tip" => ["Les pixels plus sombres que ce seuil deviennent pleins", "Los píxeles más oscuros que este umbral se vuelven llenos", "I pixel più scuri di questa soglia diventano pieni", "Pixels darker than this threshold become filled", "Pixel dunkler als diese Schwelle werden gefüllt"],
+        "img_ecart"     => ["Écart", "Desviación", "Scarto", "Offset", "Abstand"],
+        "img_ecart_tip" => ["Un pixel est plein s'il est plus sombre que ses voisins d'au moins cet écart (plus grand = moins de bruit)", "Un píxel está lleno si es más oscuro que sus vecinos al menos en esta desviación (mayor = menos ruido)", "Un pixel è pieno se è più scuro dei vicini almeno di questo scarto (più grande = meno rumore)", "A pixel is filled if it is darker than its neighbours by at least this offset (larger = less noise)", "Ein Pixel ist gefüllt, wenn es um mindestens diesen Abstand dunkler als seine Nachbarn ist (größer = weniger Rauschen)"],
+        "img_ncoul"     => ["Couleurs", "Colores", "Colori", "Colours", "Farben"],
+        "img_coul_tip"  => ["Clique une couleur pour la mettre en plein (noir) ou en vide (blanc)", "Haz clic en un color para ponerlo lleno (negro) o vacío (blanco)", "Clicca un colore per renderlo pieno (nero) o vuoto (bianco)", "Click a colour to make it filled (black) or empty (white)", "Farbe anklicken: gefüllt (schwarz) oder leer (weiß)"],
+        "img_inverser"  => ["Négatif", "Negativo", "Negativo", "Negative", "Negativ"],
+        "img_inverser_tip" => ["Inverse le noir et le blanc : le fond devient plein, le dessin devient creux", "Invierte negro y blanco: el fondo se vuelve lleno, el dibujo hueco", "Inverte nero e bianco: lo sfondo diventa pieno, il disegno vuoto", "Swaps black and white: the background becomes filled, the drawing hollow", "Tauscht Schwarz und Weiß: der Hintergrund wird gefüllt, die Zeichnung hohl"],
+        "img_sans_cadre"=> ["Supprimer le cadre", "Quitar el marco", "Rimuovi la cornice", "Remove frame", "Rahmen entfernen"],
+        "img_sans_cadre_tip" => ["Retire tout ce qui est plein et touche le bord de l'image (bordure, fond sombre, fond du négatif) : seul le dessin intérieur reste", "Quita todo lo lleno que toca el borde de la imagen (borde, fondo oscuro, fondo del negativo): solo queda el dibujo interior", "Rimuove tutto ciò che è pieno e tocca il bordo dell'immagine (cornice, sfondo scuro, sfondo del negativo): resta solo il disegno interno", "Removes everything filled that touches the image edge (border, dark background, negative background): only the inner drawing remains", "Entfernt alles Gefüllte, das den Bildrand berührt (Rahmen, dunkler Hintergrund, Negativ-Hintergrund): nur die innere Zeichnung bleibt"],
+        "img_flou"      => ["Lissage", "Suavizado", "Levigatura", "Smoothing", "Glättung"],
+        "img_flou_tip"  => ["Adoucit l'image avant la réduction (moins de petits détails et de bruit)", "Suaviza la imagen antes de la reducción (menos detalles pequeños y ruido)", "Ammorbidisce l'immagine prima della riduzione (meno dettagli e rumore)", "Softens the image before reduction (fewer small details and less noise)", "Glättet das Bild vor der Reduktion (weniger kleine Details und Rauschen)"],
+        "img_res"       => ["Résolution", "Resolución", "Risoluzione", "Resolution", "Auflösung"],
+        "img_res_tip"   => ["Plus grand côté de l'image analysée : plus élevé = plus de détails, plus lent", "Lado mayor de la imagen analizada: más alto = más detalle, más lento", "Lato maggiore dell'immagine analizzata: più alto = più dettagli, più lento", "Longest side of the analysed image: higher = more detail, slower", "Längste Seite des analysierten Bildes: höher = mehr Details, langsamer"],
+        "img_nettoyage" => ["Nettoyage", "Limpieza", "Pulizia", "Clean-up", "Bereinigung"],
+        "img_nettoyage_tip" => ["Supprime les taches et les trous plus petits que cette surface (en pixels)", "Elimina las manchas y agujeros más pequeños que esta superficie (en píxeles)", "Rimuove macchie e buchi più piccoli di questa superficie (in pixel)", "Removes specks and holes smaller than this area (in pixels)", "Entfernt Flecken und Löcher kleiner als diese Fläche (in Pixeln)"],
+        "img_tol"       => ["Tolérance", "Tolerancia", "Tolleranza", "Tolerance", "Toleranz"],
+        "img_tol_tip"   => ["Écart maximal entre le tracé et l'image (en pixels) : petit = fidèle, grand = lignes plus simples et plus lisses", "Desviación máxima entre el trazado y la imagen (en píxeles): pequeña = fiel, grande = líneas más simples y suaves", "Scarto massimo tra il tracciato e l'immagine (in pixel): piccolo = fedele, grande = linee più semplici e lisce", "Maximum gap between the outline and the image (in pixels): small = faithful, large = simpler, smoother lines", "Maximaler Abstand zwischen Kontur und Bild (in Pixeln): klein = genau, groß = einfachere, glattere Linien"],
+        "img_largeur"   => ["Largeur", "Anchura", "Larghezza", "Width", "Breite"],
+        "img_largeur_tip" => ["Largeur du dessin incrusté (la hauteur suit les proportions de l'image)", "Anchura del dibujo incrustado (la altura sigue las proporciones)", "Larghezza del disegno inciso (l'altezza segue le proporzioni)", "Width of the embossed drawing (height follows the image proportions)", "Breite der eingeprägten Zeichnung (Höhe folgt den Proportionen)"],
+        "img_stats"     => ["contours", "contornos", "contorni", "outlines", "Konturen"],
+        "img_points"    => ["points", "puntos", "punti", "points", "Punkte"],
         "texte_charge"  => ["Recherche des polices du système…", "Buscando las fuentes del sistema…", "Ricerca dei caratteri di sistema…", "Looking for system fonts…", "Systemschriften werden gesucht…"],
         "imp_tip" => ["3D-IMP : préparation à l'impression (vérifications, matière, envoi au trancheur)", "3D-IMP: preparación para imprimir (comprobaciones, material, envío al laminador)", "3D-IMP: preparazione alla stampa (verifiche, materiale, invio allo slicer)", "3D-IMP: print preparation (checks, material, send to slicer)", "3D-IMP: Druckvorbereitung (Prüfungen, Material, an den Slicer senden)"],
         "imp_titre" => ["Préparation à l'impression", "Preparación para imprimir", "Preparazione alla stampa", "Print preparation", "Druckvorbereitung"],
@@ -963,6 +998,32 @@ fn lignes_rouges(p: &egui::Painter, segs: &[[Vec3; 2]], mvp: &Mat4, sr: (f32, f3
     for s in &pr { p.line_segment(*s, egui::Stroke::new(2.2, egui::Color32::from_rgba_unmultiplied(30, 0, 0, 110))); }
     for s in &pr { p.line_segment(*s, egui::Stroke::new(1.2, egui::Color32::from_rgb(255, 35, 35))); }
 }
+/// Contours du texte ou de l'image en fil rouge 3D : en surface, à la profondeur `dh`, et quelques
+/// arêtes entre les deux (au plus ~200, quel que soit le nombre de points). Une polyligne par contour.
+fn contours_rouges(p: &egui::Painter, contours: &[Vec<[f64; 2]>], c: &CadreTexte, dh: f32, mvp: &Mat4, sr: (f32, f32, f32, f32), ppp: f32) {
+    let total: usize = contours.iter().map(|ct| ct.len()).sum();
+    let pas = (total / 200).max(3);
+    let (fond, trait_) = (egui::Stroke::new(2.2, egui::Color32::from_rgba_unmultiplied(30, 0, 0, 110)), egui::Stroke::new(1.2, egui::Color32::from_rgb(255, 35, 35)));
+    let mut lignes: Vec<Vec<egui::Pos2>> = Vec::new();
+    for ct in contours {
+        for z in [0.0, dh] {
+            // morceaux continus (un point hors champ coupe la ligne)
+            let mut cur: Vec<egui::Pos2> = Vec::new();
+            for q in ct.iter().chain(ct.first()) {
+                match project(mvp, c.pt(q[0] as f32, q[1] as f32, z), sr, ppp) {
+                    Some(e) => cur.push(e),
+                    None => if cur.len() >= 2 { lignes.push(std::mem::take(&mut cur)); } else { cur.clear(); },
+                }
+            }
+            if cur.len() >= 2 { lignes.push(cur); }
+        }
+        for q in ct.iter().step_by(pas) {
+            if let (Some(a), Some(b)) = (project(mvp, c.pt(q[0] as f32, q[1] as f32, 0.0), sr, ppp), project(mvp, c.pt(q[0] as f32, q[1] as f32, dh), sr, ppp)) { lignes.push(vec![a, b]); }
+        }
+    }
+    for l in &lignes { p.add(egui::Shape::line(l.clone(), fond)); }
+    for l in lignes { p.add(egui::Shape::line(l, trait_)); }
+}
 /// Outil à rétablir si l'on annule juste après l'avoir appliqué (le cadre revient tel qu'il était).
 #[derive(Clone, Copy)]
 enum OutilAnn { Texte(CadreTexte), Coupe(booleen::Cadre) }
@@ -1005,16 +1066,17 @@ fn surface_sous(scene: &[Obj], p: Vec3, n: Vec3) -> Option<(usize, f32)> {
 }
 /// Le curseur est-il sur une roue de rotation (milieu d'une arête L ou l) ? (rien quand le cadre est vu
 /// par la tranche : tourner n'y aurait pas de sens)
-fn poignee_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64)) -> bool {
+/// `sf` = facteur d'échelle de l'écran : la zone de clic suit la taille dessinée (en points), même en HiDPI.
+fn poignee_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64), sf: f32) -> bool {
     if de_tranche(c, k) { return false; }
     let m = egui::pos2(cursor.0 as f32, cursor.1 as f32);
-    c.roues().iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 13.0))
+    c.roues().iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 13.0 * sf))
 }
 /// Le curseur est-il sur une poignée de taille (coins du cadre) ?
-fn coin_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64)) -> bool {
+fn coin_sous(c: &CadreTexte, k: ViewKind, mvp: &Mat4, rect: (f32, f32, f32, f32), cursor: (f64, f64), sf: f32) -> bool {
     if de_tranche(c, k) { return false; }
     let m = egui::pos2(cursor.0 as f32, cursor.1 as f32);
-    c.coins(0.0).iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 10.0))
+    c.coins(0.0).iter().any(|q| project(mvp, *q, rect, 1.0).map_or(false, |sp| (sp - m).length() < 11.0 * sf))
 }
 /// Rayon monde d'une roue de ≈ 70 px centrée en `o` dans le plan (eu, ew) ; None si ce plan est vu par la tranche.
 fn rayon_roue(mvp: &Mat4, rect: (f32, f32, f32, f32), ppp: f32, o: Vec3, eu: Vec3, ew: Vec3) -> Option<f32> {
@@ -3201,7 +3263,7 @@ fn main() {
     let mut forme_pos_t: Option<std::time::Instant> = None; // dernier déplacement par la position (glisser = 1 seule étape d'annulation)
     let (mut f_angle, mut f_axe_rot, mut f_ech, mut f_ech3) = (45.0f32, 2usize, 100.0f32, [100.0f32; 3]);
     let (mut f_n, mut f_pas, mut f_dir, mut f_cn, mut f_cr) = (3u32, 30.0f32, 0usize, 6u32, 40.0f32);
-    let mut panneau_bool = matches!(std::env::var("PATCH3D_OPEN").as_deref(), Ok("booleens") | Ok("coupe") | Ok("texte"));
+    let mut panneau_bool = matches!(std::env::var("PATCH3D_OPEN").as_deref(), Ok("booleens") | Ok("coupe") | Ok("texte") | Ok("image"));
     // sélection multiple (Ctrl+clic, comme 3D Builder), dans l'ordre des clics ; contient `sel`
     let mut multi: Vec<usize> = Vec::new();
     let mut mods = winit::keyboard::ModifiersState::empty();
@@ -3209,7 +3271,16 @@ fn main() {
     // découpe (ciseaux) : armé = le prochain glisser dans une vue trace la ligne de coupe
     let mut coupe_arme = std::env::var("PATCH3D_OPEN").as_deref() == Ok("coupe");
     // TEXTE & RELIEF : sous-panneau de BOOLÉENS (toute la colonne de droite)
-    let mut panneau_texte = std::env::var("PATCH3D_OPEN").as_deref() == Ok("texte");
+    let mut panneau_texte = matches!(std::env::var("PATCH3D_OPEN").as_deref(), Ok("texte") | Ok("image"));
+    // INSÈRE IMAGE : même sous-panneau et même pose que le texte, contours tirés d'une image vectorisée
+    let mut txt_image = std::env::var("PATCH3D_OPEN").as_deref() == Ok("image");
+    // test sans clic : PATCH3D_IMAGE=fichier charge l'image au démarrage
+    let mut img: Option<vectorise::Image> = std::env::var("PATCH3D_IMAGE").ok().and_then(|p| vectorise::Image::charger(std::path::Path::new(&p)).ok());
+    let mut img_prm = vectorise::Params::default();
+    let mut img_largeur = 40.0f32;
+    let mut img_choix: Option<std::thread::JoinHandle<Option<std::path::PathBuf>>> = None;
+    let mut img_tex: Option<(u64, egui::TextureHandle)> = None; // aperçu N&B (génération de la vectorisation)
+    let mut img_vu = String::new(); // réglages de l'image au dernier calcul du tracé
     let mut txt_saisie = String::from("3D-Patch");
     let (mut txt_just, mut txt_taille, mut txt_relief, mut txt_suivre) = (1u8, 10.0f32, true, false);
     let mut txt_police: Option<usize> = None;
@@ -3328,6 +3399,11 @@ fn main() {
             // egui-winit répond « repaint » même à RedrawRequested : le suivre relancerait une image sans fin
             if resp.repaint && !matches!(event, WindowEvent::RedrawRequested) { window.request_redraw(); }
             let egui_grab = resp.consumed;
+            // clic gauche relâché au-dessus de l'interface (panneau, étiquette…) : les poignées sont lâchées quand
+            // même, sinon le cadre resterait accroché à la souris
+            if egui_grab && matches!(event, WindowEvent::MouseInput { state: ElementState::Released, button: MouseButton::Left, .. }) {
+                coupe_glisse = None; txt_rot = None; txt_deplace = None; txt_echelle = None; txt_prof_glisse = None; light_drag = None;
+            }
             let (wf, hf) = (size.width as f32, size.height as f32);
             let sf = window.scale_factor() as f32;
             // visionneuse : ni barre ni panneau -> la vue occupe toute la fenêtre
@@ -3475,10 +3551,11 @@ fn main() {
                                             // dans le plan face à la vue passant par sa pointe
                                             txt_sel = true; txt_k = k;
                                             if let Some(l) = long_fleche(&c, &mvp, rect, 1.0) { txt_prof_glisse = Some((c, l, ray_from(&mvp, cursor, rect).1.normalize())); }
-                                        } else if coin_sous(&c, k, &mvp, rect, cursor) {
+                                        } else if coin_sous(&c, k, &mvp, rect, cursor, sfc) {
+                                            // taille de départ : police du texte, ou largeur du dessin (INSÈRE IMAGE)
                                             txt_sel = true; txt_k = k;
-                                            if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { txt_echelle = Some((txt_taille, (p - centre).length().max(1e-3))); }
-                                        } else if poignee_sous(&c, k, &mvp, rect, cursor) {
+                                            if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { txt_echelle = Some((if txt_image { img_largeur } else { txt_taille }, (p - centre).length().max(1e-3))); }
+                                        } else if poignee_sous(&c, k, &mvp, rect, cursor, sfc) {
                                             txt_sel = true; txt_k = k;
                                             if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) { let d = p - centre; txt_rot = Some((c.angle, d.dot(c.v).atan2(d.dot(c.u)))); }
                                         } else if dans_cadre(&c, &mvp, rect, cursor) {
@@ -3846,7 +3923,10 @@ fn main() {
                             }
                             if prof_axe || colle {} else if let Some(p) = plan_h(&mvp, cursor, rect, c.n, c.h) {
                                 match () {
-                                    _ if txt_echelle.is_some() => if let Some((t0, d0)) = txt_echelle { txt_taille = (t0 * (p - c.pt(0.0, 0.0, 0.0)).length() / d0).clamp(0.5, 2000.0); },
+                                    _ if txt_echelle.is_some() => if let Some((t0, d0)) = txt_echelle {
+                                        let t = (t0 * (p - c.pt(0.0, 0.0, 0.0)).length() / d0).clamp(0.5, 2000.0);
+                                        if txt_image { img_largeur = t; } else { txt_taille = t; }
+                                    },
                                     _ => if let Some((a0, c0)) = txt_rot {
                                         let q = p - c.pt(0.0, 0.0, 0.0);
                                         let a = a0 + (q.dot(c.v).atan2(q.dot(c.u)) - c0);
@@ -3981,7 +4061,7 @@ fn main() {
                     langue_regler(lang);
                     VISIONNEUSE.store(viewer, std::sync::atomic::Ordering::Relaxed);
                     if let Some((g, rx)) = &gpu { unsafe { g.serve(&gl, rx); } }
-                    let cur_mode = mode;
+                    let mut cur_mode = mode;
                     // outil de rotation : objet disparu => fermé ; sinon recalé sur l'objet (hors geste)
                     // grille et règles toujours à la taille de la scène (import, redimensionnement, déplacement,
                     // annulation, changement d'unité…)
@@ -4009,7 +4089,6 @@ fn main() {
                             gizmo = Some(g); rot_test = None;
                         }
                     }
-                    let rot_xf = gizmo.as_ref().and_then(|g| g.matrix().map(|m| (g.obj, m)));
                     // tout ce qui compose la scène 3D : si rien n'a bougé, on réaffiche l'image gardée.
                     // Recalculée en fin d'image : si l'interface a changé la scène après le dessin, on redessine.
                     // sélection multiple : objets disparus oubliés ; une sélection simple ailleurs l'annule
@@ -4025,6 +4104,11 @@ fn main() {
                                                                            else { let o = &ortho[view::oidx(k)]; format!("{:?} {}", o.pan, o.scale) }) } }
                     macro_rules! cle_scene { () => { format!("{} {:?}", cle_commune!(), cles_vues!()) } }
                     let cle_dessinee = cle_scene!();
+                    // outils et panneaux ouverts (ce qui change les tracés par-dessus les vues sans toucher à la 3D) :
+                    // tout changement pendant l'image, au début ou dans l'interface, redemande une image tout de suite
+                    macro_rules! cle_outils { () => { format!("{:?} {:?}", (panneau_bool, panneau_texte, txt_image, panneau_forme, panneau_imp, light_mode, draw_tool.is_some()), (
+                        gizmo.is_some(), coupe_arme, coupe_etape, viewer, code_de_vue(mode), txt_cadre.is_some(), txt_sel, coupe.is_some())) } }
+                    let outils_avant = cle_outils!();
                     *SEL_PLUS.lock().unwrap() = multi.clone();
                     // fin d'un booléen / d'une découpe, ou panneau refermé : outils désarmés, cadre retiré,
                     // boîte à outils normale et vue d'avant la découpe
@@ -4042,8 +4126,9 @@ fn main() {
                         }
                         modes_prec = [gizmo.is_some(), panneau_bool, panneau_forme, panneau_imp, light_mode, draw_tool.is_some()];
                     }
-                    // ouverture du panneau Booléens : passage en 4 vues (la vue d'avant revient à la fermeture)
+                    // ouverture du panneau Booléens : passage en 4 vues ; à sa sortie, retour à la vue 3D standard
                     if panneau_bool && !panneau_prec && mode != ViewMode::Quad { mode_avant_coupe = Some(mode); mode = ViewMode::Quad; }
+                    if !panneau_bool && panneau_prec { mode_avant_coupe = None; mode = ViewMode::Single(ViewKind::ThreeD); }
                     panneau_prec = panneau_bool;
                     if !panneau_bool { panneau_texte = false; }
                     if !panneau_texte { txt_rot = None; txt_echelle = None; txt_prof_glisse = None; }
@@ -4052,6 +4137,9 @@ fn main() {
                         if let Some(m) = mode_avant_coupe.take() { mode = m; }
                     }
                     if coupe.is_none() { coupe_sel = false; }
+                    // disposition des vues à jour pour toute l'image (dessin 3D, cache, interface) : sinon les vues
+                    // seraient dessinées dans l'ancienne disposition et gardées en cache sous la clé de la nouvelle
+                    cur_mode = mode;
                     // marqueur du trou : seulement tant que l'objet creusé reste sélectionné et inchangé
                     if trou_marque.as_ref().map_or(false, |(i, m, _)| sel != Some(*i) || *i >= scene.len() || scene[*i].min != *m) { trou_marque = None; }
                     // PRÉPARATION À L'IMPRESSION : trancheurs installés (une fois), analyse de la pièce
@@ -4117,7 +4205,28 @@ fn main() {
                         txt_sel = true;
                     }
                     // TEXTE : contours de l'aperçu (police, texte, taille, justification) ; le cadre épouse le texte
-                    if panneau_texte {
+                    // INSÈRE IMAGE : image choisie (sélecteur en arrière-plan), vectorisation à jour, cadre ajusté au dessin
+                    if img_choix.as_ref().map_or(false, |h| h.is_finished()) {
+                        if let Some(p) = img_choix.take().unwrap().join().ok().flatten() {
+                            match vectorise::Image::charger(&p) {
+                                Ok(i) => { img = Some(i); img_prm.pleines.clear(); }
+                                Err(e) => status_msg = Some((format!("{} : {e}", tr(lang, "img_illisible")), true, std::time::Instant::now())),
+                            }
+                        }
+                    }
+                    if img_choix.is_some() { egui_ctx.request_repaint_after(std::time::Duration::from_millis(100)); }
+                    if panneau_texte && txt_image {
+                        if let Some(im) = img.as_mut() { im.maj(&mut img_prm); }
+                        img_vu = format!("{:?} {img_largeur} {}", img_prm, img.as_ref().map_or(0, |i| i.generation));
+                        if let Some(c) = txt_cadre.as_mut() {
+                            let cle = format!("image {} {}", img.as_ref().map_or(0, |i| i.generation), img_largeur);
+                            if txt_contours.0 != cle {
+                                let (p, w, h) = img.as_ref().map(|i| i.contours_mm(img_largeur)).unwrap_or_default();
+                                if !p.is_empty() { c.lx = w.max(0.5); c.ly = h.max(0.5); }
+                                txt_contours = (cle, p);
+                            }
+                        }
+                    } else if panneau_texte {
                         if let (Some(c), Some(liste)) = (txt_cadre.as_mut(), texte::polices()) {
                             if let Some(pol) = txt_police.and_then(|i| liste.get(i)) {
                                 let cle = format!("{} {} {} {}", pol.nom, txt_saisie, txt_taille, txt_just);
@@ -4134,6 +4243,8 @@ fn main() {
                         let cle = format!("{c:?} {}", cache3d::generation());
                         if coupe_section.0 != cle { coupe_section = (cle, section_cadre(&c, &scene)); }
                     } else if !coupe_section.1.is_empty() { coupe_section = (String::new(), Vec::new()); }
+                    // outil de rotation lu au moment du dessin, comme la clé du cache (un outil ouvert plus haut l'a peut-être fermé)
+                    let rot_xf = gizmo.as_ref().and_then(|g| g.matrix().map(|m| (g.obj, m)));
                     unsafe { if let Some(a_faire) = cache.debut(&gl, size.width as i32, size.height as i32, cle_commune!(), cles_vues!(), evt_recu) {
                         // egui laisse l'état GL modifié (depth test off, blend on, scissor on) :
                         // on le remet pour notre rendu 3D, sinon les faces s'occultent mal.
@@ -4401,16 +4512,8 @@ fn main() {
                                     }
                                     // lettres en fil rouge 3D : contour en surface, contour à la profondeur (creusé ou en
                                     // relief) et arêtes entre les deux
-                                    let mut segs: Vec<[Vec3; 2]> = Vec::new();
-                                    for ct in &txt_contours.1 {
-                                        let n_ = ct.len();
-                                        for i in 0..n_ {
-                                            let (a, b) = (ct[i], ct[(i + 1) % n_]);
-                                            for z in [0.0, dh] { segs.push([c.pt(a[0] as f32, a[1] as f32, z), c.pt(b[0] as f32, b[1] as f32, z)]); }
-                                            if i % 3 == 0 { segs.push([c.pt(a[0] as f32, a[1] as f32, 0.0), c.pt(a[0] as f32, a[1] as f32, dh)]); }
-                                        }
-                                    }
-                                    lignes_rouges(&vp, &segs, &mvp, sr, ppp);
+                                    // (contours en polylignes, arêtes espacées : une image vectorisée a des milliers de points)
+                                    contours_rouges(&vp, &txt_contours.1, &c, dh, &mvp, sr, ppp);
                                     if txt_deplace.is_some() {
                                         if let Some(c0) = pr(c.pt(0.0, 0.0, 0.0)) {
                                             let bleu = egui::Color32::from_rgb(70, 160, 255);
@@ -5051,7 +5154,7 @@ fn main() {
                                     .fill(egui::Color32::from_gray(60)).rounding(egui::Rounding::same(6.0)).stroke(egui::Stroke::new(1.0, egui::Color32::from_gray(110)));
                                 if ui.add_sized(egui::vec2(ui.available_width(), 26.0), retour).clicked() { panneau_texte = false; }
                                 ui.add_space(6.0);
-                                title_box(ui, &tr(lang, "texte_btn").to_uppercase(), 14.0, ui.available_width());
+                                title_box(ui, &tr(lang, if txt_image { "img_btn" } else { "texte_btn" }).to_uppercase(), 14.0, ui.available_width());
                                 ui.add_space(4.0);
                                 // champs plus grands et plus lisibles dans ce panneau
                                 {
@@ -5062,6 +5165,41 @@ fn main() {
                                     st.spacing.interact_size.y = 26.0;
                                     st.spacing.item_spacing.y = 6.0;
                                 }
+                                if txt_image {
+                                    // ===== INSÈRE IMAGE : choix du fichier, aperçu noir & blanc avec le tracé vectorisé =====
+                                    if ui.add_enabled(img_choix.is_none(), egui::Button::new(egui::RichText::new(tr(lang, "img_choisir")).size(13.0)).min_size(egui::vec2(ui.available_width(), 28.0))).clicked() {
+                                        img_choix = Some(std::thread::spawn(|| rfd::FileDialog::new().set_directory(paths::start_dir())
+                                            .add_filter("Images", &["png", "jpg", "jpeg", "bmp"]).pick_file()));
+                                    }
+                                    match img.as_ref() {
+                                        None => { ui.add(egui::Label::new(egui::RichText::new(tr(lang, "img_aucune")).size(12.0).color(egui::Color32::from_rgb(235, 150, 90))).wrap(true)); }
+                                        Some(im) => {
+                                            ui.label(egui::RichText::new(format!("{}  ({} × {} px)", im.nom, im.w, im.h)).size(11.5).color(egui::Color32::from_gray(190)));
+                                            if img_tex.as_ref().map_or(true, |t| t.0 != im.generation) {
+                                                let px: Vec<egui::Color32> = im.masque.iter().map(|&b| if b { egui::Color32::from_gray(15) } else { egui::Color32::from_gray(245) }).collect();
+                                                let ci = egui::ColorImage { size: [im.w, im.h], pixels: px };
+                                                img_tex = Some((im.generation, ui.ctx().load_texture("img_vecto", ci, egui::TextureOptions::NEAREST)));
+                                            }
+                                            if let Some((_, tex)) = &img_tex {
+                                                let k = (ui.available_width() / im.w as f32).min(170.0 / im.h as f32);
+                                                let (r, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), im.h as f32 * k), egui::Sense::hover());
+                                                let zone = egui::Rect::from_center_size(r.center(), egui::vec2(im.w as f32 * k, im.h as f32 * k));
+                                                ui.painter().image(tex.id(), zone, egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)), egui::Color32::WHITE);
+                                                // tracé vectorisé par-dessus (rouge, comme dans les vues)
+                                                let rouge = egui::Stroke::new(1.2, egui::Color32::from_rgb(235, 45, 40));
+                                                let pt = |q: [f64; 2]| egui::pos2(zone.left() + q[0] as f32 * k, zone.bottom() - q[1] as f32 * k);
+                                                for c in &im.polys {
+                                                    let mut v: Vec<egui::Pos2> = c.iter().map(|&q| pt(q)).collect();
+                                                    v.push(v[0]);
+                                                    ui.painter().add(egui::Shape::line(v, rouge));
+                                                }
+                                            }
+                                            let np: usize = im.polys.iter().map(|c| c.len()).sum();
+                                            ui.label(egui::RichText::new(format!("{} {} · {} {}", im.polys.len(), tr(lang, "img_stats"), np, tr(lang, "img_points"))).size(11.5).color(egui::Color32::from_gray(190)));
+                                            if im.polys.is_empty() { ui.label(egui::RichText::new(tr(lang, "img_vide")).size(11.5).color(egui::Color32::from_rgb(235, 150, 90))); }
+                                        }
+                                    }
+                                } else {
                                 // la police choisie est chargée dans l'interface : la saisie s'affiche avec elle
                                 if let (Some(i), Some(liste)) = (txt_police, texte::polices()) {
                                     if txt_police_ui != Some(i) {
@@ -5095,6 +5233,7 @@ fn main() {
                                         if resp.on_hover_text(tr(lang, tip)).clicked() { txt_just = j; }
                                     }
                                 });
+                                }
                                 ui.add_space(6.0);
                                 // le texte se pose de lui-même sur la face visée au centre de la vue ; ce bouton l'y replace
                                 if ui.add_sized(egui::vec2(ui.available_width(), 32.0), yellow_btn(&tr(lang, "texte_recentrer").to_uppercase(), 12.5)).on_hover_text(tr(lang, "texte_aide")).clicked() {
@@ -5119,9 +5258,63 @@ fn main() {
                                 if radio_jaune(ui, !txt_relief, &tr(lang, "texte_grave")).clicked() { txt_relief = false; }
                                 case_jaune(ui, &mut txt_suivre, &tr(lang, "texte_suivre").to_uppercase()).on_hover_text(tr(lang, "texte_suivre_tip"));
                                 ui.add_space(4.0);
-                                let pret = txt_cadre.is_some() && !txt_saisie.trim().is_empty() && txt_police.is_some() && !busy;
+                                let pret = txt_cadre.is_some() && !busy && if txt_image { img.as_ref().map_or(false, |i| !i.polys.is_empty()) }
+                                                                           else { !txt_saisie.trim().is_empty() && txt_police.is_some() };
                                 if ui.add_enabled_ui(pret, |ui| ui.add_sized(egui::vec2(ui.available_width(), 34.0), yellow_btn(&tr(lang, "texte_appl").to_uppercase(), 13.5))).inner
                                     .on_hover_text(tr(lang, "texte_appl_tip")).clicked() { txt_appl = true; }
+                                if txt_image {
+                                    // ===== VECTORISATION : réduction en noir & blanc, tolérance du tracé, taille =====
+                                    ui.add_space(10.0);
+                                    title_box(ui, &tr(lang, "img_vecto").to_uppercase(), 13.0, ui.available_width());
+                                    egui::ScrollArea::vertical().id_source("vecto").auto_shrink([false, true]).show(ui, |ui| {
+                                        ui.spacing_mut().slider_width = (ui.available_width() - 80.0).max(60.0);
+                                        let f = unit.factor();
+                                        let mut x = img_largeur / f;
+                                        ui.horizontal(|ui| { ui.label(tr(lang, "img_largeur")); if ui.add(egui::DragValue::new(&mut x).speed(0.1).max_decimals(unit.decimales()).suffix(format!(" {}", unit.suffix()))).on_hover_text(tr(lang, "img_largeur_tip")).changed() { img_largeur = (x * f).max(0.5); } });
+                                        ui.add_space(4.0);
+                                        ui.label(egui::RichText::new(tr(lang, "img_reduc")).strong());
+                                        for (m, k) in [(vectorise::Mode::Seuil, "img_m_seuil"), (vectorise::Mode::Auto, "img_m_auto"), (vectorise::Mode::Adaptatif, "img_m_adapt"), (vectorise::Mode::Couleurs, "img_m_coul")] {
+                                            if radio_jaune(ui, img_prm.mode == m, &tr(lang, k)).clicked() { img_prm.mode = m; }
+                                        }
+                                        match img_prm.mode {
+                                            vectorise::Mode::Seuil => { ui.label(tr(lang, "img_seuil")); ui.add(egui::Slider::new(&mut img_prm.seuil, 1..=254)).on_hover_text(tr(lang, "img_seuil_tip")); }
+                                            vectorise::Mode::Adaptatif => { ui.label(tr(lang, "img_ecart")); ui.add(egui::Slider::new(&mut img_prm.ecart, 0..=60)).on_hover_text(tr(lang, "img_ecart_tip")); }
+                                            vectorise::Mode::Couleurs => {
+                                                ui.label(tr(lang, "img_ncoul"));
+                                                ui.add(egui::Slider::new(&mut img_prm.n_coul, 2..=12));
+                                                // palette : clic = couleur pleine (cadre jaune + coche noire) ou vide
+                                                if let Some(im) = img.as_ref() {
+                                                    ui.horizontal_wrapped(|ui| {
+                                                        for (i, c) in im.palette().iter().enumerate() {
+                                                            let (r, resp) = ui.allocate_exact_size(egui::vec2(30.0, 30.0), egui::Sense::click());
+                                                            let plein = img_prm.pleines.get(i).copied().unwrap_or(false);
+                                                            ui.painter().rect_filled(r, 4.0, egui::Color32::from_rgb(c[0], c[1], c[2]));
+                                                            ui.painter().rect_stroke(r, 4.0, if plein { egui::Stroke::new(3.0, JAUNE) } else { egui::Stroke::new(1.0, egui::Color32::from_gray(110)) });
+                                                            if plein {
+                                                                ui.painter().rect_filled(egui::Rect::from_center_size(r.center(), egui::vec2(12.0, 12.0)), 2.0, egui::Color32::BLACK);
+                                                                ui.painter().rect_stroke(egui::Rect::from_center_size(r.center(), egui::vec2(12.0, 12.0)), 2.0, egui::Stroke::new(1.0, egui::Color32::WHITE));
+                                                            }
+                                                            if resp.on_hover_text(tr(lang, "img_coul_tip")).clicked() { if let Some(b) = img_prm.pleines.get_mut(i) { *b = !*b; } }
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                            vectorise::Mode::Auto => {}
+                                        }
+                                        case_jaune(ui, &mut img_prm.inverser, &tr(lang, "img_inverser").to_uppercase()).on_hover_text(tr(lang, "img_inverser_tip"));
+                                        case_jaune(ui, &mut img_prm.sans_cadre, &tr(lang, "img_sans_cadre").to_uppercase()).on_hover_text(tr(lang, "img_sans_cadre_tip"));
+                                        ui.add_space(4.0);
+                                        // libellé au-dessus, curseur sur toute la largeur (rien n'est rogné dans la colonne étroite)
+                                        ui.label(tr(lang, "img_flou"));
+                                        ui.add(egui::Slider::new(&mut img_prm.flou, 0..=8).suffix(" px")).on_hover_text(tr(lang, "img_flou_tip"));
+                                        ui.label(tr(lang, "img_res"));
+                                        ui.add(egui::Slider::new(&mut img_prm.res, 100..=1500).step_by(50.0).suffix(" px")).on_hover_text(tr(lang, "img_res_tip"));
+                                        ui.label(tr(lang, "img_nettoyage"));
+                                        ui.add(egui::Slider::new(&mut img_prm.nettoyage, 0.0..=400.0).logarithmic(true).suffix(" px²")).on_hover_text(tr(lang, "img_nettoyage_tip"));
+                                        ui.label(tr(lang, "img_tol"));
+                                        ui.add(egui::Slider::new(&mut img_prm.tolerance, 0.0..=10.0).max_decimals(2).suffix(" px")).on_hover_text(tr(lang, "img_tol_tip"));
+                                    });
+                                } else {
                                 // ===== POLICE : taille et aperçu en direct =====
                                 ui.add_space(10.0);
                                 title_box(ui, &tr(lang, "texte_police").to_uppercase(), 13.0, ui.available_width());
@@ -5187,6 +5380,7 @@ fn main() {
                                             }
                                         });
                                     }
+                                }
                                 }
                             } else if panneau_bool {
                                 // ===== Panneau BOOLÉENS (remplace le panneau d'outils) =====
@@ -5311,7 +5505,16 @@ fn main() {
                                 title_box(ui, &tr(lang, "texte_btn").to_uppercase(), 14.0, ui.available_width());
                                 ui.add_space(4.0);
                                 if ui.add_sized(egui::vec2(ui.available_width(), 34.0), yellow_btn(&tr(lang, "texte_btn").to_uppercase(), 13.5)).on_hover_text(tr(lang, "texte_tip")).clicked() {
-                                    panneau_texte = true; txt_cadre = None; // posé de lui-même sur la face visée
+                                    panneau_texte = true; txt_image = false; txt_cadre = None; // posé de lui-même sur la face visée
+                                }
+                                ui.add_space(4.0);
+                                // INSÈRE IMAGE : même pose que le texte ; le sélecteur s'ouvre tout de suite s'il n'y a pas encore d'image
+                                if ui.add_sized(egui::vec2(ui.available_width(), 34.0), yellow_btn(&tr(lang, "img_btn").to_uppercase(), 13.5)).on_hover_text(tr(lang, "img_tip")).clicked() {
+                                    panneau_texte = true; txt_image = true; txt_cadre = None;
+                                    if img.is_none() && img_choix.is_none() {
+                                        img_choix = Some(std::thread::spawn(|| rfd::FileDialog::new().set_directory(paths::start_dir())
+                                            .add_filter("Images", &["png", "jpg", "jpeg", "bmp"]).pick_file()));
+                                    }
                                 }
                             } else {
                             // --- AFFICHAGE : modes de visualisation (au-dessus des outils) ---
@@ -5743,6 +5946,8 @@ fn main() {
                         } // fin « pas en visionneuse »
                     });
                     egui_state.handle_platform_output(&window, full.platform_output);
+                    // INSÈRE IMAGE : réglage changé dans le panneau → image suivante tout de suite (vues et aperçu à jour)
+                    if panneau_texte && txt_image && img_vu != format!("{:?} {img_largeur} {}", img_prm, img.as_ref().map_or(0, |i| i.generation)) { window.request_redraw(); }
                     let delai_repaint = full.viewport_output.get(&egui::ViewportId::ROOT).map_or(std::time::Duration::MAX, |v| v.repaint_delay);
                     let prims = egui_ctx.tessellate(full.shapes, full.pixels_per_point);
                     egui_painter.paint_and_update_textures([size.width, size.height], full.pixels_per_point, &prims, &full.textures_delta);
@@ -6256,14 +6461,19 @@ fn main() {
                         let cible = txt_cadre.and_then(|c| surface_sous(&scene, c.centre, c.n).map(|x| x.0))
                             .or_else(|| sel.filter(|&i| i < scene.len() && scene[i].nverts > 0))
                             .or_else(|| { let v: Vec<usize> = (0..scene.len()).filter(|&i| scene[i].nverts > 0).collect(); if v.len() == 1 { Some(v[0]) } else { None } });
-                        match (cible, txt_cadre, texte::polices()) {
-                            (Some(i), Some(c), Some(liste)) => if let Some(pol) = txt_police.and_then(|j| liste.get(j)) {
-                                let polys = texte::contours(pol, &txt_saisie, txt_taille, txt_just, 0.0).map(|r| r.0).unwrap_or_default();
+                        // contours : image vectorisée (INSÈRE IMAGE) ou texte dans la police choisie
+                        let polys = if txt_image { img.as_ref().map(|im| im.contours_mm(img_largeur).0) } else {
+                            texte::polices().and_then(|liste| txt_police.and_then(|j| liste.get(j))
+                                .map(|pol| texte::contours(pol, &txt_saisie, txt_taille, txt_just, 0.0).map(|r| r.0).unwrap_or_default()))
+                        };
+                        let titre = tr(lang, if txt_image { "img_btn" } else { "texte_btn" });
+                        match (cible, txt_cadre, polys) {
+                            (Some(i), Some(c), Some(polys)) => {
                                 txt_lance = Some(c);
                                 let prm = booleen::ParamsTexte { polys, u: c.u, v: c.v, n: c.n, centre: c.centre, angle: c.angle, prof: c.prof, relief: txt_relief, suivre: txt_suivre };
                                 let v = scene[i].verts.clone();
                                 let nom = tr(lang, if txt_relief { "texte_relief" } else { "texte_grave" });
-                                job = Some(spawn_job(i, JobKind::Texte, move || booleen::texte(&v, &prm).map(|w| (w, format!("{} : {nom}", tr(lang, "texte_btn"))))));
+                                job = Some(spawn_job(i, JobKind::Texte, move || booleen::texte(&v, &prm).map(|w| (w, format!("{titre} : {nom}")))));
                             },
                             (None, _, _) => status_msg = Some((tr(lang, "aucun_obj").into(), true, std::time::Instant::now())),
                             _ => {}
@@ -6576,6 +6786,9 @@ fn main() {
                     }
                     // immédiat seulement si egui le demande sans délai ; sinon réveil programmé
                     // (la scène a changé depuis son dessin : nouvelle image tout de suite)
+                    // panneau Booléens ouvert / fermé pendant cette image : la bascule en 4 vues (ou le retour à la vue
+                    // d'avant) se fait au début de l'image suivante, à demander tout de suite
+                    if panneau_bool != panneau_prec || cle_outils!() != outils_avant { window.request_redraw(); }
                     if delai_repaint.is_zero() || cle_scene!() != cle_dessinee { window.request_redraw(); }
                     else if delai_repaint < std::time::Duration::from_secs(3600) {
                         let t = std::time::Instant::now() + delai_repaint;

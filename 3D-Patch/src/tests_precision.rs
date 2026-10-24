@@ -555,6 +555,61 @@ fn texte_relief_et_gravure() {
 fn boite_de(v: &[f32]) -> (Vec3, Vec3) { forme::bornes(v) }
 
 #[test]
+fn image_vectorisee_relief_et_gravure() {
+    use crate::vectorise;
+    // anneau noir (R 80, r 40 px) + carré rouge sur fond blanc, avec un peu de transparence
+    let (w, h) = (300u32, 200u32);
+    let img = image::RgbaImage::from_fn(w, h, |x, y| {
+        let (dx, dy) = (x as f32 - 100.0, y as f32 - 100.0);
+        let d = (dx * dx + dy * dy).sqrt();
+        if d < 80.0 && d >= 40.0 { image::Rgba([10, 10, 10, 255]) }
+        else if (210..270).contains(&x) && (70..130).contains(&y) { image::Rgba([200, 30, 30, 255]) }
+        else { image::Rgba([0, 0, 0, 0]) } // transparent = fond blanc
+    });
+    let f = std::env::temp_dir().join("patch3d_test_vecto.png");
+    img.save(&f).unwrap();
+    let mut im = vectorise::Image::charger(&f).unwrap();
+    // seuil automatique : anneau (extérieur + trou) et carré rouge (plus sombre que le blanc)
+    let mut prm = vectorise::Params { tolerance: 0.8, ..Default::default() };
+    im.maj(&mut prm);
+    let aire_px: f64 = im.polys.iter().map(|c| vectorise::aire(c)).sum();
+    let attendu = std::f64::consts::PI * (80.0f64.powi(2) - 40.0f64.powi(2)) + 60.0 * 60.0;
+    eprintln!("IMAGE : {} contours, aire {aire_px:.0} px² (attendu {attendu:.0})", im.polys.len());
+    assert_eq!(im.polys.len(), 3);
+    assert!(ecart_rel(aire_px, attendu) < 0.02);
+    // par couleurs : seule la couleur la plus sombre (noir) en plein → l'anneau seul
+    let mut pc = vectorise::Params { mode: vectorise::Mode::Couleurs, n_coul: 3, ..prm.clone() };
+    im.maj(&mut pc);
+    pc.pleines = (0..im.palette().len()).map(|i| i == 0).collect();
+    im.maj(&mut pc);
+    assert_eq!(im.polys.len(), 2, "couleurs : anneau seul");
+    // inversé : le fond devient plein (cadre de l'image percé de l'anneau et du carré)
+    let mut pi = vectorise::Params { inverser: true, ..prm.clone() };
+    im.maj(&mut pi);
+    assert!(im.polys.iter().any(|c| vectorise::aire(c) < 0.0));
+    // une autre image chargée ne reprend jamais le numéro de vectorisation de la précédente
+    let mut autre = vectorise::Image::charger(&f).unwrap();
+    autre.maj(&mut vectorise::Params::default());
+    assert!(autre.generation > im.generation, "numéro de vectorisation réutilisé");
+    // incrustation dans une plaque, comme un texte : 50 mm de large, relief et gravure de 2 mm
+    im.maj(&mut prm);
+    let (polys, lx, ly) = im.contours_mm(50.0);
+    assert!((lx - 50.0).abs() < 1e-4 && ly > 25.0 && ly < 35.0, "cadre {lx} × {ly}");
+    let k = 50.0 / 250.0; // largeur du dessin : 20..270 px
+    let aire_mm = attendu * k * k;
+    let boite = decale(&prim(occt::Prim::Box { dx: 70.0, dy: 50.0, dz: 10.0 }), Vec3::new(-35.0, -25.0, 0.0));
+    let v0 = volume(&boite);
+    let p = |relief: bool| booleen::ParamsTexte { polys: polys.clone(), u: Vec3::X, v: Vec3::Y, n: Vec3::Z, centre: Vec3::ZERO, angle: 0.0, prof: 2.0, relief, suivre: false };
+    let r = booleen::texte(&boite, &p(true)).unwrap();
+    let d = defects::analyze(&r); assert_eq!((d.holes, d.face_errors), (0, 0), "image en relief : défauts");
+    eprintln!("IMAGE relief : +{:.1} mm³ (attendu {:.1})", volume(&r) - v0, aire_mm * 2.0);
+    assert!(ecart_rel(volume(&r) - v0, aire_mm * 2.0) < 0.03);
+    let g = booleen::texte(&boite, &p(false)).unwrap();
+    let d = defects::analyze(&g); assert_eq!((d.holes, d.face_errors), (0, 0), "image gravée : défauts");
+    assert!(ecart_rel(v0 - volume(&g), aire_mm * 2.0) < 0.03);
+}
+
+#[test]
 fn verifications_impression() {
     let tris = |v: &[f32]| v.chunks_exact(18).map(|t| [Vec3::new(t[0], t[1], t[2]), Vec3::new(t[6], t[7], t[8]), Vec3::new(t[12], t[13], t[14])]).collect::<Vec<_>>();
     // table : plateau 40×40 épais de 4 sur un pied 10×10 haut de 20 -> dessous du plateau en surplomb

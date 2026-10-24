@@ -18,7 +18,7 @@ Er läuft unter Linux und Windows, vollständig offline, und die Oberfläche ist
 
 - **Ansichten**: texturiert, transparent, Drahtgitter sowie eine Ansicht *Fehler & Defekte*, die Probleme farbig hervorhebt.
 - **Reparatur**: Erkennung von Löchern und fehlerhaften Flächen, interne Bereinigung, automatische Reparatur per Klick und eine „A.I.“-Reparatur, die eine geschlossene (wasserdichte) Hülle neu aufbaut.
-- **Bearbeitung**: Boolesche Operationen (Vereinigung, Subtraktion, Schnittmenge), Schnitt entlang einer Ebene, Aushöhlen mit Ablauflöchern, Vereinfachung, Gitterobjekte, Relief-/Texturgravur, 3D-Text.
+- **Bearbeitung**: Boolesche Operationen (Vereinigung, Subtraktion, Schnittmenge), Schnitt entlang einer Ebene, Aushöhlen mit Ablauflöchern, Vereinfachung, Gitterobjekte, Relief-/Texturgravur, 3D-Text sowie in Schwarzweiß vektorisierte Bilder (Schwelle, automatisch, adaptiv oder nach Farben, einstellbare Toleranz, Negativ, Rahmen entfernen), erhaben oder graviert wie Text.
 - **Platzierung**: Gizmo zum Verschieben/Drehen/Skalieren, exakte Maße in mm/cm/Zoll, Zentrieren, Lineal, Ablegen auf dem Druckbett mit realistischer Schwerkraftsimulation.
 - **Teile & Gruppen**: ein Teil eines mehrteiligen Objekts anklicken und Rechtsklick → *Trennen*; mehrere Objekte mit Umschalt+Klick wählen und Rechtsklick → *Gruppieren*; Kopieren/Einfügen (Strg+C / Strg+V), Löschen mit Entf oder Rücktaste.
 - **Druckvorbereitung**: Prüfungen (Dichtheit, Überhänge, dünne Wände, Größe), empfohlene Ausrichtung, Schätzung des Materialgewichts, direkte Übergabe an installierte Slicer (PrusaSlicer, Cura, OrcaSlicer, Bambu Studio, SuperSlicer, Creality Print…).
