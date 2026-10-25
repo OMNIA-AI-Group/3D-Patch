@@ -38,8 +38,8 @@ Ready-to-use builds are on the [Releases](https://github.com/OMNIA-AI-Group/3D-P
 | File | System | Install |
 |---|---|---|
 | `3D-Patch-x86_64.AppImage` | any Linux x86-64 | `chmod +x`, then double-click |
-| `3d-patch_<version>-1_amd64.deb` | Debian, Ubuntu, Mint, Zorin, Pop!_OS… | `sudo apt install ./3d-patch_<version>-1_amd64.deb` |
-| `3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` | Arch Linux, Manjaro, EndeavourOS… | `sudo pacman -U 3d-patch-bin-<version>-1-x86_64.pkg.tar.zst` (or `makepkg -si` with [`paquets/PKGBUILD`](paquets/PKGBUILD)) |
+| `3d-patch_<version>-2_amd64.deb` | Debian, Ubuntu, Mint, Zorin, Pop!_OS… | `sudo apt install ./3d-patch_<version>-2_amd64.deb` |
+| `3d-patch-bin-<version>-2-x86_64.pkg.tar.zst` | Arch Linux, Manjaro, EndeavourOS… | `sudo pacman -U 3d-patch-bin-<version>-2-x86_64.pkg.tar.zst` (or `makepkg -si` with [`paquets/PKGBUILD`](paquets/PKGBUILD)) |
 | `3d-patch-<version>-linux-x86_64.tar.gz` | any Linux (manual) | extract into `/`: `/opt/3d-patch` + launcher |
 | `3D-Patch-Setup.exe` | Windows 10/11 | installer |
 | `3D-Patch-Windows-portable.zip` | Windows 10/11 | unzip, run `3D-Patch\3d-patch.exe` |

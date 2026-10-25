@@ -1,8 +1,8 @@
 #!/bin/bash
 # Paquets Linux de 3D-Patch à partir du binaire compilé (cargo build --release) :
 #   - archive portable  3d-patch-<v>-linux-x86_64.tar.gz  (arborescence /opt + /usr, source du PKGBUILD)
-#   - Debian / Ubuntu   3d-patch_<v>-1_amd64.deb
-#   - Arch Linux        3d-patch-bin-<v>-1-x86_64.pkg.tar.zst  (makepkg dans un conteneur Arch, Docker requis)
+#   - Debian / Ubuntu   3d-patch_<v>-<rév>_amd64.deb
+#   - Arch Linux        3d-patch-bin-<v>-<rév>-x86_64.pkg.tar.zst  (makepkg dans un conteneur Arch, Docker requis)
 # Usage : ./paquets/construire-paquets.sh [dossier de sortie]
 set -e
 P="$(dirname "$(readlink -f "$0")")/.."
@@ -32,13 +32,13 @@ tar -C "$R" --owner=0 --group=0 -czf "$SORTIE/3d-patch-$V-linux-x86_64.tar.gz" o
 D="$TRAV/deb"; cp -a "$R" "$D"; mkdir -p "$D/DEBIAN"
 cat > "$D/DEBIAN/control" <<C
 Package: 3d-patch
-Version: $V-1
+Version: $V-2
 Section: graphics
 Priority: optional
 Architecture: amd64
 Maintainer: Alain Valette-Clary <7956043+OMNIA-AI-Group@users.noreply.github.com>
 Installed-Size: $(du -sk "$R" | cut -f1)
-Depends: libc6, libgcc-s1, libstdc++6, zlib1g, libgl1, libegl1, libx11-6, libxkbcommon0, libxcursor1, libxi6, libxrandr2, libwayland-client0
+Depends: libc6 (>= 2.39), libgcc-s1, libstdc++6, zlib1g, libgl1, libegl1, libx11-6, libx11-xcb1, libxkbcommon0, libxkbcommon-x11-0, libxcursor1, libxi6, libxrandr2, libwayland-client0, libwayland-cursor0, libwayland-egl1
 Recommends: xdg-desktop-portal
 Homepage: https://github.com/OMNIA-AI-Group/3D-Patch
 Description: 3D modeler for 3D printing (repair, edit, textures, prepare)
@@ -46,7 +46,7 @@ Description: 3D modeler for 3D printing (repair, edit, textures, prepare)
  object (booleans, cutting, hollowing, text, images, relief textures with
  grip patterns) and sends it to your slicer. Rust + OpenCASCADE.
 C
-fakeroot dpkg-deb --build --root-owner-group "$D" "$SORTIE/3d-patch_${V}-1_amd64.deb" >/dev/null
+fakeroot dpkg-deb --build --root-owner-group "$D" "$SORTIE/3d-patch_${V}-2_amd64.deb" >/dev/null
 # --- Arch Linux (makepkg officiel, dans un conteneur Arch) ---
 if command -v docker >/dev/null; then
     A="$TRAV/arch"; mkdir -p "$A"
@@ -61,7 +61,7 @@ if command -v docker >/dev/null; then
         pacman -Sy --noconfirm --needed base-devel >/dev/null 2>&1 &&
         useradd -m b && chown -R b /w &&
         su b -c "cd /w && makepkg -f --nodeps --skipchecksums" >/dev/null' 
-    cp "$A"/3d-patch-bin-"$V"-1-x86_64.pkg.tar.zst "$SORTIE/"
+    cp "$A"/3d-patch-bin-"$V"-2-x86_64.pkg.tar.zst "$SORTIE/"
 fi
 rm -rf "$TRAV"
 ls -la "$SORTIE"
